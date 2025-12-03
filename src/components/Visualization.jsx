@@ -139,9 +139,18 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
     const [calculatedStats, setCalculatedStats] = useState(null);
     const [isCapturing, setIsCapturing] = useState(false);
     const [shareMessage, setShareMessage] = useState(null);
+    const [displayMode, setDisplayMode] = useState(() => {
+        const saved = localStorage.getItem('lifevis_displayMode');
+        return saved || 'percentage';
+    });
 
     const visualizationRef = useRef(null);
     const shareCardRef = useRef(null); // Ref for the share card
+    
+    // Save display mode to localStorage
+    useEffect(() => {
+        localStorage.setItem('lifevis_displayMode', displayMode);
+    }, [displayMode]);
 
     const t = translations[country] || translations['default'];
 
@@ -554,6 +563,48 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
 
             {/* Energy Dashboard */}
             <div style={{ marginBottom: '3rem' }}>
+                {/* Display Mode Toggle */}
+                <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    gap: '0.5rem', 
+                    marginBottom: '1.5rem',
+                    flexWrap: 'wrap'
+                }}>
+                    <button
+                        className={`toggle-btn ${displayMode === 'percentage' ? 'active' : ''}`}
+                        onClick={() => setDisplayMode('percentage')}
+                        style={{
+                            padding: '0.5rem 1rem',
+                            borderRadius: '8px',
+                            border: '1px solid rgba(255,255,255,0.2)',
+                            background: displayMode === 'percentage' ? 'rgba(96, 165, 250, 0.2)' : 'transparent',
+                            color: 'var(--color-text-primary)',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            fontSize: '0.85rem'
+                        }}
+                    >
+                        {country === 'Japan' ? 'パーセンテージ' : 'Percentage'}
+                    </button>
+                    <button
+                        className={`toggle-btn ${displayMode === 'hours' ? 'active' : ''}`}
+                        onClick={() => setDisplayMode('hours')}
+                        style={{
+                            padding: '0.5rem 1rem',
+                            borderRadius: '8px',
+                            border: '1px solid rgba(255,255,255,0.2)',
+                            background: displayMode === 'hours' ? 'rgba(96, 165, 250, 0.2)' : 'transparent',
+                            color: 'var(--color-text-primary)',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            fontSize: '0.85rem'
+                        }}
+                    >
+                        {country === 'Japan' ? '時間で比較' : 'Compare Hours'}
+                    </button>
+                </div>
+                
                 {(() => {
                     const lifeExpectancy = customLifeExpectancy || lifeExpectancyData[country] || lifeExpectancyData['Global'];
                     const healthyLifeExpectancy = customHealthyLifeExpectancy || healthyLifeExpectancyData[country] || healthyLifeExpectancyData['Global'];
@@ -615,6 +666,7 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
                                         isSelected={isSelected}
                                         subtitle={`${battery.years.toFixed(1)}年`}
                                         onClick={handleOpenUserSettings}
+                                        displayMode={displayMode}
                                     />
                                 );
                             })}
@@ -670,6 +722,7 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
                                 t={t}
                                 subtitle={meetingsLabel}
                                 onClick={() => onOpenSettingsWithPerson(person.id)}
+                                displayMode={displayMode}
                             />
                         );
                     })}
