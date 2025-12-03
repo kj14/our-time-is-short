@@ -141,6 +141,7 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
     const [shareMessage, setShareMessage] = useState(null);
 
     const visualizationRef = useRef(null);
+    const shareCardRef = useRef(null); // Ref for the share card
 
     const t = translations[country] || translations['default'];
 
@@ -192,11 +193,21 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
     const shareUrl = typeof window !== 'undefined' ? window.location.href : defaultShareUrl;
 
     const captureVisualization = async () => {
-        if (!visualizationRef.current) return null;
-        const canvas = await html2canvas(visualizationRef.current, {
+        // Capture the specific share card layout instead of the whole visualization
+        const targetRef = shareCardRef.current || visualizationRef.current;
+        if (!targetRef) return null;
+        
+        // If capturing the hidden share card, we need to make it temporarily visible for html2canvas
+        // but off-screen. Since it's already positioned absolute off-screen, we just need to ensure
+        // it's rendered fully.
+        
+        const canvas = await html2canvas(targetRef, {
             scale: 2,
             useCORS: true,
-            backgroundColor: '#050505'
+            backgroundColor: '#050505',
+            logging: false,
+            width: 1200, // Force width for consistency
+            height: 675  // Force height (16:9)
         });
         return await new Promise((resolve) => {
             canvas.toBlob((blob) => resolve(blob), 'image/png');
@@ -320,6 +331,128 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
             opacity: visible ? 1 : 0,
             transform: visible ? 'translateY(0)' : 'translateY(20px)'
         }}>
+            {/* Hidden Share Card Layout */}
+            <div ref={shareCardRef} style={{
+                position: 'absolute',
+                top: 0,
+                left: '-9999px', // Hide off-screen
+                width: '1200px',
+                height: '675px',
+                background: '#050505',
+                color: 'white',
+                padding: '40px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                fontFamily: 'var(--font-main)',
+                zIndex: -1
+            }}>
+                {/* Header */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                        <h1 style={{ fontSize: '3rem', fontWeight: 800, margin: 0, lineHeight: 1.2 }}>
+                            {country === 'Japan' 
+                                ? `人生${(customLifeExpectancy || lifeExpectancyData[country] || 80).toFixed(1)}年だとしたら`
+                                : `If life were ${(customLifeExpectancy || lifeExpectancyData[country] || 80).toFixed(1)} years`}
+                        </h1>
+                        <p style={{ fontSize: '1.2rem', opacity: 0.7, marginTop: '0.5rem' }}>
+                            {country === 'Japan' ? 'あなたの時間を可視化しよう。' : 'Visualize your time. Make it count.'}
+                        </p>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '1rem', opacity: 0.5, letterSpacing: '1px' }}>REMAINING TIME</div>
+                        <div style={{ fontSize: '2.5rem', fontWeight: 700, fontFamily: 'var(--font-mono)', color: themeColor }}>
+                            {displayStats?.remainingYears.toFixed(2)} <span style={{ fontSize: '1.2rem' }}>years</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Main Content Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', flex: 1, margin: '40px 0' }}>
+                    {/* Left: Life Battery */}
+                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                         <div style={{ marginBottom: '1rem', fontSize: '1.2rem', opacity: 0.8 }}>YOUR LIFE</div>
+                         <div style={{ position: 'relative', height: '60px', background: 'rgba(255,255,255,0.1)', borderRadius: '30px', overflow: 'hidden' }}>
+                            <div style={{ 
+                                width: `${Math.max(0, Math.min(100, (displayStats?.remainingYears / displayStats?.expectancy) * 100))}%`, 
+                                height: '100%', 
+                                background: themeColor,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'flex-end',
+                                paddingRight: '20px'
+                            }}>
+                                <span style={{ color: '#000', fontWeight: 800, fontSize: '1.2rem' }}>
+                                    {Math.max(0, Math.min(100, (displayStats?.remainingYears / displayStats?.expectancy) * 100)).toFixed(1)}%
+                                </span>
+                            </div>
+                         </div>
+                         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', opacity: 0.6, fontSize: '0.9rem' }}>
+                            <span>Lived: {age?.toFixed(1)}y</span>
+                            <span>Total: {displayStats?.expectancy.toFixed(1)}y</span>
+                         </div>
+                    </div>
+
+                    {/* Right: People Batteries (Top 3) */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                        <div style={{ fontSize: '1.2rem', opacity: 0.8 }}>PRECIOUS TIME</div>
+                        {people.slice(0, 3).map(person => {
+                            const pAge = calculateAge(person);
+                            if (pAge === null) return null;
+                            // Simplified calculation for share card
+                            const pExp = lifeExpectancyData[country] || 80;
+                            const limit = pAge < age ? pExp : pExp; 
+                            const yearsWith = Math.max(0, limit - pAge);
+                            const effYears = Math.min(yearsWith, displayStats?.remainingYears || 0);
+                            const meetings = effYears * person.meetingFrequency;
+                            const hours = meetings * person.hoursPerMeeting;
+                            
+                            // Determine percentage for visual bar
+                            // If younger: overlap starts at birth (0) ends at life expectancy. Current point is age.
+                            // But for "battery remaining", we want (remaining / total_possible)
+                            const totalOverlap = pAge < age ? pAge + effYears : age + effYears; // simplified approximation
+                            const livedOverlap = pAge < age ? pAge : age;
+                            const pct = Math.max(5, Math.min(100, (hours / (hours + (livedOverlap * person.meetingFrequency * person.hoursPerMeeting))) * 100));
+
+                            return (
+                                <div key={person.id} style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                    <div style={{ width: '100px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        {person.name}
+                                    </div>
+                                    <div style={{ flex: 1, height: '12px', background: 'rgba(255,255,255,0.1)', borderRadius: '6px', overflow: 'hidden' }}>
+                                        <div style={{ width: `${pct}%`, height: '100%', background: person.color || '#818cf8' }}></div>
+                                    </div>
+                                    <div style={{ width: '80px', textAlign: 'right', fontSize: '0.9rem', opacity: 0.8 }}>
+                                        {meetings.toFixed(0)} {country === 'Japan' ? '回' : 'times'}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                        {people.length === 0 && (
+                            <div style={{ opacity: 0.4, fontStyle: 'italic' }}>
+                                {country === 'Japan' ? '大切な人を追加して時間を可視化しましょう' : 'Add people to visualize shared time'}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div style={{ 
+                    borderTop: '1px solid rgba(255,255,255,0.1)', 
+                    paddingTop: '20px', 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                }}>
+                    <div style={{ fontSize: '0.9rem', opacity: 0.5 }}>
+                        #OurTimeIsShort
+                    </div>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 600, letterSpacing: '1px' }}>
+                        letmeknow.life
+                    </div>
+                </div>
+            </div>
+
             {/* Story Section */}
             <div className="story-section" style={{
                 textAlign: 'center',
