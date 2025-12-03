@@ -1,57 +1,69 @@
-# Our Life Is Short
+# Our Time Is Short
 
-インタラクティブなビジュアライゼーションで、残りの人生や大切な人との時間を直感的に把握できる React + Vite 製アプリです。  
-GitHub Pages でのホスティングを前提に、CI/CD（Actions）とベースパスの設定を済ませています。
+> **Time feels infinite only because we cannot see it.**  
+> **時間は見えないから、無限にあるように感じてしまう。**
 
-## 使用技術
+I built this tool to help myself stop postponing my life.  
+私自身が人生を後回しにするのをやめるために、このツールを作りました。
 
-- React 18 / Vite 7
-- Three.js + react-three-fiber（3D 可視化）
-- GitHub Actions（Pages への自動デプロイ）
-- LocalStorage（ユーザー設定の永続化）
+---
 
-## 動作要件
+## Philosophy / 思想
 
-- Node.js **20.19 以上** または **22.12 以上**（Vite の要件）
-- npm 10 以上
+We tend to postpone things because "time" is invisible.  
+By visualizing the remaining time with our loved ones, vague anxiety turns into concrete actions.  
+This tool is not just a calculator; it is a compass to verify if you are living your life the way you want to.
 
-## セットアップ
+人は「見えない時間」を後回しにしがちです。  
+大切な人と過ごせる残りの時間を可視化することで、漠然とした不安を具体的な行動に変えることができます。  
+このツールは単なる計算機ではなく、あなたが「望む人生を生きているか」を確認するためのコンパスです。
+
+## Features / 機能
+
+- **Visualize Life & Energy**: See your remaining life, healthy life expectancy, and working years as battery tanks.
+- **Precious Time with Others**: Calculate and visualize the remaining time you have with your parents, children, or partners based on meeting frequency.
+- **"If Life Were..."**: Reframe your perspective by customizing the assumed life expectancy.
+- **Share Your Visualization**: Generate and share a snapshot of your current life status to social media.
+
+---
+
+## Usage / 使い方
+
+1. **Enter Your Details**: Input your country, age, and life expectancy assumption.
+2. **Add People**: Add important people in your life (parents, children, friends).
+3. **Set Conditions**: Adjust how often and how long you meet them.
+4. **Visualize**: See the "batteries" representing your shared time together.
+
+---
+
+## Development / 開発
+
+This project is built with React + Vite and Three.js for visualization.
 
 ```bash
+# Install dependencies
 npm install
-npm run dev        # http://localhost:5173
-npm run build      # dist/ に本番成果物を出力
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
 ```
 
-> ⚠️ Node.js 20.19 未満だと Vite が警告を出します。必要に応じて `nvm install 20.19.0` などでアップデートしてください。
+### Deployment
 
-## GitHub Pages へのデプロイ
+This project is configured to be deployed via GitHub Actions to GitHub Pages.  
+Pushing to the `main` branch triggers the deployment workflow.
 
-1. リポジトリの **Settings → Pages** で「GitHub Actions」を選択。
-2. 既に `.github/workflows/deploy.yml` があるため、`main` ブランチへ push すると自動で `npm ci → npm run build` が走り、Pages に反映されます。
-3. 公開 URL は `https://<GitHubユーザー名>.github.io/our-life-is-short/`（または Settings で指定したカスタムドメイン）です。
+---
 
-### ベースパスについて
+## License
 
-`vite.config.js` で `base` を `/<repository-name>/` に設定済みです。  
-リポジトリ名を変更した場合は、以下のように書き換えてください。
+This project is open-sourced under the MIT License.  
+Feel free to use, modify, and share this code.  
+Your life is yours to design.
 
-```js
-const repoName = 'your-new-repo-name'
-export default defineConfig({
-  base: `/${repoName}/`,
-  // ...
-})
-```
-
-## よくある作業
-
-| 作業             | コマンド例                         |
-|------------------|------------------------------------|
-| 依存関係更新     | `npm install <package>`            |
-| Lint (Eslint)    | `npm run lint`                     |
-| 本番ビルド確認   | `npm run build && npm run preview` |
-
-## ライセンス
-
-プロジェクトで採用したいライセンス（例: MIT, Apache-2.0 等）をここに明記してください。
+このプロジェクトは MIT ライセンスの下で公開されています。  
+自由に使い、改変し、共有してください。  
+あなたの人生は、あなたがデザインするものです。

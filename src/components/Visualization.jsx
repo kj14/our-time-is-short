@@ -101,7 +101,9 @@ const calculateAge = (person) => {
     return age + yearProgress;
 };
 
-// Calculate hours with a person
+    // Calculate hours with a person
+    // Thought: Relationships are defined by shared time, not just shared blood or titles.
+    // 思考：関係性とは、血縁や肩書きではなく、共有された「時間」によって定義される。
 const calculateHoursWithPerson = (person, userAge, userCountry, remainingYears) => {
     const personAge = calculateAge(person);
     if (personAge === null) return 0;
@@ -142,6 +144,10 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
 
     const t = translations[country] || translations['default'];
 
+    // Philosophy: Time is invisible, so we tend to postpone living.
+    // Visualization turns vague "someday" into concrete "remaining time".
+    // 人は「見えない時間」を後回しにする。可視化することで、行動が生まれる。
+    
     // Handle opening settings and scrolling to user settings
     const handleOpenUserSettings = () => {
         if (!isSettingsOpen && onOpenSettingsWithPerson) {

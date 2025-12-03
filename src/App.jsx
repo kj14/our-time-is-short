@@ -69,7 +69,9 @@ function App() {
     }
   }, [userData]);
 
-  const handleVisualize = (country, age) => {
+    const handleVisualize = (country, age) => {
+    // Philosophy: Stop postponing life. Start visualizing it.
+    // 思想：人生を後回しにするのをやめる。可視化から始める。
     const lifeExpectancy = lifeExpectancyData[country] || lifeExpectancyData['Global'];
     const healthyLifeExpectancy = healthyLifeExpectancyData[country] || healthyLifeExpectancyData['Global'];
     const workingAgeLimit = workingAgeLimitData[country] || workingAgeLimitData['Global'];
