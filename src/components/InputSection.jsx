@@ -7,13 +7,13 @@ const InputSection = ({ onVisualize, onCountryChange }) => {
         return localStorage.getItem('lifevis_country') || 'Japan';
     });
     const [year, setYear] = useState(() => {
-        return localStorage.getItem('lifevis_year') || '';
+        return localStorage.getItem('lifevis_year') || '1980';
     });
     const [month, setMonth] = useState(() => {
-        return localStorage.getItem('lifevis_month') || '';
+        return localStorage.getItem('lifevis_month') || '1';
     });
     const [day, setDay] = useState(() => {
-        return localStorage.getItem('lifevis_day') || '';
+        return localStorage.getItem('lifevis_day') || '14';
     });
     const [calculatedAge, setCalculatedAge] = useState(null);
 
