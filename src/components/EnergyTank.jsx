@@ -1,6 +1,6 @@
 import React from 'react';
 
-const EnergyTank = ({ activity, hours, maxHours, color, label, t, isMainBattery = false, isSubBattery = false, isSelected = false, subtitle, conditionText, onClick, displayMode = 'percentage' }) => {
+const EnergyTank = ({ activity, hours, maxHours, color, label, t, country = 'Global', isMainBattery = false, isSubBattery = false, isSelected = false, subtitle, conditionText, onClick, displayMode = 'percentage' }) => {
     // Calculate percentage: remaining time / total time
     // This represents "how much % is remaining until the end date"
     const percentage = Math.min(100, Math.max(0, (hours / maxHours) * 100));
@@ -31,13 +31,18 @@ const EnergyTank = ({ activity, hours, maxHours, color, label, t, isMainBattery 
                                 boxShadow: `0 0 10px ${color}40`
                             }}
                         >
-                            <span className="bar-percentage">{percentage.toFixed(0)}%</span>
                         </div>
                     </div>
                 </div>
                 <div className="bar-value-row">
-                    <span className="remaining-value">{formattedHours} <span className="unit">{t.hours}</span></span>
-                    <span className="max-value">{formattedMaxHours} <span className="unit">{t.hours}</span></span>
+                    <div className="bar-time-info">
+                        <span className="time-label">{country === 'Japan' ? '残り' : 'Remaining'}</span>
+                        <span className="remaining-value">{formattedHours} <span className="unit">{t.hours}</span></span>
+                    </div>
+                    <div className="bar-time-info">
+                        <span className="time-label">{country === 'Japan' ? '最大' : 'Max'}</span>
+                        <span className="max-value">{formattedMaxHours} <span className="unit">{t.hours}</span></span>
+                    </div>
                 </div>
             </div>
         );

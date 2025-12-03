@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import html2canvas from 'html2canvas';
 import { calculateLifeStats, translations, lifeExpectancyData, healthyLifeExpectancyData, workingAgeLimitData } from '../utils/lifeData';
 import EnergyTank from './EnergyTank';
@@ -153,6 +153,12 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
     }, [displayMode]);
 
     const t = translations[country] || translations['default'];
+    
+    // Calculate maxLifeHours for hours comparison mode
+    const maxLifeHours = useMemo(() => {
+        const lifeExpectancy = customLifeExpectancy || lifeExpectancyData[country] || lifeExpectancyData['Global'];
+        return lifeExpectancy * 365.25 * 24;
+    }, [customLifeExpectancy, country]);
 
     // Philosophy: Time is invisible, so we tend to postpone living.
     // Visualization turns vague "someday" into concrete "remaining time".
@@ -261,6 +267,44 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
                 // Try to open X app first
                 const twitterAppUrl = `twitter://post?message=${encodeURIComponent(localeShareText)}`;
                 
+                // Track if the app opened (page loses focus)
+                let appOpened = false;
+                let fallbackTimeout;
+                
+                // Listen for page visibility change (app opened)
+                const handleVisibilityChange = () => {
+                    if (document.hidden) {
+                        appOpened = true;
+                        clearTimeout(fallbackTimeout);
+                        document.removeEventListener('visibilitychange', handleVisibilityChange);
+                        window.removeEventListener('blur', handleBlur);
+                        window.removeEventListener('pagehide', handlePageHide);
+                    }
+                };
+                
+                // Listen for blur event (app opened)
+                const handleBlur = () => {
+                    appOpened = true;
+                    clearTimeout(fallbackTimeout);
+                    document.removeEventListener('visibilitychange', handleVisibilityChange);
+                    window.removeEventListener('blur', handleBlur);
+                    window.removeEventListener('pagehide', handlePageHide);
+                };
+                
+                // Listen for pagehide event (app opened)
+                const handlePageHide = () => {
+                    appOpened = true;
+                    clearTimeout(fallbackTimeout);
+                    document.removeEventListener('visibilitychange', handleVisibilityChange);
+                    window.removeEventListener('blur', handleBlur);
+                    window.removeEventListener('pagehide', handlePageHide);
+                };
+                
+                // Add event listeners
+                document.addEventListener('visibilitychange', handleVisibilityChange);
+                window.addEventListener('blur', handleBlur);
+                window.addEventListener('pagehide', handlePageHide);
+                
                 // Create a temporary link element to open the app
                 const link = document.createElement('a');
                 link.href = twitterAppUrl;
@@ -269,13 +313,18 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
                 link.click();
                 document.body.removeChild(link);
                 
-                // Fallback to web if app doesn't open (after a short delay)
-                // Note: This is a best-effort approach. If the app opens, user will see both,
-                // but the app will take focus, so the web page won't be visible.
-                setTimeout(() => {
-                    const twitterWebUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(localeShareText)}`;
-                    window.open(twitterWebUrl, '_blank', 'noopener,noreferrer');
-                }, 800);
+                // Fallback to web if app doesn't open (after a longer delay)
+                // Only open web if the app didn't open (page didn't lose focus)
+                fallbackTimeout = setTimeout(() => {
+                    if (!appOpened) {
+                        const twitterWebUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(localeShareText)}`;
+                        window.open(twitterWebUrl, '_blank', 'noopener,noreferrer');
+                    }
+                    // Clean up event listeners
+                    document.removeEventListener('visibilitychange', handleVisibilityChange);
+                    window.removeEventListener('blur', handleBlur);
+                    window.removeEventListener('pagehide', handlePageHide);
+                }, 2000); // Increased delay to 2 seconds
             } else {
                 // Desktop: use web URL
                 const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(localeShareText)}`;
@@ -491,18 +540,19 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
             {/* Story Section */}
             <div className="story-section" style={{
                 textAlign: 'center',
-                marginBottom: '2rem',
-                padding: '1.5rem 1rem',
-                maxWidth: '800px',
+                marginBottom: '2.5rem',
+                padding: '2rem 1.5rem',
+                maxWidth: '700px',
                 marginLeft: 'auto',
                 marginRight: 'auto'
             }}>
                 <p style={{
-                    fontSize: 'clamp(0.95rem, 2vw, 1.1rem)',
-                    lineHeight: 1.6,
+                    fontSize: 'clamp(1rem, 2.5vw, 1.15rem)',
+                    lineHeight: 1.8,
                     color: 'var(--color-text-primary)',
-                    fontWeight: 300,
-                    opacity: 0.9
+                    fontWeight: 400,
+                    opacity: 0.85,
+                    letterSpacing: '0.02em'
                 }}>
                     {(() => {
                         const livedHours = Number(age) * 365.25 * 24;
@@ -563,46 +613,28 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
 
             {/* Energy Dashboard */}
             <div style={{ marginBottom: '3rem' }}>
-                {/* Display Mode Toggle */}
-                <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'center', 
-                    gap: '0.5rem', 
-                    marginBottom: '1.5rem',
-                    flexWrap: 'wrap'
-                }}>
-                    <button
-                        className={`toggle-btn ${displayMode === 'percentage' ? 'active' : ''}`}
-                        onClick={() => setDisplayMode('percentage')}
-                        style={{
-                            padding: '0.5rem 1rem',
-                            borderRadius: '8px',
-                            border: '1px solid rgba(255,255,255,0.2)',
-                            background: displayMode === 'percentage' ? 'rgba(96, 165, 250, 0.2)' : 'transparent',
-                            color: 'var(--color-text-primary)',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s',
-                            fontSize: '0.85rem'
-                        }}
-                    >
-                        {country === 'Japan' ? 'パーセンテージ' : 'Percentage'}
-                    </button>
-                    <button
-                        className={`toggle-btn ${displayMode === 'hours' ? 'active' : ''}`}
-                        onClick={() => setDisplayMode('hours')}
-                        style={{
-                            padding: '0.5rem 1rem',
-                            borderRadius: '8px',
-                            border: '1px solid rgba(255,255,255,0.2)',
-                            background: displayMode === 'hours' ? 'rgba(96, 165, 250, 0.2)' : 'transparent',
-                            color: 'var(--color-text-primary)',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s',
-                            fontSize: '0.85rem'
-                        }}
-                    >
-                        {country === 'Japan' ? '時間で比較' : 'Compare Hours'}
-                    </button>
+                {/* Display Mode Toggle - Segment Control */}
+                <div className="segment-control-wrapper">
+                    <div className="segment-control">
+                        <div 
+                            className="segment-slider"
+                            style={{
+                                transform: displayMode === 'hours' ? 'translateX(100%)' : 'translateX(0)'
+                            }}
+                        />
+                        <button
+                            className={`segment-btn ${displayMode === 'percentage' ? 'active' : ''}`}
+                            onClick={() => setDisplayMode('percentage')}
+                        >
+                            {country === 'Japan' ? '残量' : 'Remaining'}
+                        </button>
+                        <button
+                            className={`segment-btn ${displayMode === 'hours' ? 'active' : ''}`}
+                            onClick={() => setDisplayMode('hours')}
+                        >
+                            {country === 'Japan' ? '時間比較' : 'Hours'}
+                        </button>
+                    </div>
                 </div>
                 
                 {(() => {
@@ -651,6 +683,9 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
                         }
                     ];
                     
+                    // For hours comparison mode, use maxLifeHours as the common max for all batteries
+                    const commonMaxHours = displayMode === 'hours' ? maxLifeHours : null;
+                    
                     return (
                         <div className="main-batteries-row">
                             {allBatteries.map((battery, index) => {
@@ -660,9 +695,10 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
                                         key={index}
                                         label={battery.label}
                                         hours={battery.hours}
-                                        maxHours={battery.maxHours}
+                                        maxHours={commonMaxHours || battery.maxHours}
                                         color={battery.color}
                                         t={t}
+                                        country={country}
                                         isSelected={isSelected}
                                         subtitle={`${battery.years.toFixed(1)}年`}
                                         onClick={handleOpenUserSettings}
@@ -711,15 +747,19 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
                             ? `残り${Math.max(0, totalMeetings).toFixed(0)}回`
                             : `${Math.max(0, totalMeetings).toFixed(0)} times left`;
 
+                        // For hours comparison mode, use maxLifeHours as the common max
+                        const personMaxHours = displayMode === 'hours' ? maxLifeHours : totalLifeHours;
+
                         return (
                             <EnergyTank
                                 key={person.id}
                                 label={person.name}
                                 hours={hours}
-                                maxHours={totalLifeHours}
+                                maxHours={personMaxHours}
                                 conditionText={conditionText}
                                 color={person.color || '#818cf8'}
                                 t={t}
+                                country={country}
                                 subtitle={meetingsLabel}
                                 onClick={() => onOpenSettingsWithPerson(person.id)}
                                 displayMode={displayMode}
