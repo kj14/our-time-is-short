@@ -299,6 +299,13 @@ a {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
 }
 
+.share-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 .share-icon {
   font-size: 1.1rem;
   line-height: 1;
@@ -319,6 +326,14 @@ a {
 .outline-button:hover {
   border-color: rgba(255, 255, 255, 0.6);
   background: rgba(255, 255, 255, 0.08);
+}
+
+.share-message {
+  text-align: center;
+  margin-top: -1rem;
+  margin-bottom: 4rem;
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
 }
 
 .countdown-grid {

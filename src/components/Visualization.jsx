@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import html2canvas from 'html2canvas';
 import { calculateLifeStats, translations, lifeExpectancyData, healthyLifeExpectancyData, workingAgeLimitData } from '../utils/lifeData';
 import EnergyTank from './EnergyTank';
 
@@ -134,6 +135,10 @@ const calculateHoursWithPerson = (person, userAge, userCountry, remainingYears) 
 const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, healthyLifeExpectancy: customHealthyLifeExpectancy, workingAgeLimit: customWorkingAgeLimit, calculationBasis, onCalculationBasisChange, onReset, isSettingsOpen, onCloseSettings, editingPersonId, onOpenSettingsWithPerson, onUpdateUserSettings, people, setPeople, stats, userSettingsRef }) => {
     const [visible, setVisible] = useState(false);
     const [calculatedStats, setCalculatedStats] = useState(null);
+    const [isCapturing, setIsCapturing] = useState(false);
+    const [shareMessage, setShareMessage] = useState(null);
+
+    const visualizationRef = useRef(null);
 
     const t = translations[country] || translations['default'];
 
@@ -180,16 +185,65 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
     const defaultShareUrl = 'https://kj14.github.io/our-time-is-short/';
     const shareUrl = typeof window !== 'undefined' ? window.location.href : defaultShareUrl;
 
-    const handleShareToX = () => {
-        const expectancy = customLifeExpectancy || lifeExpectancyData[country] || lifeExpectancyData['Global'];
-        const remainingYears = displayStats?.remainingYears ?? 0;
-        const livedYears = age ?? 0;
-        const localeShareText = country === 'Japan'
-            ? `「もし人生が${expectancy.toFixed(1)}年だとしたら」 あなたはすでに${livedYears.toFixed(1)}年を過ごし、残りは約${remainingYears.toFixed(1)}年。あなたの時間を可視化しよう。 #OurTimeIsShort`
-            : `If life were ${expectancy.toFixed(1)} years long, I've lived ${livedYears.toFixed(1)} years and have roughly ${remainingYears.toFixed(1)} years left. Visualize your energy. #OurTimeIsShort`;
-        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(localeShareText)}&url=${encodeURIComponent(shareUrl)}`;
-        window.open(twitterUrl, '_blank', 'noopener,noreferrer');
+    const captureVisualization = async () => {
+        if (!visualizationRef.current) return null;
+        const canvas = await html2canvas(visualizationRef.current, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#050505'
+        });
+        return await new Promise((resolve) => {
+            canvas.toBlob((blob) => resolve(blob), 'image/png');
+        });
     };
+
+    const handleShareToX = async () => {
+        if (isCapturing) return;
+        setIsCapturing(true);
+        try {
+            const blob = await captureVisualization();
+            if (blob) {
+                const fileName = `our-life-is-short-${Date.now()}.png`;
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(() => URL.revokeObjectURL(url), 2000);
+                setShareMessage(country === 'Japan'
+                    ? 'スクリーンショットを保存しました。Xに投稿するときに画像を添付してください。'
+                    : 'Screenshot saved. Attach it when you post on X.');
+            } else {
+                setShareMessage(country === 'Japan'
+                    ? 'スクリーンショットの取得に失敗しました。'
+                    : 'Failed to capture screenshot.');
+            }
+
+            const expectancy = customLifeExpectancy || lifeExpectancyData[country] || lifeExpectancyData['Global'];
+            const remainingYears = displayStats?.remainingYears ?? 0;
+            const livedYears = age ?? 0;
+            const localeShareText = country === 'Japan'
+                ? `「もし人生が${expectancy.toFixed(1)}年だとしたら」 あなたはすでに${livedYears.toFixed(1)}年を過ごし、残りは約${remainingYears.toFixed(1)}年。あなたの時間を可視化しよう。 #OurTimeIsShort`
+                : `If life were ${expectancy.toFixed(1)} years long, I've lived ${livedYears.toFixed(1)} years and have roughly ${remainingYears.toFixed(1)} years left. Visualize your energy. #OurTimeIsShort`;
+            const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(localeShareText)}&url=${encodeURIComponent(shareUrl)}`;
+            window.open(twitterUrl, '_blank', 'noopener,noreferrer');
+        } catch (error) {
+            console.error(error);
+            setShareMessage(country === 'Japan'
+                ? 'シェアの準備に失敗しました。'
+                : 'Unable to prepare the share content.');
+        } finally {
+            setIsCapturing(false);
+        }
+    };
+
+    useEffect(() => {
+        if (!shareMessage) return;
+        const timer = setTimeout(() => setShareMessage(null), 6000);
+        return () => clearTimeout(timer);
+    }, [shareMessage]);
 
     useEffect(() => {
         if (!displayStats) return;
@@ -251,8 +305,12 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
         return displayStats.remainingYears * 52 * 5; // Max 5 hours per week
     };
 
+    const shareButtonLabel = isCapturing
+        ? (country === 'Japan' ? '画像を生成中...' : 'Preparing...')
+        : (country === 'Japan' ? 'Xでシェア' : 'Share on X');
+
     return (
-        <div className={`visualization-wrapper ${visible ? 'visible' : ''}`} style={{
+        <div ref={visualizationRef} className={`visualization-wrapper ${visible ? 'visible' : ''}`} style={{
             opacity: visible ? 1 : 0,
             transform: visible ? 'translateY(0)' : 'translateY(20px)'
         }}>
@@ -474,14 +532,17 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
             )}
 
             <div className="primary-actions">
-                <button className="share-button share-x" onClick={handleShareToX}>
+                <button className="share-button share-x" onClick={handleShareToX} disabled={isCapturing}>
                     <span className="share-icon">𝕏</span>
-                    <span>{country === 'Japan' ? 'Xでシェア' : 'Share on X'}</span>
+                    <span>{shareButtonLabel}</span>
                 </button>
                 <button className="outline-button" onClick={onReset}>
                     {t.startOver}
                 </button>
             </div>
+            {shareMessage && (
+                <p className="share-message">{shareMessage}</p>
+            )}
 
 
         </div>
