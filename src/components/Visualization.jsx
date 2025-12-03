@@ -177,6 +177,20 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
 
     const [timeLeft, setTimeLeft] = useState(null);
 
+    const defaultShareUrl = 'https://kj14.github.io/our-time-is-short/';
+    const shareUrl = typeof window !== 'undefined' ? window.location.href : defaultShareUrl;
+
+    const handleShareToX = () => {
+        const expectancy = customLifeExpectancy || lifeExpectancyData[country] || lifeExpectancyData['Global'];
+        const remainingYears = displayStats?.remainingYears ?? 0;
+        const livedYears = age ?? 0;
+        const localeShareText = country === 'Japan'
+            ? `「もし人生が${expectancy.toFixed(1)}年だとしたら」 あなたはすでに${livedYears.toFixed(1)}年を過ごし、残りは約${remainingYears.toFixed(1)}年。あなたの時間を可視化しよう。 #OurTimeIsShort`
+            : `If life were ${expectancy.toFixed(1)} years long, I've lived ${livedYears.toFixed(1)} years and have roughly ${remainingYears.toFixed(1)} years left. Visualize your energy. #OurTimeIsShort`;
+        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(localeShareText)}&url=${encodeURIComponent(shareUrl)}`;
+        window.open(twitterUrl, '_blank', 'noopener,noreferrer');
+    };
+
     useEffect(() => {
         if (!displayStats) return;
         const now = new Date();
@@ -276,6 +290,13 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
                         );
                     })()}
                 </p>
+
+                <div className="share-section">
+                    <button className="share-button share-x" onClick={handleShareToX}>
+                        <span className="share-icon">𝕏</span>
+                        <span>{country === 'Japan' ? 'Xでシェア' : 'Share on X'}</span>
+                    </button>
+                </div>
             </div>
 
             {/* Countdown Timer */}
