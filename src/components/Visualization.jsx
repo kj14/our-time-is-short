@@ -242,10 +242,36 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
             const remainingYears = displayStats?.remainingYears ?? 0;
             const livedYears = age ?? 0;
             const localeShareText = country === 'Japan'
-                ? `「もし人生が${expectancy.toFixed(1)}年だとしたら」 あなたはすでに${livedYears.toFixed(1)}年を過ごし、残りは約${remainingYears.toFixed(1)}年。あなたの時間を可視化しよう。 #OurTimeIsShort`
-                : `If life were ${expectancy.toFixed(1)} years long, I've lived ${livedYears.toFixed(1)} years and have roughly ${remainingYears.toFixed(1)} years left. Visualize your energy. #OurTimeIsShort`;
-            const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(localeShareText)}&url=${encodeURIComponent(shareUrl)}`;
-            window.open(twitterUrl, '_blank', 'noopener,noreferrer');
+                ? `「もし人生が${expectancy.toFixed(1)}年だとしたら」 あなたはすでに${livedYears.toFixed(1)}年を過ごし、残りは約${remainingYears.toFixed(1)}年。あなたの時間を可視化しよう。 #OurTimeIsShort ${shareUrl}`
+                : `If life were ${expectancy.toFixed(1)} years long, I've lived ${livedYears.toFixed(1)} years and have roughly ${remainingYears.toFixed(1)} years left. Visualize your energy. #OurTimeIsShort ${shareUrl}`;
+            
+            // Detect mobile device
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                // Try to open X app first
+                const twitterAppUrl = `twitter://post?message=${encodeURIComponent(localeShareText)}`;
+                
+                // Create a temporary link element to open the app
+                const link = document.createElement('a');
+                link.href = twitterAppUrl;
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Fallback to web if app doesn't open (after a short delay)
+                // Note: This is a best-effort approach. If the app opens, user will see both,
+                // but the app will take focus, so the web page won't be visible.
+                setTimeout(() => {
+                    const twitterWebUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(localeShareText)}`;
+                    window.open(twitterWebUrl, '_blank', 'noopener,noreferrer');
+                }, 800);
+            } else {
+                // Desktop: use web URL
+                const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(localeShareText)}`;
+                window.open(twitterUrl, '_blank', 'noopener,noreferrer');
+            }
         } catch (error) {
             console.error(error);
             setShareMessage(country === 'Japan'
