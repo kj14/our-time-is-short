@@ -261,8 +261,8 @@ a {
 
 .countdown-card {
   text-align: center;
-  margin-bottom: 4rem;
-  padding: 3rem;
+  margin-bottom: 2rem;
+  padding: 2rem 1.5rem;
   background: rgba(255, 255, 255, 0.02);
   border-radius: var(--radius-xl);
   border: 1px solid rgba(255, 255, 255, 0.03);
@@ -272,7 +272,7 @@ a {
 }
 
 .primary-actions {
-  margin: 4rem auto 6rem;
+  margin: 2rem auto 3rem;
   display: flex;
   justify-content: center;
   gap: 1rem;
@@ -387,13 +387,22 @@ a {
     flex-wrap: wrap;
 }
 
+.sub-batteries-row {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+}
+
 .energy-tanks-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 2rem;
-    margin-bottom: 6rem;
+    gap: 1.5rem;
+    margin-bottom: 3rem;
     justify-content: center;
-    padding: 2rem;
+    padding: 1.5rem;
     background: rgba(255, 255, 255, 0.01);
     border-radius: var(--radius-xl);
     border: 1px solid rgba(255, 255, 255, 0.03);
@@ -550,6 +559,40 @@ a {
 
 .energy-tank-container.main-battery .battery-percentage {
     font-size: 1.5rem;
+}
+
+/* Sub battery (smaller, for health and work) */
+.energy-tank-container.sub-battery .battery-body {
+    width: 70px;
+    height: 160px;
+}
+
+.energy-tank-container.sub-battery .battery-top {
+    width: 18px;
+    height: 6px;
+}
+
+.energy-tank-container.sub-battery .battery-percentage {
+    font-size: 1rem;
+}
+
+.energy-tank-container.sub-battery .activity-name {
+    font-size: 0.75rem;
+    line-height: 1.2;
+    margin-bottom: 0.3rem;
+}
+
+.energy-tank-container.sub-battery .activity-subtitle {
+    font-size: 0.65rem;
+    margin-bottom: 0.2rem;
+}
+
+.energy-tank-container.sub-battery .remaining-value {
+    font-size: 0.85rem;
+}
+
+.energy-tank-container.sub-battery .remaining-value .unit {
+    font-size: 0.65rem;
 }
 
 .energy-tank-container.clickable-battery {
@@ -1443,6 +1486,40 @@ a {
   .energy-tank-container.main-battery .remaining-value .unit {
       font-size: 0.5rem !important;
   }
+  
+  /* Sub Batteries on Mobile */
+  .sub-batteries-row {
+      gap: 0.75rem;
+      padding: 0.75rem 0.5rem;
+      justify-content: center;
+  }
+  
+  .energy-tank-container.sub-battery .battery-body {
+      width: 50px !important;
+      height: 100px !important;
+  }
+  
+  .energy-tank-container.sub-battery .battery-top {
+      width: 14px !important;
+      height: 4px !important;
+  }
+  
+  .energy-tank-container.sub-battery .battery-percentage {
+      font-size: 0.7rem !important;
+  }
+  
+  .energy-tank-container.sub-battery .activity-name {
+      font-size: 0.65rem !important;
+      line-height: 1.1;
+  }
+  
+  .energy-tank-container.sub-battery .activity-subtitle {
+      font-size: 0.55rem !important;
+  }
+  
+  .energy-tank-container.sub-battery .remaining-value {
+      font-size: 0.7rem !important;
+  }
 
   /* People Batteries */
   .energy-tanks-container {
@@ -1528,6 +1605,37 @@ a {
   
   .energy-tank-container.main-battery .remaining-value {
     font-size: 0.6rem !important;
+  }
+  
+  .sub-batteries-row {
+    gap: 0.5rem;
+    padding: 0.5rem 0.25rem;
+  }
+  
+  .energy-tank-container.sub-battery .battery-body {
+    width: 45px !important;
+    height: 90px !important;
+  }
+  
+  .energy-tank-container.sub-battery .battery-top {
+    width: 12px !important;
+    height: 3px !important;
+  }
+  
+  .energy-tank-container.sub-battery .battery-percentage {
+    font-size: 0.65rem !important;
+  }
+  
+  .energy-tank-container.sub-battery .activity-name {
+    font-size: 0.6rem !important;
+  }
+  
+  .energy-tank-container.sub-battery .activity-subtitle {
+    font-size: 0.5rem !important;
+  }
+  
+  .energy-tank-container.sub-battery .remaining-value {
+    font-size: 0.65rem !important;
   }
   
   .energy-tanks-container {

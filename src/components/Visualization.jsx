@@ -482,15 +482,15 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
             {/* Story Section */}
             <div className="story-section" style={{
                 textAlign: 'center',
-                marginBottom: '4rem',
-                padding: '3rem 2rem',
+                marginBottom: '2rem',
+                padding: '1.5rem 1rem',
                 maxWidth: '800px',
                 marginLeft: 'auto',
                 marginRight: 'auto'
             }}>
                 <p style={{
-                    fontSize: 'clamp(1.1rem, 2.5vw, 1.4rem)',
-                    lineHeight: 1.8,
+                    fontSize: 'clamp(0.95rem, 2vw, 1.1rem)',
+                    lineHeight: 1.6,
                     color: 'var(--color-text-primary)',
                     fontWeight: 300,
                     opacity: 0.9
@@ -518,12 +518,12 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
             {/* Countdown Timer */}
             <div className="countdown-card">
                 <h2 style={{
-                    fontSize: 'clamp(1.2rem, 3vw, 1.5rem)',
-                    marginBottom: '1.5rem',
+                    fontSize: 'clamp(0.9rem, 2.5vw, 1.2rem)',
+                    marginBottom: '1rem',
                     fontWeight: 300,
                     color: 'var(--color-text-primary)',
                     textTransform: 'uppercase',
-                    letterSpacing: '0.4em',
+                    letterSpacing: '0.3em',
                     opacity: 0.9
                 }}>
                     {t.remainingSeconds}
@@ -553,34 +553,40 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
             </div>
 
             {/* Energy Dashboard */}
-            <div style={{ marginBottom: '6rem' }}>
-                <h3 style={{
-                    marginBottom: '2rem',
-                    textAlign: 'center',
-                    fontSize: '1.5rem',
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
-                    opacity: 0.8
-                }}>Energy Dashboard</h3>
-                
-                {/* Main Batteries - Your Life Energy (3 perspectives) */}
-                <div className="main-batteries-row">
+            <div style={{ marginBottom: '3rem' }}>
+                {/* Main Battery - 残りの人生 */}
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
                     {(() => {
                         const lifeExpectancy = customLifeExpectancy || lifeExpectancyData[country] || lifeExpectancyData['Global'];
-                        const healthyLifeExpectancy = customHealthyLifeExpectancy || healthyLifeExpectancyData[country] || healthyLifeExpectancyData['Global'];
-                        const workingAgeLimit = customWorkingAgeLimit || workingAgeLimitData[country] || workingAgeLimitData['Global'];
-                        
-                        // 1. 寿命を基軸にした時間
                         const remainingLifeYears = Math.max(0, lifeExpectancy - age);
                         const remainingLifeHours = remainingLifeYears * 365.25 * 24;
                         const maxLifeHours = lifeExpectancy * 365.25 * 24;
                         
-                        // 2. 元気な時間（健康寿命）を基軸にした時間
+                        return (
+                            <EnergyTank
+                                label="残りの人生"
+                                hours={remainingLifeHours}
+                                maxHours={maxLifeHours}
+                                color="#06b6d4"
+                                t={t}
+                                isMainBattery={true}
+                                subtitle={`${remainingLifeYears.toFixed(1)}年`}
+                                onClick={handleOpenUserSettings}
+                            />
+                        );
+                    })()}
+                </div>
+                
+                {/* Sub Batteries - 健康寿命と仕事寿命 */}
+                <div className="sub-batteries-row">
+                    {(() => {
+                        const healthyLifeExpectancy = customHealthyLifeExpectancy || healthyLifeExpectancyData[country] || healthyLifeExpectancyData['Global'];
+                        const workingAgeLimit = customWorkingAgeLimit || workingAgeLimitData[country] || workingAgeLimitData['Global'];
+                        
                         const remainingHealthyYears = Math.max(0, healthyLifeExpectancy - age);
                         const remainingHealthyHours = remainingHealthyYears * 365.25 * 24;
                         const maxHealthyHours = healthyLifeExpectancy * 365.25 * 24;
                         
-                        // 3. 働ける時間を基軸にした時間
                         const remainingWorkingYears = Math.max(0, workingAgeLimit - age);
                         const remainingWorkingHours = remainingWorkingYears * 365.25 * 24;
                         const maxWorkingHours = workingAgeLimit * 365.25 * 24;
@@ -588,22 +594,12 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
                         return (
                             <>
                                 <EnergyTank
-                                    label="残りの人生"
-                                    hours={remainingLifeHours}
-                                    maxHours={maxLifeHours}
-                                    color="#06b6d4"
-                                    t={t}
-                                    isMainBattery={true}
-                                    subtitle={`${remainingLifeYears.toFixed(1)}年`}
-                                    onClick={handleOpenUserSettings}
-                                />
-                                <EnergyTank
                                     label="健康でいられる時間"
                                     hours={remainingHealthyHours}
                                     maxHours={maxHealthyHours}
                                     color="#34d399"
                                     t={t}
-                                    isMainBattery={true}
+                                    isSubBattery={true}
                                     subtitle={`${remainingHealthyYears.toFixed(1)}年`}
                                     onClick={handleOpenUserSettings}
                                 />
@@ -613,7 +609,7 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
                                     maxHours={maxWorkingHours}
                                     color="#fbbf24"
                                     t={t}
-                                    isMainBattery={true}
+                                    isSubBattery={true}
                                     subtitle={`${remainingWorkingYears.toFixed(1)}年`}
                                     onClick={handleOpenUserSettings}
                                 />
