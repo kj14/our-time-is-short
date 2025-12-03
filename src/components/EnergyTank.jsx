@@ -1,6 +1,6 @@
 import React from 'react';
 
-const EnergyTank = ({ activity, hours, maxHours, color, label, t, isMainBattery = false, isSubBattery = false, subtitle, conditionText, onClick }) => {
+const EnergyTank = ({ activity, hours, maxHours, color, label, t, isMainBattery = false, isSubBattery = false, isSelected = false, subtitle, conditionText, onClick }) => {
     // Calculate percentage: remaining time / total time
     // This represents "how much % is remaining until the end date"
     const percentage = Math.min(100, Math.max(0, (hours / maxHours) * 100));
@@ -10,7 +10,7 @@ const EnergyTank = ({ activity, hours, maxHours, color, label, t, isMainBattery 
 
     return (
         <div 
-            className={`energy-tank-container ${isMainBattery ? 'main-battery' : ''} ${isSubBattery ? 'sub-battery' : ''} ${onClick ? 'clickable-battery' : ''}`}
+            className={`energy-tank-container ${isMainBattery ? 'main-battery' : ''} ${isSubBattery ? 'sub-battery' : ''} ${isSelected ? 'selected-battery' : ''} ${onClick ? 'clickable-battery' : ''}`}
             onClick={onClick}
             style={{ cursor: onClick ? 'pointer' : 'default' }}
         >
