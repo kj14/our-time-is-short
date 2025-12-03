@@ -554,69 +554,142 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
 
             {/* Energy Dashboard */}
             <div style={{ marginBottom: '3rem' }}>
-                {/* Main Battery - 残りの人生 */}
-                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
-                    {(() => {
-                        const lifeExpectancy = customLifeExpectancy || lifeExpectancyData[country] || lifeExpectancyData['Global'];
-                        const remainingLifeYears = Math.max(0, lifeExpectancy - age);
-                        const remainingLifeHours = remainingLifeYears * 365.25 * 24;
-                        const maxLifeHours = lifeExpectancy * 365.25 * 24;
-                        
-                        return (
-                            <EnergyTank
-                                label="残りの人生"
-                                hours={remainingLifeHours}
-                                maxHours={maxLifeHours}
-                                color="#06b6d4"
-                                t={t}
-                                isMainBattery={true}
-                                subtitle={`${remainingLifeYears.toFixed(1)}年`}
-                                onClick={handleOpenUserSettings}
-                            />
-                        );
-                    })()}
-                </div>
-                
-                {/* Sub Batteries - 健康寿命と仕事寿命 */}
-                <div className="sub-batteries-row">
-                    {(() => {
-                        const healthyLifeExpectancy = customHealthyLifeExpectancy || healthyLifeExpectancyData[country] || healthyLifeExpectancyData['Global'];
-                        const workingAgeLimit = customWorkingAgeLimit || workingAgeLimitData[country] || workingAgeLimitData['Global'];
-                        
-                        const remainingHealthyYears = Math.max(0, healthyLifeExpectancy - age);
-                        const remainingHealthyHours = remainingHealthyYears * 365.25 * 24;
-                        const maxHealthyHours = healthyLifeExpectancy * 365.25 * 24;
-                        
-                        const remainingWorkingYears = Math.max(0, workingAgeLimit - age);
-                        const remainingWorkingHours = remainingWorkingYears * 365.25 * 24;
-                        const maxWorkingHours = workingAgeLimit * 365.25 * 24;
-                        
-                        return (
-                            <>
+                {(() => {
+                    const lifeExpectancy = customLifeExpectancy || lifeExpectancyData[country] || lifeExpectancyData['Global'];
+                    const healthyLifeExpectancy = customHealthyLifeExpectancy || healthyLifeExpectancyData[country] || healthyLifeExpectancyData['Global'];
+                    const workingAgeLimit = customWorkingAgeLimit || workingAgeLimitData[country] || workingAgeLimitData['Global'];
+                    
+                    // Calculate all three values
+                    const remainingLifeYears = Math.max(0, lifeExpectancy - age);
+                    const remainingLifeHours = remainingLifeYears * 365.25 * 24;
+                    const maxLifeHours = lifeExpectancy * 365.25 * 24;
+                    
+                    const remainingHealthyYears = Math.max(0, healthyLifeExpectancy - age);
+                    const remainingHealthyHours = remainingHealthyYears * 365.25 * 24;
+                    const maxHealthyHours = healthyLifeExpectancy * 365.25 * 24;
+                    
+                    const remainingWorkingYears = Math.max(0, workingAgeLimit - age);
+                    const remainingWorkingHours = remainingWorkingYears * 365.25 * 24;
+                    const maxWorkingHours = workingAgeLimit * 365.25 * 24;
+                    
+                    // Determine main and sub batteries based on calculationBasis
+                    let mainBattery, subBatteries;
+                    
+                    if (calculationBasis === 'healthy') {
+                        // Main: 健康でいられる時間
+                        mainBattery = {
+                            label: "健康でいられる時間",
+                            hours: remainingHealthyHours,
+                            maxHours: maxHealthyHours,
+                            color: "#34d399",
+                            years: remainingHealthyYears
+                        };
+                        // Sub: 残りの人生 + 社会で活躍できる時間
+                        subBatteries = [
+                            {
+                                label: "残りの人生",
+                                hours: remainingLifeHours,
+                                maxHours: maxLifeHours,
+                                color: "#06b6d4",
+                                years: remainingLifeYears
+                            },
+                            {
+                                label: "社会で活躍できる時間",
+                                hours: remainingWorkingHours,
+                                maxHours: maxWorkingHours,
+                                color: "#fbbf24",
+                                years: remainingWorkingYears
+                            }
+                        ];
+                    } else if (calculationBasis === 'working') {
+                        // Main: 社会で活躍できる時間
+                        mainBattery = {
+                            label: "社会で活躍できる時間",
+                            hours: remainingWorkingHours,
+                            maxHours: maxWorkingHours,
+                            color: "#fbbf24",
+                            years: remainingWorkingYears
+                        };
+                        // Sub: 残りの人生 + 健康でいられる時間
+                        subBatteries = [
+                            {
+                                label: "残りの人生",
+                                hours: remainingLifeHours,
+                                maxHours: maxLifeHours,
+                                color: "#06b6d4",
+                                years: remainingLifeYears
+                            },
+                            {
+                                label: "健康でいられる時間",
+                                hours: remainingHealthyHours,
+                                maxHours: maxHealthyHours,
+                                color: "#34d399",
+                                years: remainingHealthyYears
+                            }
+                        ];
+                    } else {
+                        // Default: Main: 残りの人生
+                        mainBattery = {
+                            label: "残りの人生",
+                            hours: remainingLifeHours,
+                            maxHours: maxLifeHours,
+                            color: "#06b6d4",
+                            years: remainingLifeYears
+                        };
+                        // Sub: 健康でいられる時間 + 社会で活躍できる時間
+                        subBatteries = [
+                            {
+                                label: "健康でいられる時間",
+                                hours: remainingHealthyHours,
+                                maxHours: maxHealthyHours,
+                                color: "#34d399",
+                                years: remainingHealthyYears
+                            },
+                            {
+                                label: "社会で活躍できる時間",
+                                hours: remainingWorkingHours,
+                                maxHours: maxWorkingHours,
+                                color: "#fbbf24",
+                                years: remainingWorkingYears
+                            }
+                        ];
+                    }
+                    
+                    return (
+                        <>
+                            {/* Main Battery */}
+                            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
                                 <EnergyTank
-                                    label="健康でいられる時間"
-                                    hours={remainingHealthyHours}
-                                    maxHours={maxHealthyHours}
-                                    color="#34d399"
+                                    label={mainBattery.label}
+                                    hours={mainBattery.hours}
+                                    maxHours={mainBattery.maxHours}
+                                    color={mainBattery.color}
                                     t={t}
-                                    isSubBattery={true}
-                                    subtitle={`${remainingHealthyYears.toFixed(1)}年`}
+                                    isMainBattery={true}
+                                    subtitle={`${mainBattery.years.toFixed(1)}年`}
                                     onClick={handleOpenUserSettings}
                                 />
-                                <EnergyTank
-                                    label="社会で活躍できる時間"
-                                    hours={remainingWorkingHours}
-                                    maxHours={maxWorkingHours}
-                                    color="#fbbf24"
-                                    t={t}
-                                    isSubBattery={true}
-                                    subtitle={`${remainingWorkingYears.toFixed(1)}年`}
-                                    onClick={handleOpenUserSettings}
-                                />
-                            </>
-                        );
-                    })()}
-                </div>
+                            </div>
+                            
+                            {/* Sub Batteries */}
+                            <div className="sub-batteries-row">
+                                {subBatteries.map((sub, index) => (
+                                    <EnergyTank
+                                        key={index}
+                                        label={sub.label}
+                                        hours={sub.hours}
+                                        maxHours={sub.maxHours}
+                                        color={sub.color}
+                                        t={t}
+                                        isSubBattery={true}
+                                        subtitle={`${sub.years.toFixed(1)}年`}
+                                        onClick={handleOpenUserSettings}
+                                    />
+                                ))}
+                            </div>
+                        </>
+                    );
+                })()}
                 
                 {/* People Batteries */}
                 <div className="energy-tanks-container">
