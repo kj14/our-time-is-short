@@ -1223,7 +1223,17 @@ a {
   }
 
   .app-header {
-    margin-top: 2rem;
+    margin-top: 3rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .app-title {
+    font-size: clamp(2rem, 7vw, 3rem); /* Slightly smaller for mobile */
+  }
+
+  .app-subtitle {
+    font-size: 0.9rem;
+    padding: 0 1rem;
   }
 
   .input-form {
@@ -1231,7 +1241,18 @@ a {
   }
   
   .countdown-card {
-    padding: 1.5rem;
+    padding: 1.5rem 1rem;
+    margin-bottom: 3rem;
+  }
+  
+  .countdown-grid {
+    gap: 0.5rem;
+  }
+
+  .countdown-card h2 {
+    font-size: 1rem;
+    letter-spacing: 0.2em;
+    margin-bottom: 1rem;
   }
   
   .stat-grid {
@@ -1244,41 +1265,89 @@ a {
   }
 
   .date-grid {
-    grid-template-columns: 1.5fr 1fr 0.8fr; /* Adjust for narrow screens */
+    grid-template-columns: 1.5fr 1fr 1fr; /* Better proportion */
     gap: 0.5rem;
   }
 
+  /* Main Batteries - Try to keep horizontal but scale down */
   .main-batteries-row {
-      flex-direction: column;
-      align-items: center;
-      gap: 1.5rem;
-      padding: 1rem;
+      flex-direction: row; /* Keep row */
+      flex-wrap: nowrap;   /* Try not to wrap */
+      justify-content: space-evenly;
+      align-items: flex-end; /* Align bottoms */
+      gap: 0.5rem;
+      padding: 1.5rem 0.5rem;
+      overflow-x: auto; /* Allow scroll if really needed, but try to fit */
   }
 
+  /* Specific styles for main batteries on mobile to fit 3 */
+  .energy-tank-container.main-battery {
+      max-width: 32%; /* 3 columns roughly */
+      min-width: 90px;
+  }
+
+  .energy-tank-container.main-battery .battery-body {
+      width: 60px; /* Smaller width */
+      height: 160px; /* Smaller height */
+  }
+
+  .energy-tank-container.main-battery .battery-top {
+      width: 20px;
+      height: 6px;
+  }
+  
+  .energy-tank-container.main-battery .battery-percentage {
+      font-size: 1rem;
+  }
+
+  .energy-tank-container.main-battery .activity-name {
+      font-size: 0.7rem; /* Smaller text */
+      white-space: normal; /* Allow wrapping */
+      line-height: 1.2;
+      height: 2.4em; /* Fixed height for 2 lines */
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+  }
+
+  .energy-tank-container.main-battery .activity-subtitle {
+      font-size: 0.65rem;
+  }
+  
+  .energy-tank-container.main-battery .remaining-value {
+      font-size: 0.8rem;
+  }
+
+  /* People Batteries */
   .energy-tanks-container {
-      grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
+      grid-template-columns: repeat(2, 1fr);
       gap: 1rem;
       padding: 1rem;
   }
 
-  .energy-tank-container.main-battery {
-      max-width: 150px;
+  .energy-tank-container {
+      gap: 0.5rem;
   }
 
   .battery-body {
-      width: 60px;
-      height: 150px;
+      width: 50px;
+      height: 120px;
   }
 
-  .energy-tank-container.main-battery .battery-body {
-      width: 100px;
-      height: 200px;
+  .activity-name {
+      font-size: 0.8rem;
+      word-break: break-word; /* Prevent overflow */
+      max-width: 100%;
+  }
+  
+  .remaining-value {
+      font-size: 0.9rem;
   }
 }
 
 @media (max-width: 480px) {
   .app-title {
-    font-size: 2.5rem; /* Ensure not too small but clamp handles it */
+    font-size: 1.8rem;
   }
 
   .input-form {
@@ -1288,17 +1357,19 @@ a {
   .date-grid {
     grid-template-columns: 1fr; /* Stack inputs on very small screens */
   }
-
-  .countdown-grid {
-    gap: 0.5rem;
+  
+  .settings-container {
+      margin: 0;
+      border-radius: 0;
+      height: 100%;
+      width: 100%;
   }
   
-  .countdown-card h2 {
-    font-size: 1rem;
-    letter-spacing: 0.2em;
+  .settings-modal {
+      padding: 0;
   }
   
-  .breakdown-card {
-    padding: 1.2rem;
+  .energy-tank-container.main-battery {
+      min-width: 80px;
   }
 }
