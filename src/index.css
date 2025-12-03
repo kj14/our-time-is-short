@@ -271,10 +271,12 @@ a {
   overflow: hidden;
 }
 
-.share-section {
-  margin-top: 2rem;
+.primary-actions {
+  margin: 4rem auto 6rem;
   display: flex;
   justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .share-button {
@@ -300,6 +302,23 @@ a {
 .share-icon {
   font-size: 1.1rem;
   line-height: 1;
+}
+
+.outline-button {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: var(--color-text-primary);
+  padding: 0.85rem 2.5rem;
+  border-radius: 999px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  font-weight: 500;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.outline-button:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .countdown-grid {

@@ -290,13 +290,6 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
                         );
                     })()}
                 </p>
-
-                <div className="share-section">
-                    <button className="share-button share-x" onClick={handleShareToX}>
-                        <span className="share-icon">𝕏</span>
-                        <span>{country === 'Japan' ? 'Xでシェア' : 'Share on X'}</span>
-                    </button>
-                </div>
             </div>
 
             {/* Countdown Timer */}
@@ -480,27 +473,12 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
                 </div>
             )}
 
-            <div style={{ textAlign: 'center', marginBottom: '6rem' }}>
-                <button onClick={onReset} style={{
-                    background: 'transparent',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    color: 'var(--color-text-primary)',
-                    padding: '1rem 3rem',
-                    fontSize: '1.1rem',
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
-                    borderRadius: '50px',
-                    transition: 'all 0.3s'
-                }}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = '#fff';
-                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
-                        e.currentTarget.style.background = 'transparent';
-                    }}
-                >
+            <div className="primary-actions">
+                <button className="share-button share-x" onClick={handleShareToX}>
+                    <span className="share-icon">𝕏</span>
+                    <span>{country === 'Japan' ? 'Xでシェア' : 'Share on X'}</span>
+                </button>
+                <button className="outline-button" onClick={onReset}>
                     {t.startOver}
                 </button>
             </div>
