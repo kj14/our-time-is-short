@@ -3,18 +3,18 @@ import { useFrame, useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
 import Earth from './Earth';
 
-// High quality textures for planets from reliable sources (Wikipedia/Wikimedia Commons/JPL)
-// Using Wikimedia Commons URLs which are generally reliable and CORS-friendly
+// High quality textures for planets from local storage
+// Using downloaded textures to avoid CORS issues and ensure reliability
 const PLANET_TEXTURES = {
-    Mercury: 'https://upload.wikimedia.org/wikipedia/commons/3/30/Mercury_in_color_-_Prockter07_centered.jpg',
-    Venus: 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Venus-real_color.jpg',
-    Mars: 'https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg',
-    Jupiter: 'https://upload.wikimedia.org/wikipedia/commons/e/e2/Jupiter.jpg',
-    Saturn: 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Saturn_during_Equinox.jpg',
-    SaturnRing: 'https://upload.wikimedia.org/wikipedia/commons/b/b1/Saturn_Ring_System.jpg', // Simplified ring texture
-    Uranus: 'https://upload.wikimedia.org/wikipedia/commons/3/3d/Uranus2.jpg',
-    Neptune: 'https://upload.wikimedia.org/wikipedia/commons/5/56/Neptune_Full.jpg',
-    Sun: 'https://upload.wikimedia.org/wikipedia/commons/b/b4/The_Sun_by_the_Atmospheric_Imaging_Assembly_of_NASA%27s_Solar_Dynamics_Observatory_-_20100819.jpg'
+    Mercury: '/textures/2k_mercury.jpg',
+    Venus: '/textures/2k_venus_surface.jpg',
+    Mars: '/textures/2k_mars.jpg',
+    Jupiter: '/textures/2k_jupiter.jpg',
+    Saturn: '/textures/2k_saturn.jpg',
+    SaturnRing: '/textures/2k_saturn_ring_alpha.png',
+    Uranus: '/textures/2k_uranus.jpg',
+    Neptune: '/textures/2k_neptune.jpg',
+    Sun: '/textures/2k_sun.jpg'
 };
 
 const RealisticPlanet = ({ radius, distance, speed, angleOffset = 0, name, textureUrl, hasRing, ringUrl }) => {

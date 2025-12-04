@@ -10,9 +10,9 @@ export default function Earth({ targetCountry, onClick, onPointerOver, onPointer
 
     // Load textures
     const [colorMap, specularMap, cloudsMap] = useLoader(THREE.TextureLoader, [
-        'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg',
-        'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_specular_2048.jpg',
-        'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_clouds_1024.png'
+        '/textures/2k_earth_daymap.jpg',
+        '/textures/2k_earth_specular_map.jpg',
+        '/textures/2k_earth_clouds.jpg'
     ]);
 
     useEffect(() => {
