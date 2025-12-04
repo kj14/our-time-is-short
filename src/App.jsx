@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import InputSection from './components/InputSection'
 import Visualization, { UserSettings, PeopleSettings } from './components/Visualization'
+import DetailPage from './components/DetailPage'
 import Earth3D from './components/Earth3D'
 import DigitalHourglass from './components/DigitalHourglass'
 import { lifeExpectancyData, healthyLifeExpectancyData, workingAgeLimitData, calculateLifeStats } from './utils/lifeData'
@@ -27,6 +28,7 @@ function App() {
   });
   const [currentCountry, setCurrentCountry] = useState('Japan');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isDetailPageOpen, setIsDetailPageOpen] = useState(false);
   const [editingPersonId, setEditingPersonId] = useState(null);
   const [people, setPeople] = useState(() => {
     // Load from localStorage
@@ -44,6 +46,10 @@ function App() {
     // Load from localStorage
     const saved = localStorage.getItem('lifevis_calculationBasis');
     return saved || 'life'; // 'life', 'healthy', 'working'
+  });
+  const [displayMode, setDisplayMode] = useState(() => {
+    const saved = localStorage.getItem('lifevis_displayMode');
+    return saved || 'percentage';
   });
   const userSettingsRef = useRef(null);
 
@@ -122,31 +128,6 @@ function App() {
           </button>
         )}
         <div style={{ width: '100%' }}>
-          <h1 className="app-title">
-            {(() => {
-              const isJapan = (isValidUser ? userData.country : currentCountry) === 'Japan';
-              const lifeExp = isValidUser && userData.lifeExpectancy 
-                ? userData.lifeExpectancy
-                : currentCountry && lifeExpectancyData[currentCountry]
-                ? lifeExpectancyData[currentCountry]
-                : null;
-              
-              if (isJapan) {
-                return lifeExp 
-                  ? `人生${lifeExp.toFixed(1)}年だとしたら`
-                  : '人生〇〇年だとしたら';
-              } else {
-                return lifeExp
-                  ? `If life were ${lifeExp.toFixed(1)} years`
-                  : 'If life were {years} years';
-              }
-            })()}
-          </h1>
-          <p className="app-subtitle">
-            {((isValidUser ? userData.country : currentCountry) === 'Japan') 
-              ? 'あなたの時間を可視化します。'
-              : 'Visualize your time.'}
-          </p>
         </div>
       </header>
 
@@ -155,6 +136,33 @@ function App() {
           <InputSection
             onVisualize={handleVisualize}
             onCountryChange={setCurrentCountry}
+          />
+        ) : isDetailPageOpen ? (
+          <DetailPage
+            country={userData.country}
+            age={userData.age}
+            lifeExpectancy={userData.lifeExpectancy}
+            healthyLifeExpectancy={userData.healthyLifeExpectancy}
+            workingAgeLimit={userData.workingAgeLimit}
+            calculationBasis={calculationBasis}
+            onCalculationBasisChange={setCalculationBasis}
+            onReset={() => {
+              setIsDetailPageOpen(false);
+              handleReset();
+            }}
+            onOpenSettingsWithPerson={(personId) => {
+              if (personId === 'user-settings') {
+                setEditingPersonId(null);
+              } else {
+                setEditingPersonId(personId);
+              }
+              setIsDetailPageOpen(false);
+              setIsSettingsOpen(true);
+            }}
+            people={people}
+            displayMode={displayMode}
+            onDisplayModeChange={setDisplayMode}
+            onBack={() => setIsDetailPageOpen(false)}
           />
         ) : (
           <Visualization
@@ -231,6 +239,39 @@ function App() {
                     setEditingPersonId(null);
                   }}
                 />
+                
+                {/* Detail Page Link */}
+                <div style={{ 
+                  marginTop: '2rem', 
+                  paddingTop: '2rem', 
+                  borderTop: '1px solid rgba(255, 255, 255, 0.1)' 
+                }}>
+                  <button
+                    onClick={() => {
+                      setIsSettingsOpen(false);
+                      setIsDetailPageOpen(true);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '1rem',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      color: 'var(--color-text-primary)',
+                      fontSize: '1rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = 'rgba(255, 255, 255, 0.1)';
+                    }}
+                  >
+                    {userData.country === 'Japan' ? '詳細ページを見る' : 'View Detail Page'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

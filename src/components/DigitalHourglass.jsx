@@ -17,8 +17,8 @@ const particleVertexShader = `
     vColor = color;
     vAlpha = alpha;
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-    // Size attenuation based on depth - Increased for more presence
-    gl_PointSize = size * pixelRatio * (280.0 / -mvPosition.z);
+    // Size attenuation based on depth - Smaller on mobile to prevent glare
+    gl_PointSize = size * pixelRatio * (200.0 / -mvPosition.z);
     gl_Position = projectionMatrix * mvPosition;
   }
 `;
@@ -33,9 +33,9 @@ const particleFragmentShader = `
     float r = length(uv);
     if (r > 0.5) discard;
     
-    // Soft radial gradient
+    // Soft radial gradient - Softer on mobile to reduce glare
     float glow = 1.0 - (r * 2.0);
-    glow = pow(glow, 2.0); // Sharper falloff for delicate look
+    glow = pow(glow, 2.5); // Softer falloff to reduce brightness
     
     gl_FragColor = vec4(vColor, vAlpha * glow);
   }
@@ -43,8 +43,11 @@ const particleFragmentShader = `
 
 function DelicateSnowParticles({ remainingPercentage = 50, onDrop }) {
   const pointsRef = useRef();
-  const count = 12000; // High count for dense but small particles
   const lastDropTime = useRef(0);
+  
+  // Detect mobile device for particle optimization
+  const isMobile = typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const count = isMobile ? 6000 : 12000; // Reduce particle count on mobile
   
   // Dimensions
   const width = 60; 
@@ -101,7 +104,8 @@ function DelicateSnowParticles({ remainingPercentage = 50, onDrop }) {
         colors[i * 3] = pColor.r;
         colors[i * 3 + 1] = pColor.g;
         colors[i * 3 + 2] = pColor.b;
-        alphas[i] = 0.7 + Math.random() * 0.3; // Bright and visible
+        // Reduce opacity on mobile to prevent glare
+        alphas[i] = isMobile ? 0.3 + Math.random() * 0.2 : 0.7 + Math.random() * 0.3;
         
       } else {
         // Used Time (Bottom) - Already fallen snow
@@ -119,7 +123,8 @@ function DelicateSnowParticles({ remainingPercentage = 50, onDrop }) {
         colors[i * 3] = snowColor.r;
         colors[i * 3 + 1] = snowColor.g;
         colors[i * 3 + 2] = snowColor.b;
-        alphas[i] = 0.3 + Math.random() * 0.3; // Softer, less prominent than top particles
+        // Reduce opacity on mobile to prevent glare
+        alphas[i] = isMobile ? 0.15 + Math.random() * 0.15 : 0.3 + Math.random() * 0.3;
       }
       
       positions[i * 3] = x;
@@ -130,12 +135,13 @@ function DelicateSnowParticles({ remainingPercentage = 50, onDrop }) {
       originalPositions[i * 3 + 1] = y;
       originalPositions[i * 3 + 2] = z;
       
-      sizes[i] = Math.random() * 2.0 + 1.0; // Slightly larger for more presence, still delicate
+      // Smaller particles on mobile to prevent glare
+      sizes[i] = isMobile ? Math.random() * 1.0 + 0.5 : Math.random() * 2.0 + 1.0;
       velocities[i] = 0;
     }
     
     return { positions, colors, sizes, alphas, velocities, states, originalPositions };
-  }, [remainingPercentage]);
+  }, [remainingPercentage, isMobile]);
 
   useFrame((state) => {
     if (!pointsRef.current) return;
@@ -276,7 +282,7 @@ function DelicateSnowParticles({ remainingPercentage = 50, onDrop }) {
         fragmentShader={particleFragmentShader}
         transparent
         depthWrite={false}
-        blending={THREE.AdditiveBlending}
+        blending={isMobile ? THREE.NormalBlending : THREE.AdditiveBlending}
       />
     </points>
   );
