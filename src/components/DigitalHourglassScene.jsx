@@ -401,7 +401,7 @@ function DelicateSnowParticles({ remainingPercentage = 50, onDrop }) {
   });
 
   return (
-    <points ref={pointsRef}>
+    <points ref={pointsRef} frustumCulled={false}>
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
