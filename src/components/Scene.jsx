@@ -165,7 +165,7 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
 
     return (
         <>
-            <ambientLight intensity={isVisualizing ? 1.5 : (isOverviewMode ? 0.8 : 0.3)} />
+            <ambientLight intensity={isVisualizing ? 1.0 : (isOverviewMode ? 0.8 : 0.3)} />
             {/* Point light for overview mode to illuminate person stars */}
             {isOverviewMode && !isVisualizing && (
                 <pointLight position={[0, 50, -10]} intensity={1.5} distance={120} />
@@ -273,7 +273,7 @@ export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, t
                 performance={{ min: 0.5 }}
                 style={{ touchAction: 'manipulation' }}
             >
-                <fog attach="fog" args={isVisualizing ? ['#141e35', 80, 200] : ['#0a0e1a', 10, 150]} />
+                <fog attach="fog" args={isVisualizing ? ['#141e35', 60, 130] : ['#0a0e1a', 10, 150]} />
                 <Suspense fallback={null}>
                     <SceneContent 
                         isVisualizing={isVisualizing}

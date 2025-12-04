@@ -208,7 +208,7 @@ const OrbitZoneCircle = ({ distance, color, label }) => {
             {/* Orbit Ring */}
             <mesh rotation={[-Math.PI/2, 0, 0]} frustumCulled={false}>
                 <ringGeometry args={[distance - 0.1, distance + 0.1, 128]} />
-                <meshBasicMaterial color={color} opacity={0.3} transparent side={THREE.DoubleSide} />
+                <meshBasicMaterial color={color} opacity={0.1} transparent side={THREE.DoubleSide} />
             </mesh>
         </group>
     );
