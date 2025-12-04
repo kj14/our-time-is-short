@@ -123,14 +123,14 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
             }
         } else if (isOverviewMode) {
             // Overview Mode: Top-down view to see the entire relationship map
-            // PersonStars can be at distance 6-20, adjusted to fit 2/3 of screen
-            const overviewHeight = 45; // Height above Earth to see all stars within screen
+            // PersonStars can be at distance 6-20, camera high enough to see 2/3 of screen
+            const overviewHeight = 65; // Height above Earth to see all stars within screen
             
             // Camera positioned directly above Earth, looking straight down
             targetCameraPos = new THREE.Vector3(
                 currentEarthCenter.x,
                 currentEarthCenter.y + overviewHeight,
-                currentEarthCenter.z + 5 // Slight Z offset for better angle
+                currentEarthCenter.z + 3 // Slight Z offset for better angle
             );
             
             // Look at Earth center from above
@@ -168,7 +168,7 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
             <ambientLight intensity={isVisualizing ? 0.7 : (isOverviewMode ? 0.8 : 0.3)} />
             {/* Point light for overview mode to illuminate person stars */}
             {isOverviewMode && !isVisualizing && (
-                <pointLight position={[0, 35, -10]} intensity={1.5} distance={100} />
+                <pointLight position={[0, 50, -10]} intensity={1.5} distance={120} />
             )}
             
             {/* Solar System - Earth-centered with person stars */}
