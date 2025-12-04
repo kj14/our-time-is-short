@@ -152,12 +152,25 @@ const PersonSettings = ({
     return (
         <section 
             className="input-section fade-in" 
-            style={{ animationDelay: '0.2s' }}
+            style={{ 
+                animationDelay: '0.2s',
+                padding: '1rem',
+                boxSizing: 'border-box'
+            }}
         >
-            <p className="input-section-tagline">
+            <p className="input-section-tagline" style={{ marginBottom: '1.5rem', fontSize: '1rem' }}>
                 {isJapan ? '大切な人との時間を可視化' : 'Visualize time with someone special'}
             </p>
-            <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="input-form">
+            <form 
+                onSubmit={(e) => { e.preventDefault(); handleSave(); }} 
+                className="input-form"
+                style={{
+                    padding: '1.5rem',
+                    gap: '1.25rem',
+                    maxWidth: '100%',
+                    boxSizing: 'border-box'
+                }}
+            >
                 {/* Name */}
                 <div className="input-group">
                     <label className="input-label">
@@ -325,28 +338,28 @@ const PersonSettings = ({
                 {/* Shared Time Preview */}
                 {sharedTime && (
                     <div style={{
-                        padding: '1.5rem',
+                        padding: '1rem',
                         background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)',
-                        borderRadius: '16px',
+                        borderRadius: '12px',
                         border: '1px solid rgba(59, 130, 246, 0.2)',
                         textAlign: 'center'
                     }}>
                         <div style={{ 
-                            fontSize: '0.85rem', 
+                            fontSize: '0.75rem', 
                             color: 'rgba(255, 255, 255, 0.6)',
-                            marginBottom: '0.75rem'
+                            marginBottom: '0.5rem'
                         }}>
-                            {isJapan ? '残りの共有時間（目安）' : 'Estimated Remaining Time Together'}
+                            {isJapan ? '残りの共有時間（目安）' : 'Estimated Time Together'}
                         </div>
                         <div style={{
                             display: 'flex',
                             justifyContent: 'center',
-                            gap: '2rem',
+                            gap: '1.5rem',
                             flexWrap: 'wrap'
                         }}>
                             <div>
                                 <div style={{ 
-                                    fontSize: '1.75rem', 
+                                    fontSize: '1.25rem', 
                                     fontWeight: '700',
                                     color: '#3b82f6',
                                     fontFamily: 'var(--font-mono)'
@@ -354,7 +367,7 @@ const PersonSettings = ({
                                     {sharedTime.totalHours.toLocaleString()}
                                 </div>
                                 <div style={{ 
-                                    fontSize: '0.75rem', 
+                                    fontSize: '0.65rem', 
                                     color: 'rgba(255, 255, 255, 0.5)' 
                                 }}>
                                     {isJapan ? '時間' : 'hours'}
@@ -362,7 +375,7 @@ const PersonSettings = ({
                             </div>
                             <div>
                                 <div style={{ 
-                                    fontSize: '1.75rem', 
+                                    fontSize: '1.25rem', 
                                     fontWeight: '700',
                                     color: '#8b5cf6',
                                     fontFamily: 'var(--font-mono)'
@@ -370,7 +383,7 @@ const PersonSettings = ({
                                     {sharedTime.totalMeetings.toLocaleString()}
                                 </div>
                                 <div style={{ 
-                                    fontSize: '0.75rem', 
+                                    fontSize: '0.65rem', 
                                     color: 'rgba(255, 255, 255, 0.5)' 
                                 }}>
                                     {isJapan ? '回' : 'times'}
@@ -378,7 +391,7 @@ const PersonSettings = ({
                             </div>
                             <div>
                                 <div style={{ 
-                                    fontSize: '1.75rem', 
+                                    fontSize: '1.25rem', 
                                     fontWeight: '700',
                                     color: '#10b981',
                                     fontFamily: 'var(--font-mono)'
@@ -386,7 +399,7 @@ const PersonSettings = ({
                                     {sharedTime.totalDays}
                                 </div>
                                 <div style={{ 
-                                    fontSize: '0.75rem', 
+                                    fontSize: '0.65rem', 
                                     color: 'rgba(255, 255, 255, 0.5)' 
                                 }}>
                                     {isJapan ? '日' : 'days'}
@@ -403,9 +416,9 @@ const PersonSettings = ({
                     </label>
                     <div style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(4, 1fr)',
-                        gap: '0.75rem',
-                        padding: '1rem',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(60px, 1fr))',
+                        gap: '0.5rem',
+                        padding: '0.75rem',
                         background: 'rgba(255, 255, 255, 0.03)',
                         borderRadius: '12px'
                     }}>
@@ -418,12 +431,12 @@ const PersonSettings = ({
                                     display: 'flex',
                                     flexDirection: 'column',
                                     alignItems: 'center',
-                                    gap: '0.5rem',
-                                    padding: '0.75rem 0.5rem',
+                                    gap: '0.25rem',
+                                    padding: '0.5rem 0.25rem',
                                     border: formData.textureUrl === planet.url 
                                         ? '2px solid #3b82f6' 
                                         : '2px solid transparent',
-                                    borderRadius: '12px',
+                                    borderRadius: '10px',
                                     background: formData.textureUrl === planet.url 
                                         ? 'rgba(59, 130, 246, 0.2)' 
                                         : 'rgba(255, 255, 255, 0.05)',
@@ -432,18 +445,18 @@ const PersonSettings = ({
                                 }}
                             >
                                 <div style={{
-                                    width: '40px',
-                                    height: '40px',
+                                    width: '32px',
+                                    height: '32px',
                                     borderRadius: '50%',
                                     backgroundImage: `url(${planet.url})`,
                                     backgroundSize: 'cover',
                                     backgroundPosition: 'center',
                                     boxShadow: formData.textureUrl === planet.url 
-                                        ? '0 0 10px rgba(59, 130, 246, 0.5)' 
+                                        ? '0 0 8px rgba(59, 130, 246, 0.5)' 
                                         : 'none'
                                 }} />
                                 <span style={{
-                                    fontSize: '0.7rem',
+                                    fontSize: '0.6rem',
                                     color: 'rgba(255, 255, 255, 0.8)',
                                     textAlign: 'center'
                                 }}>
@@ -455,19 +468,19 @@ const PersonSettings = ({
                 </div>
 
                 {/* Action Buttons */}
-                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem' }}>
                     <button 
                         type="button" 
                         onClick={onCancel}
                         style={{
                             flex: 1,
-                            padding: '1rem',
+                            padding: '0.75rem',
                             border: '1px solid rgba(255, 255, 255, 0.2)',
-                            borderRadius: '12px',
+                            borderRadius: '10px',
                             background: 'transparent',
                             color: 'white',
                             cursor: 'pointer',
-                            fontSize: '1rem'
+                            fontSize: '0.9rem'
                         }}
                     >
                         {isJapan ? 'キャンセル' : 'Cancel'}
@@ -475,7 +488,7 @@ const PersonSettings = ({
                     <button 
                         type="submit" 
                         className="visualize-btn"
-                        style={{ flex: 2 }}
+                        style={{ flex: 2, padding: '0.75rem', fontSize: '0.9rem' }}
                     >
                         {person ? (isJapan ? '更新する' : 'Update') : (isJapan ? '追加する' : 'Add')}
                     </button>
@@ -488,13 +501,13 @@ const PersonSettings = ({
                         onClick={() => onDelete(person.id)}
                         style={{
                             width: '100%',
-                            padding: '0.75rem',
+                            padding: '0.6rem',
                             border: 'none',
-                            borderRadius: '12px',
+                            borderRadius: '10px',
                             background: 'rgba(244, 63, 94, 0.2)',
                             color: '#f43f5e',
                             cursor: 'pointer',
-                            fontSize: '0.9rem',
+                            fontSize: '0.8rem',
                             marginTop: '0.5rem'
                         }}
                     >
