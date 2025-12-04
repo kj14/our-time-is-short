@@ -1,5 +1,5 @@
 import React, { Suspense, useRef, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Stars } from '@react-three/drei';
 import * as THREE from 'three';
 import Earth from './Earth';
@@ -9,20 +9,27 @@ import DigitalHourglassScene from './DigitalHourglassScene';
 function SceneContent({ isVisualizing, targetCountry, remainingPercentage, onParticleDrop, onEarthClick }) {
     const earthRef = useRef();
     const hourglassRef = useRef();
+    const { camera } = useThree();
     
-    // Animation state - use refs to ensure latest values are used in useFrame loop
-    // However, since component re-renders on prop change, local variables "should" be fine if useFrame callback updates
-    // But let's be safe
+    // Animation state
+    // Earth moves away and up
+    const earthTargetZ = isVisualizing ? -60 : 0;
+    const earthTargetY = isVisualizing ? 25 : 0; 
     
-    const targetZ = isVisualizing ? -60 : 0;
-    const targetY = isVisualizing ? 25 : 0; // Move up to avoid center card
+    // Camera moves back to see the whole particle scene
+    const cameraTargetZ = isVisualizing ? 40 : 6;
     
     useFrame((state, delta) => {
+        const lerpSpeed = delta * 2;
+        
         if (earthRef.current) {
             // Smoothly interpolate Earth position
-            earthRef.current.position.z = THREE.MathUtils.lerp(earthRef.current.position.z, targetZ, delta * 2);
-            earthRef.current.position.y = THREE.MathUtils.lerp(earthRef.current.position.y, targetY, delta * 2);
+            earthRef.current.position.z = THREE.MathUtils.lerp(earthRef.current.position.z, earthTargetZ, lerpSpeed);
+            earthRef.current.position.y = THREE.MathUtils.lerp(earthRef.current.position.y, earthTargetY, lerpSpeed);
         }
+        
+        // Smoothly interpolate Camera position
+        camera.position.z = THREE.MathUtils.lerp(camera.position.z, cameraTargetZ, lerpSpeed);
     });
 
     return (
