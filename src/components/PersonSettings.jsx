@@ -336,31 +336,32 @@ const PersonSettings = ({
                     </select>
                 </div>
 
-                {/* Shared Time Preview */}
+                {/* Shared Time Preview - Same design as PersonVisualization time mode */}
                 {sharedTime && (
                     <div style={{
-                        padding: '1rem',
-                        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)',
-                        borderRadius: '12px',
-                        border: '1px solid rgba(59, 130, 246, 0.2)',
+                        padding: '1.5rem',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        backdropFilter: 'blur(20px)',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
                         textAlign: 'center'
                     }}>
                         <div style={{ 
-                            fontSize: '0.75rem', 
+                            fontSize: '0.85rem', 
                             color: 'rgba(255, 255, 255, 0.6)',
-                            marginBottom: '0.5rem'
+                            marginBottom: '1rem'
                         }}>
-                            {isJapan ? '残りの共有時間（目安）' : 'Estimated Time Together'}
+                            {isJapan ? '残りの共有時間' : 'Time Remaining Together'}
                         </div>
                         <div style={{
                             display: 'flex',
                             justifyContent: 'center',
-                            gap: '1.5rem',
+                            gap: '2rem',
                             flexWrap: 'wrap'
                         }}>
                             <div>
                                 <div style={{ 
-                                    fontSize: '1.25rem', 
+                                    fontSize: '2rem', 
                                     fontWeight: '700',
                                     color: '#3b82f6',
                                     fontFamily: 'var(--font-mono)'
@@ -368,7 +369,7 @@ const PersonSettings = ({
                                     {sharedTime.totalHours.toLocaleString()}
                                 </div>
                                 <div style={{ 
-                                    fontSize: '0.65rem', 
+                                    fontSize: '0.8rem', 
                                     color: 'rgba(255, 255, 255, 0.5)' 
                                 }}>
                                     {isJapan ? '時間' : 'hours'}
@@ -376,7 +377,7 @@ const PersonSettings = ({
                             </div>
                             <div>
                                 <div style={{ 
-                                    fontSize: '1.25rem', 
+                                    fontSize: '2rem', 
                                     fontWeight: '700',
                                     color: '#8b5cf6',
                                     fontFamily: 'var(--font-mono)'
@@ -384,7 +385,7 @@ const PersonSettings = ({
                                     {sharedTime.totalMeetings.toLocaleString()}
                                 </div>
                                 <div style={{ 
-                                    fontSize: '0.65rem', 
+                                    fontSize: '0.8rem', 
                                     color: 'rgba(255, 255, 255, 0.5)' 
                                 }}>
                                     {isJapan ? '回' : 'times'}
@@ -392,7 +393,7 @@ const PersonSettings = ({
                             </div>
                             <div>
                                 <div style={{ 
-                                    fontSize: '1.25rem', 
+                                    fontSize: '2rem', 
                                     fontWeight: '700',
                                     color: '#10b981',
                                     fontFamily: 'var(--font-mono)'
@@ -400,7 +401,7 @@ const PersonSettings = ({
                                     {sharedTime.totalDays}
                                 </div>
                                 <div style={{ 
-                                    fontSize: '0.65rem', 
+                                    fontSize: '0.8rem', 
                                     color: 'rgba(255, 255, 255, 0.5)' 
                                 }}>
                                     {isJapan ? '日' : 'days'}
