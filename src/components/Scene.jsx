@@ -4,55 +4,102 @@ import { Stars } from '@react-three/drei';
 import * as THREE from 'three';
 import SolarSystem from './SolarSystem';
 import DigitalHourglassScene from './DigitalHourglassScene';
+import { countryCoordinates } from '../utils/lifeData';
 
 // Scene component handling 3D transitions
-function SceneContent({ isVisualizing, isSettingsOpen, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick }) {
+function SceneContent({ isVisualizing, isSettingsOpen, isEarthZoomed, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears }) {
     const solarSystemRef = useRef();
     const earthRef = useRef();
     const { camera } = useThree();
     
-    // Constants
-    const SOLAR_POS = new THREE.Vector3(0, 30, -50);
+    // Constants - Earth is at center now
+    const EARTH_POS = new THREE.Vector3(0, 30, -50); // Same position as old SOLAR_POS
     const PARTICLE_CENTER = new THREE.Vector3(0, 0, 0);
     
     // Current lookAt tracker
     const currentLookAt = useRef(new THREE.Vector3());
 
+    // Earth position animation
+    const currentEarthPos = useRef(EARTH_POS.clone());
+    const isInitialized = useRef(false);
+    
     useFrame((state, delta) => {
         const lerpSpeed = delta * 1.5;
+        
+        // Initialize Earth position on first frame
+        if (!isInitialized.current && solarSystemRef.current) {
+            solarSystemRef.current.position.copy(EARTH_POS);
+            currentEarthPos.current.copy(EARTH_POS);
+            isInitialized.current = true;
+        }
+        
+        // Animate Earth position: move away when visualizing
+        let targetEarthPos;
+        if (isVisualizing) {
+            // Earth moves far away (back/behind, up)
+            // Move in Z direction (backward) and slightly up, keep X centered
+            targetEarthPos = new THREE.Vector3(0, 25, -60);
+        } else {
+            // Earth at center for country selection
+            targetEarthPos = EARTH_POS.clone();
+        }
+        
+        // Lerp Earth position
+        currentEarthPos.current.lerp(targetEarthPos, lerpSpeed);
+        
+        // Update solar system group position
+        if (solarSystemRef.current) {
+            solarSystemRef.current.position.copy(currentEarthPos.current);
+        }
         
         let targetCameraPos, targetLookAt;
         
         if (isVisualizing) {
-            // Visual Mode: Camera looks at particle center
+            // Visual Mode: Camera looks at particle center, Earth is far away
             targetCameraPos = new THREE.Vector3(0, 0, 40);
             targetLookAt = PARTICLE_CENTER;
-        } else if (isSettingsOpen) {
-            // Settings Modal Mode: Camera looks at Sun (settings entry point)
-            targetLookAt = SOLAR_POS;
-            // Camera position: Close to Sun, slightly above and offset
-            targetCameraPos = SOLAR_POS.clone().add(new THREE.Vector3(0, 3, 8));
         } else {
-            // Country Selection Mode: Camera looks at Earth
-            if (earthRef.current && earthRef.current.position) {
-                const earthLocalPos = earthRef.current.position;
-                const earthWorldPos = SOLAR_POS.clone().add(earthLocalPos);
+            // TOP Country Selection: Earth is up close, camera shows selected country centered
+            // Calculate country position on Earth surface
+            const earthRadius = 2; // Earth radius from Earth.jsx
+            const cameraDistanceFromSurface = 3.5; // Distance from Earth surface for zoom (increased to avoid too close)
+            const totalDistance = earthRadius + cameraDistanceFromSurface;
+            
+            // Use current Earth position (animated)
+            const currentEarthCenter = currentEarthPos.current;
+            
+            if (targetCountry && countryCoordinates[targetCountry]) {
+                const { lat, lng } = countryCoordinates[targetCountry];
+                const latRad = lat * (Math.PI / 180);
+                const lngRad = lng * (Math.PI / 180);
                 
-                targetLookAt = earthWorldPos;
-                // Camera position: Close to Earth, slightly above and offset
-                targetCameraPos = earthWorldPos.clone().add(new THREE.Vector3(0, 3, 8));
-            } else {
-                // Fallback if Earth not yet ready - look at Earth's orbit position
-                const earthData = { distance: 18 };
-                const earthAngle = 0; // Default angle
-                const earthLocalPos = new THREE.Vector3(
-                    earthData.distance * Math.cos(earthAngle),
-                    0,
-                    -earthData.distance * Math.sin(earthAngle)
+                // Convert lat/lng to 3D position on sphere surface
+                // Earth texture mapping offset
+                const adjustedLngRad = lngRad + Math.PI / 2;
+                
+                // Convert to cartesian coordinates
+                const x = Math.cos(latRad) * Math.sin(adjustedLngRad);
+                const y = Math.sin(latRad);
+                const z = Math.cos(latRad) * Math.cos(adjustedLngRad);
+                
+                // Country position on Earth surface (normalized direction vector)
+                const countryDirection = new THREE.Vector3(x, y, z).normalize();
+                
+                // Position camera at country position, moved away from Earth surface
+                // Camera is positioned outside Earth, looking at Earth center
+                // This makes the selected country appear at the center of the screen
+                targetCameraPos = currentEarthCenter.clone().add(
+                    countryDirection.clone().multiplyScalar(totalDistance)
                 );
-                const earthWorldPos = SOLAR_POS.clone().add(earthLocalPos);
-                targetLookAt = earthWorldPos;
-                targetCameraPos = earthWorldPos.clone().add(new THREE.Vector3(0, 3, 8));
+                
+                // Look at Earth center - the selected country will be centered
+                targetLookAt = currentEarthCenter;
+            } else {
+                // Fallback: side view without country-specific positioning
+                targetCameraPos = currentEarthCenter.clone().add(
+                    new THREE.Vector3(totalDistance, 0, 0)
+                );
+                targetLookAt = currentEarthCenter;
             }
         }
         
@@ -76,9 +123,20 @@ function SceneContent({ isVisualizing, isSettingsOpen, targetCountry, remainingP
             <ambientLight intensity={0.2} />
             {/* Sun light is inside SolarSystem, but we need ambient */}
             
-            {/* Solar System - Always visible, but in background during visualization */}
-            <group position={SOLAR_POS} ref={solarSystemRef}>
-                <SolarSystem onSunClick={onSunClick} targetCountry={targetCountry} earthRef={earthRef} onEarthClick={onEarthClick} />
+            {/* Solar System - Earth-centered with person stars */}
+            {/* Position is animated in useFrame */}
+            <group ref={solarSystemRef}>
+                <SolarSystem 
+                    onSunClick={onSunClick} 
+                    targetCountry={targetCountry} 
+                    earthRef={earthRef} 
+                    onEarthClick={onEarthClick}
+                    onPersonClick={onPersonClick}
+                    people={people}
+                    userAge={userAge}
+                    userCountry={userCountry}
+                    remainingYears={remainingYears}
+                />
             </group>
             
             {/* Particles - Only visible when visualizing */}
@@ -95,7 +153,7 @@ function SceneContent({ isVisualizing, isSettingsOpen, targetCountry, remainingP
     );
 }
 
-export default function Scene({ isVisualizing, isSettingsOpen, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick }) {
+export default function Scene({ isVisualizing, isSettingsOpen, isEarthZoomed, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears }) {
     return (
         <div style={{
             position: 'fixed',
@@ -107,19 +165,34 @@ export default function Scene({ isVisualizing, isSettingsOpen, targetCountry, re
             background: 'radial-gradient(circle at center, #1a1f3a 0%, #0a0e1a 100%)',
             transition: 'background 1s ease',
             pointerEvents: 'auto', // Allow clicks on canvas
-            touchAction: 'none'
+            touchAction: 'auto' // Allow touch events for mobile
         }}>
-            <Canvas camera={{ position: [0, 40, -30], fov: 45 }}>
+            <Canvas 
+                camera={{ position: [0, 50, 30], fov: 45 }}
+                gl={{ 
+                    antialias: true,
+                    alpha: false,
+                    powerPreference: "high-performance"
+                }}
+                dpr={[1, 2]}
+                performance={{ min: 0.5 }}
+            >
                 <fog attach="fog" args={['#0a0e1a', 10, 150]} />
                 <Suspense fallback={null}>
                     <SceneContent 
                         isVisualizing={isVisualizing}
                         isSettingsOpen={isSettingsOpen}
+                        isEarthZoomed={isEarthZoomed}
                         targetCountry={targetCountry}
                         remainingPercentage={remainingPercentage}
                         onParticleDrop={onParticleDrop}
                         onEarthClick={onEarthClick}
                         onSunClick={onSunClick}
+                        onPersonClick={onPersonClick}
+                        people={people}
+                        userAge={userAge}
+                        userCountry={userCountry}
+                        remainingYears={remainingYears}
                     />
                 </Suspense>
             </Canvas>

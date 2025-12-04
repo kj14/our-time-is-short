@@ -1,12 +1,10 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { useFrame, useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
-import { countryCoordinates } from '../utils/lifeData';
 
 export default function Earth({ targetCountry, onClick, onPointerOver, onPointerOut, ...props }) {
     const earthRef = useRef();
     const cloudsRef = useRef();
-    const targetRotation = useRef(new THREE.Quaternion());
 
     // Load textures
     const [colorMap, specularMap, cloudsMap] = useLoader(THREE.TextureLoader, [
@@ -15,41 +13,32 @@ export default function Earth({ targetCountry, onClick, onPointerOver, onPointer
         '/textures/2k_earth_clouds.png'
     ]);
 
-    useEffect(() => {
-        if (targetCountry && countryCoordinates[targetCountry]) {
-            const { lat, lng } = countryCoordinates[targetCountry];
-            const latRad = lat * (Math.PI / 180);
-            const lngRad = lng * (Math.PI / 180);
-
-            const finalEuler = new THREE.Euler(
-                -latRad, // Inverted latitude rotation
-                -lngRad - Math.PI / 2,
-                0,
-                'YXZ'
-            );
-
-            // Create quaternion from euler
-            const q = new THREE.Quaternion().setFromEuler(finalEuler);
-            targetRotation.current.copy(q);
-        }
-    }, [targetCountry]);
-
+    // Earth rotation is now disabled - camera will move instead
+    // Keep Earth at fixed rotation
     useFrame((state, delta) => {
         if (earthRef.current) {
-            // Smoothly interpolate current rotation to target rotation
-            earthRef.current.quaternion.slerp(targetRotation.current, 2 * delta);
-
-            // Rotate clouds slightly faster/independent
+            // Keep Earth at fixed rotation (no country-specific rotation)
+            // Earth stays in default position
+            
+            // Rotate clouds slightly for visual effect
             if (cloudsRef.current) {
                 cloudsRef.current.rotation.y += 0.0005;
             }
         }
     });
 
+    const handlePointerDown = (e) => {
+        e.stopPropagation();
+        if (onClick) {
+            onClick(e);
+        }
+    };
+
     return (
         <group 
             {...props}
-            onClick={onClick} 
+            onClick={onClick}
+            onPointerDown={handlePointerDown}
             onPointerOver={() => {
                 document.body.style.cursor = 'pointer';
                 if (onPointerOver) onPointerOver();

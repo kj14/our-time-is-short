@@ -1,120 +1,90 @@
 import React, { useRef, useMemo, forwardRef } from 'react';
 import { useFrame, useLoader } from '@react-three/fiber';
+import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import Earth from './Earth';
+import { lifeExpectancyData } from '../utils/lifeData';
 
 // High quality textures for planets from local storage
-const PLANET_TEXTURES = {
-    Mercury: '/textures/2k_mercury.jpg',
-    Venus: '/textures/2k_venus_surface.jpg',
-    Mars: '/textures/2k_mars.jpg',
-    Jupiter: '/textures/2k_jupiter.jpg',
-    Saturn: '/textures/2k_saturn.jpg',
-    Uranus: '/textures/2k_uranus.jpg',
-    Neptune: '/textures/2k_neptune.jpg',
-    Sun: '/textures/2k_sun.jpg'
-};
+const PLANET_TEXTURES = [
+    '/textures/2k_mercury.jpg',
+    '/textures/2k_venus_surface.jpg',
+    '/textures/2k_mars.jpg',
+    '/textures/2k_jupiter.jpg',
+    '/textures/2k_saturn.jpg',
+    '/textures/2k_uranus.jpg',
+    '/textures/2k_neptune.jpg'
+];
 
-// Approximate orbital elements (Mean Longitude at J2000 and Period in days)
-// Using simplified circular orbits for visualization
-const PLANET_DATA = {
-    Mercury: { distance: 8, radius: 0.4, period: 87.97, L0: 252.25, texture: PLANET_TEXTURES.Mercury },
-    Venus: { distance: 12, radius: 0.9, period: 224.7, L0: 181.98, texture: PLANET_TEXTURES.Venus },
-    Earth: { distance: 18, radius: 1.0, period: 365.26, L0: 100.46 }, // Earth handled separately
-    Mars: { distance: 24, radius: 0.5, period: 687.0, L0: 355.43, texture: PLANET_TEXTURES.Mars },
-    Jupiter: { distance: 35, radius: 2.5, period: 4332.6, L0: 34.35, texture: PLANET_TEXTURES.Jupiter },
-    Saturn: { distance: 45, radius: 2.0, period: 10759.2, L0: 50.08, texture: PLANET_TEXTURES.Saturn, hasRing: true },
-    Uranus: { distance: 55, radius: 1.5, period: 30688.5, L0: 314.06, texture: PLANET_TEXTURES.Uranus },
-    Neptune: { distance: 65, radius: 1.5, period: 60182.0, L0: 304.35, texture: PLANET_TEXTURES.Neptune }
-};
-
-// Calculate current planet angle based on date
-const calculatePlanetAngle = (period, L0) => {
-    const now = new Date();
-    const j2000 = new Date('2000-01-01T12:00:00Z');
-    const daysSinceJ2000 = (now - j2000) / (1000 * 60 * 60 * 24);
+// Calculate age from birthdate or use direct age
+const calculateAge = (person) => {
+    if (person.age !== undefined && person.age !== null) {
+        return Number(person.age);
+    }
     
-    // Mean longitude in degrees
-    let L = L0 + (daysSinceJ2000 / period) * 360;
-    L = L % 360;
+    if (!person.birthYear || !person.birthMonth || !person.birthDay) return null;
     
-    // Convert to radians (and adjust for THREE.js coordinate system if needed)
-    // Assuming standard counter-clockwise orbit
-    return L * (Math.PI / 180);
+    const today = new Date();
+    const birthDate = new Date(person.birthYear, person.birthMonth - 1, person.birthDay);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    const dayDiff = today.getDate() - birthDate.getDate();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+        age--;
+    }
+    
+    return age;
 };
 
-const RealisticPlanet = ({ radius, distance, angle, name, textureUrl, hasRing, onClick }) => {
-  const ref = useRef();
-  const texture = useLoader(THREE.TextureLoader, textureUrl);
-  
-  if (texture) {
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.RepeatWrapping;
-  }
-  
-  return (
-      <PlanetMesh 
-        radius={radius} 
-        distance={distance} 
-        angle={angle}
-        name={name} 
-        texture={texture}
-        hasRing={hasRing}
-        onClick={onClick}
-      />
-  );
+// Calculate shared hours with a person
+const calculateHoursWithPerson = (person, userAge, userCountry, remainingYears) => {
+    const personAge = calculateAge(person);
+    if (personAge === null) return 0;
+    
+    const userLifeExpectancy = lifeExpectancyData[userCountry] || lifeExpectancyData['Global'];
+    const personLifeExpectancy = userLifeExpectancy;
+    
+    let limitLifeExpectancy;
+    if (personAge < userAge) {
+        limitLifeExpectancy = userLifeExpectancy;
+    } else {
+        limitLifeExpectancy = personLifeExpectancy;
+    }
+    
+    const yearsWithPerson = Math.max(0, limitLifeExpectancy - personAge);
+    const effectiveYears = Math.min(yearsWithPerson, remainingYears);
+    
+    const totalMeetings = effectiveYears * person.meetingFrequency;
+    const totalHours = totalMeetings * person.hoursPerMeeting;
+    
+    return Math.max(0, totalHours);
 };
 
-// Inner component to handle the mesh and logic
-const PlanetMesh = ({ radius, distance, angle, name, texture, hasRing, onClick }) => {
-    const groupRef = useRef();
+// Person Star Component
+const PersonStar = ({ person, distance, radius, textureUrl, onClick }) => {
     const meshRef = useRef();
-
-    // Procedural Saturn Ring Texture
-    const ringTexture = useMemo(() => {
-        if (!hasRing) return null;
-        
-        const canvas = document.createElement('canvas');
-        canvas.width = 1024;
-        canvas.height = 64;
-        const context = canvas.getContext('2d');
-        const gradient = context.createLinearGradient(0, 0, 1024, 0);
-        
-        gradient.addColorStop(0.0, 'rgba(0,0,0,0)');
-        gradient.addColorStop(0.1, 'rgba(30,30,30,0)');
-        gradient.addColorStop(0.2, 'rgba(200,200,180,0.2)');
-        gradient.addColorStop(0.4, 'rgba(255,255,230,0.8)');
-        gradient.addColorStop(0.6, 'rgba(255,255,230,0.9)'); 
-        gradient.addColorStop(0.65, 'rgba(0,0,0,0.1)');
-        gradient.addColorStop(0.7, 'rgba(230,230,210,0.6)');
-        gradient.addColorStop(0.9, 'rgba(230,230,210,0.5)');
-        gradient.addColorStop(1.0, 'rgba(0,0,0,0)');
-        
-        context.fillStyle = gradient;
-        context.fillRect(0, 0, 1024, 64);
-        
-        const texture = new THREE.CanvasTexture(canvas);
+    const texture = useLoader(THREE.TextureLoader, textureUrl);
+    
+    if (texture) {
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.RepeatWrapping;
-        texture.rotation = -Math.PI / 2;
-        return texture;
-    }, [hasRing]);
-
-    // Set initial static position
-    useMemo(() => {
-        // Position calculations should happen in render or ref effect usually, 
-        // but since angle is static prop now (calculated once in parent), we can't set ref.current here easily.
-        // We'll use useFrame for one-time setup or just render group with rotation/position.
-        // Easier: Rotate the group to 'angle' and put planet at 'distance' on x-axis.
-    }, [angle, distance]);
-
+    }
+    
     useFrame((state, delta) => {
-        // Slow self-rotation only
+        // Slow self-rotation
         if (meshRef.current) {
             meshRef.current.rotation.y += 0.005 / radius;
         }
     });
-
+    
+    // Random angle for orbit position
+    const angle = useMemo(() => {
+        // Use person.id to generate consistent angle
+        const hash = person.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        return (hash % 360) * (Math.PI / 180);
+    }, [person.id]);
+    
     return (
         <group rotation={[0, angle, 0]}>
             {/* Orbit Line */}
@@ -123,172 +93,185 @@ const PlanetMesh = ({ radius, distance, angle, name, texture, hasRing, onClick }
                 <meshBasicMaterial color="#ffffff" opacity={0.08} transparent side={THREE.DoubleSide} />
             </mesh>
             
-            {/* Planet Group positioned at distance */}
-            <group position={[distance, 0, 0]} 
+            {/* Person Star positioned at distance */}
+            <group position={[distance, 0, 0]}
                    onClick={(e) => {
                        e.stopPropagation();
-                       onClick && onClick(name);
+                       if (onClick) {
+                           onClick(person.id);
+                       }
                    }}
-                   onPointerOver={() => document.body.style.cursor = 'pointer'}
-                   onPointerOut={() => document.body.style.cursor = 'auto'}
+                   onPointerDown={(e) => {
+                       e.stopPropagation();
+                       if (onClick) {
+                           onClick(person.id);
+                       }
+                   }}
+                   onPointerOver={(e) => {
+                       e.stopPropagation();
+                       document.body.style.cursor = 'pointer';
+                   }}
+                   onPointerOut={(e) => {
+                       e.stopPropagation();
+                       document.body.style.cursor = 'auto';
+                   }}
             >
                 <group ref={meshRef}>
                     <mesh rotation={[0, 0, 0]}>
                         <sphereGeometry args={[radius, 64, 64]} />
-                        <meshStandardMaterial map={texture} />
+                        {texture ? (
+                            <meshStandardMaterial map={texture} />
+                        ) : (
+                            <meshStandardMaterial color={person.color || '#818cf8'} />
+                        )}
                     </mesh>
-                    
-                    {name === 'Venus' && (
-                         <mesh scale={[1.02, 1.02, 1.02]}>
-                            <sphereGeometry args={[radius, 64, 64]} />
-                            <meshBasicMaterial color="#ffbf00" transparent opacity={0.15} side={THREE.BackSide} />
-                        </mesh>
-                    )}
-
-                    {hasRing && ringTexture && (
-                        <mesh rotation={[-Math.PI/2, 0, 0]}>
-                            <ringGeometry args={[radius * 1.4, radius * 2.4, 64]} />
-                            <meshStandardMaterial 
-                                map={ringTexture} 
-                                side={THREE.DoubleSide} 
-                                transparent 
-                                opacity={0.8} 
-                            />
-                        </mesh>
-                    )}
                 </group>
+                
+                {/* Person Label */}
+                <Html
+                    position={[0, radius + 0.5, 0]}
+                    center
+                    style={{
+                        pointerEvents: 'none',
+                        userSelect: 'none'
+                    }}
+                >
+                    <div style={{
+                        color: 'white',
+                        fontSize: '0.8rem',
+                        fontWeight: '600',
+                        textShadow: '0 0 10px rgba(0,0,0,0.8), 0 0 5px rgba(0,0,0,0.8)',
+                        whiteSpace: 'nowrap',
+                        transform: 'translateY(-50%)'
+                    }}>
+                        {person.name}
+                    </div>
+                </Html>
             </group>
         </group>
     );
-}
+};
 
 const EarthWrapper = forwardRef(({ targetCountry, onClick }, ref) => {
     const groupRef = useRef();
     const earthPositionRef = useRef(new THREE.Vector3());
     
-    const earthData = PLANET_DATA.Earth;
-    const angle = useMemo(() => calculatePlanetAngle(earthData.period, earthData.L0), []);
-    
+    // Earth is at center (position 0,0,0)
     if (ref) {
-        ref.current = {
-            get position() {
-                return earthPositionRef.current;
-            }
-        };
+        if (!ref.current) {
+            ref.current = {
+                get position() {
+                    return earthPositionRef.current;
+                }
+            };
+        }
     }
 
-    // Calculate static position once
-    useMemo(() => {
-        const x = Math.cos(angle) * earthData.distance;
-        const z = -Math.sin(angle) * earthData.distance; // -sin to match counter-clockwise in 3D space usually?
-        // Actually in "group rotation" approach above:
-        // x = distance * cos(angle), z = -distance * sin(angle) is implicit by rotation [0, angle, 0] * [distance,0,0]
-        // Rotation Y angle: x' = x*cos(a) + z*sin(a) -> distance * cos(a)
-        // z' = -x*sin(a) + z*cos(a) -> -distance * sin(a)
-        
-        earthPositionRef.current.set(
-            earthData.distance * Math.cos(angle), 
-            0, 
-            -earthData.distance * Math.sin(angle)
-        );
-    }, [angle, earthData.distance]);
-
+    useFrame(() => {
+        // Earth is at center
+        earthPositionRef.current.set(0, 0, 0);
+    });
+    
     return (
-        <group rotation={[0, angle, 0]}>
-             <mesh rotation={[-Math.PI/2, 0, 0]}>
-                <ringGeometry args={[earthData.distance - 0.05, earthData.distance + 0.05, 128]} />
-                <meshBasicMaterial color="#ffffff" opacity={0.08} transparent side={THREE.DoubleSide} />
-            </mesh>
-            <group position={[earthData.distance, 0, 0]} ref={groupRef}>
-                <Earth targetCountry={targetCountry} onClick={onClick} />
-            </group>
+        <group ref={groupRef}>
+            <Earth targetCountry={targetCountry} onClick={onClick} />
+            {/* Earth Label */}
+            <Html
+                position={[0, 2.5, 0]}
+                center
+                style={{
+                    pointerEvents: 'none',
+                    userSelect: 'none'
+                }}
+            >
+                <div style={{
+                    color: 'white',
+                    fontSize: '1rem',
+                    fontWeight: '700',
+                    textShadow: '0 0 15px rgba(59,130,246,0.8), 0 0 10px rgba(0,0,0,0.8)',
+                    whiteSpace: 'nowrap',
+                    transform: 'translateY(-50%)'
+                }}>
+                    Earth (You)
+                </div>
+            </Html>
         </group>
     )
 });
 
-const Sun = ({ onClick }) => {
-    const sunRef = useRef();
-    const texture = useLoader(THREE.TextureLoader, PLANET_TEXTURES.Sun);
-
-    useFrame((state, delta) => {
-        if (sunRef.current) {
-            sunRef.current.rotation.y += delta * 0.002; // Very slow rotation
-        }
-    });
-
-    const handleClick = (e) => {
-        e.stopPropagation();
-        if (onClick) {
-            onClick();
-        }
-    };
-
-    return (
-        <group 
-            onClick={handleClick}
-            onPointerOver={() => document.body.style.cursor = 'pointer'}
-            onPointerOut={() => document.body.style.cursor = 'auto'}
-        >
-            <mesh ref={sunRef} onClick={handleClick}>
-                <sphereGeometry args={[4, 64, 64]} />
-                <meshStandardMaterial map={texture} emissiveMap={texture} emissive="#FDB813" emissiveIntensity={0.5} />
-            </mesh>
-            <pointLight intensity={2} distance={100} decay={2} color="#FDB813" />
-            <mesh scale={[1.2, 1.2, 1.2]} onClick={handleClick}>
-                <sphereGeometry args={[4, 64, 64]} />
-                <meshBasicMaterial color="#FDB813" transparent opacity={0.15} />
-            </mesh>
-             <mesh scale={[1.4, 1.4, 1.4]} onClick={handleClick}>
-                <sphereGeometry args={[4, 64, 64]} />
-                <meshBasicMaterial color="#FDB813" transparent opacity={0.05} />
-            </mesh>
-        </group>
-    );
-}
-
-export default function SolarSystem({ onSunClick, targetCountry, earthRef, onEarthClick }) {
-    const handlePlanetClick = (name) => {
-        console.log(`Clicked on ${name}`);
-        // Future: Show modal or info
-    };
-
-    // Calculate angles for all planets
-    const planetAngles = useMemo(() => {
-        const angles = {};
-        Object.keys(PLANET_DATA).forEach(key => {
-            if (key !== 'Earth') {
-                angles[key] = calculatePlanetAngle(PLANET_DATA[key].period, PLANET_DATA[key].L0);
-            }
+export default function SolarSystem({ onSunClick, targetCountry, earthRef, onEarthClick, onPersonClick, people, userAge, userCountry, remainingYears }) {
+    // Calculate person stars data
+    const personStars = useMemo(() => {
+        if (!people || people.length === 0) return [];
+        
+        // Calculate shared hours for each person
+        const personData = people.map(person => {
+            const sharedHours = calculateHoursWithPerson(person, userAge, userCountry, remainingYears);
+            const personAge = calculateAge(person);
+            return {
+                ...person,
+                sharedHours,
+                personAge: personAge || 0
+            };
         });
-        return angles;
-    }, []);
-
+        
+        // Sort by shared hours (descending) - more hours = closer
+        personData.sort((a, b) => b.sharedHours - a.sharedHours);
+        
+        // Calculate max shared hours for distance normalization
+        const maxHours = Math.max(...personData.map(p => p.sharedHours), 1);
+        const minHours = Math.min(...personData.map(p => p.sharedHours), 0);
+        const hoursRange = maxHours - minHours || 1;
+        
+        // Calculate distances: more hours = closer (distance 8-65)
+        // Invert: max hours = distance 8, min hours = distance 65
+        const minDistance = 8;
+        const maxDistance = 65;
+        
+        // Calculate sizes: age closer to life expectancy = larger (sun size = 4)
+        // Max age (life expectancy) = radius 4, younger = smaller
+        const lifeExpectancy = lifeExpectancyData[userCountry] || lifeExpectancyData['Global'];
+        const maxRadius = 4; // Sun size
+        const minRadius = 0.4; // Mercury size
+        
+        return personData.map((person, index) => {
+            // Distance based on shared hours (inverted: more hours = closer)
+            const hoursRatio = (person.sharedHours - minHours) / hoursRange;
+            const distance = maxDistance - (hoursRatio * (maxDistance - minDistance));
+            
+            // Size based on age (closer to life expectancy = larger)
+            const ageRatio = person.personAge / lifeExpectancy;
+            const radius = minRadius + (ageRatio * (maxRadius - minRadius));
+            
+            // Random texture
+            const textureIndex = Math.abs(person.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % PLANET_TEXTURES.length;
+            const textureUrl = PLANET_TEXTURES[textureIndex];
+            
+            return {
+                person,
+                distance,
+                radius,
+                textureUrl
+            };
+        });
+    }, [people, userAge, userCountry, remainingYears]);
+    
     return (
         <group>
-            <Sun onClick={onSunClick} />
-
-            {Object.keys(PLANET_DATA).map((key) => {
-                if (key === 'Earth') return null;
-                const data = PLANET_DATA[key];
-                return (
-                    <RealisticPlanet 
-                        key={key}
-                        name={key}
-                        radius={data.radius}
-                        distance={data.distance}
-                        angle={planetAngles[key]}
-                        textureUrl={data.texture}
-                        hasRing={data.hasRing}
-                        onClick={handlePlanetClick}
-                    />
-                );
-            })}
+            {/* Earth at center (replacing Sun position) */}
+            <EarthWrapper ref={earthRef} targetCountry={targetCountry} onClick={onEarthClick} />
             
-            <EarthWrapper 
-                ref={earthRef} 
-                targetCountry={targetCountry} 
-                onClick={onEarthClick}
-            />
+            {/* Person Stars */}
+            {personStars.map(({ person, distance, radius, textureUrl }) => (
+                <PersonStar
+                    key={person.id}
+                    person={person}
+                    distance={distance}
+                    radius={radius}
+                    textureUrl={textureUrl}
+                    onClick={onPersonClick}
+                />
+            ))}
         </group>
     );
 }
