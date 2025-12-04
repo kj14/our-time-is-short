@@ -3,7 +3,7 @@ import { useFrame, useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
 import { countryCoordinates } from '../utils/lifeData';
 
-export default function Earth({ targetCountry, onClick, onPointerOver, onPointerOut }) {
+export default function Earth({ targetCountry, onClick, onPointerOver, onPointerOut, ...props }) {
     const earthRef = useRef();
     const cloudsRef = useRef();
     const targetRotation = useRef(new THREE.Quaternion());
@@ -48,6 +48,7 @@ export default function Earth({ targetCountry, onClick, onPointerOver, onPointer
 
     return (
         <group 
+            {...props}
             onClick={onClick} 
             onPointerOver={() => {
                 document.body.style.cursor = 'pointer';

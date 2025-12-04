@@ -1,47 +1,56 @@
-import React, { Suspense, useRef, useEffect } from 'react';
+import React, { Suspense, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Stars } from '@react-three/drei';
 import * as THREE from 'three';
-import Earth from './Earth';
+import SolarSystem from './SolarSystem';
 import DigitalHourglassScene from './DigitalHourglassScene';
 
 // Scene component handling 3D transitions
 function SceneContent({ isVisualizing, targetCountry, remainingPercentage, onParticleDrop, onEarthClick }) {
-    const earthRef = useRef();
-    const hourglassRef = useRef();
+    const solarSystemRef = useRef();
     const { camera } = useThree();
     
-    // Animation state
-    // Earth moves away and up
-    const earthTargetZ = isVisualizing ? -60 : 0;
-    const earthTargetY = isVisualizing ? 25 : 0; 
+    // Constants
+    const SOLAR_POS = new THREE.Vector3(0, 30, -50);
+    const PARTICLE_CENTER = new THREE.Vector3(0, 0, 0);
     
-    // Camera moves back to see the whole particle scene
-    const cameraTargetZ = isVisualizing ? 40 : 6;
-    
+    // Target Definitions
+    // Settings Mode: Camera looks down at Sun from above/front
+    // Visual Mode: Camera looks at particle center
+    const targetCameraPos = isVisualizing 
+        ? new THREE.Vector3(0, 0, 40) 
+        : new THREE.Vector3(0, 40, -30); // Closer to Sun
+        
+    const targetLookAt = isVisualizing 
+        ? PARTICLE_CENTER 
+        : SOLAR_POS;
+
+    // Current lookAt tracker
+    const currentLookAt = useRef(targetLookAt.clone());
+
     useFrame((state, delta) => {
-        const lerpSpeed = delta * 2;
+        const lerpSpeed = delta * 1.5;
         
-        if (earthRef.current) {
-            // Smoothly interpolate Earth position
-            earthRef.current.position.z = THREE.MathUtils.lerp(earthRef.current.position.z, earthTargetZ, lerpSpeed);
-            earthRef.current.position.y = THREE.MathUtils.lerp(earthRef.current.position.y, earthTargetY, lerpSpeed);
-        }
+        // Lerp Position
+        camera.position.lerp(targetCameraPos, lerpSpeed);
         
-        // Smoothly interpolate Camera position
-        camera.position.z = THREE.MathUtils.lerp(camera.position.z, cameraTargetZ, lerpSpeed);
+        // Lerp LookAt
+        currentLookAt.current.lerp(targetLookAt, lerpSpeed);
+        camera.lookAt(currentLookAt.current);
     });
 
     return (
         <>
-            <ambientLight intensity={0.5} />
-            <pointLight position={[10, 10, 10]} intensity={1.5} />
+            <ambientLight intensity={0.2} />
+            {/* Sun light is inside SolarSystem, but we need ambient */}
             
-            <group ref={earthRef}>
-                <Earth targetCountry={targetCountry} onClick={onEarthClick} />
+            {/* Solar System - Always visible, but in background during visualization */}
+            <group position={SOLAR_POS} ref={solarSystemRef}>
+                <SolarSystem onSunClick={onEarthClick} targetCountry={targetCountry} />
             </group>
             
-            <group ref={hourglassRef} visible={isVisualizing}>
+            {/* Particles - Only visible when visualizing */}
+            <group visible={isVisualizing}>
                 <DigitalHourglassScene 
                     remainingPercentage={remainingPercentage} 
                     onParticleDrop={onParticleDrop} 
@@ -64,9 +73,11 @@ export default function Scene({ isVisualizing, targetCountry, remainingPercentag
             height: '100%',
             zIndex: 0,
             background: 'radial-gradient(circle at center, #1a1f3a 0%, #0a0e1a 100%)',
-            transition: 'background 1s ease'
+            transition: 'background 1s ease',
+            pointerEvents: 'auto', // Allow clicks on canvas
+            touchAction: 'none'
         }}>
-            <Canvas camera={{ position: [0, 0, 6], fov: 45 }}>
+            <Canvas camera={{ position: [0, 40, -30], fov: 45 }}>
                 <fog attach="fog" args={['#0a0e1a', 10, 150]} />
                 <Suspense fallback={null}>
                     <SceneContent 
