@@ -66,7 +66,7 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
             targetCameraPos = new THREE.Vector3(0, 0, 40);
             targetLookAt = PARTICLE_CENTER;
         } else if (selectedPersonId && people && people.length > 0) {
-            // Zoom to selected person's star
+            // Zoom to selected person's star - same zoom level as You (Earth)
             const selectedPerson = people.find(p => p.id === selectedPersonId);
             if (selectedPerson) {
                 // Calculate the star's position (same logic as SolarSystem.jsx)
@@ -78,7 +78,6 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
                 const distance = 20;
                 
                 // Star position relative to Earth (Y-axis rotation then X translation)
-                // After Y rotation: x = distance * cos(angle), z = -distance * sin(angle)
                 const starX = distance * Math.cos(angle);
                 const starZ = -distance * Math.sin(angle);
                 
@@ -89,16 +88,15 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
                     currentEarthCenter.z + starZ
                 );
                 
-                // Camera position: in front of the star (opposite side from Earth)
+                // Camera position: directly in front of the star (same distance as Earth zoom)
                 // Direction from Earth to star
                 const dirFromEarth = new THREE.Vector3(starX, 0, starZ).normalize();
                 
-                // Camera slightly beyond the star, looking back at it
-                const cameraDistance = 6; // Distance from star to camera
+                // Camera at same zoom level as You - straight in front of the star
                 targetCameraPos = starWorldPos.clone().add(
-                    dirFromEarth.clone().multiplyScalar(cameraDistance)
+                    dirFromEarth.clone().multiplyScalar(zoomDistance)
                 );
-                targetCameraPos.y += 3; // Slightly above
+                // No Y offset - camera stays at same height for straight movement
                 
                 targetLookAt = starWorldPos;
             } else {
