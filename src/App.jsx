@@ -109,11 +109,8 @@ function App() {
   };
 
   const handleEarthClick = () => {
-    if (visualizingPersonId) {
-      // From person visualization mode: go back to countdown mode
-      setVisualizingPersonId(null);
-    } else if (isValidUser) {
-      // From countdown mode: go back to You's settings mode
+    if (visualizingPersonId || isValidUser) {
+      // From person visualization mode OR countdown mode: go to You's settings mode
       setSelectedPersonId(null);
       setVisualizingPersonId(null);
       handleReset();
@@ -152,11 +149,8 @@ function App() {
         onEarthClick={handleEarthClick}
         onSunClick={handleSunClick}
         onPersonClick={(personId) => {
-          if (visualizingPersonId) {
-            // From person visualization mode: switch to that star's visualization
-            setVisualizingPersonId(personId);
-          } else if (isValidUser) {
-            // From countdown mode: go to that star's settings mode
+          if (visualizingPersonId || isValidUser) {
+            // From person visualization mode OR countdown mode: go to that star's settings mode
             setSelectedPersonId(personId);
             setUserData(null); // Clear user data to show settings
             setVisualizingPersonId(null);

@@ -53,27 +53,6 @@ const PersonVisualization = ({
 
     return (
         <div className="visualization-wrapper">
-            {/* Back Button */}
-            <button
-                onClick={onBack}
-                style={{
-                    position: 'fixed',
-                    top: '1rem',
-                    left: '1rem',
-                    padding: '0.5rem 1rem',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    borderRadius: '8px',
-                    background: 'rgba(0, 0, 0, 0.3)',
-                    color: 'white',
-                    cursor: 'pointer',
-                    fontSize: '0.85rem',
-                    zIndex: 1000,
-                    pointerEvents: 'auto'
-                }}
-            >
-                ← {isJapan ? '戻る' : 'Back'}
-            </button>
-
             {/* Main Display */}
             <div style={{
                 display: 'flex',
