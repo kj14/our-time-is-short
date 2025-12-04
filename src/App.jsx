@@ -51,6 +51,7 @@ function App() {
     const saved = localStorage.getItem('lifevis_displayMode');
     return saved || 'percentage';
   });
+  const [particleDropCallback, setParticleDropCallback] = useState(null);
   const userSettingsRef = useRef(null);
 
   // Save to localStorage whenever people changes
@@ -108,6 +109,7 @@ function App() {
           remainingPercentage={userData ? ((userData.lifeExpectancy - userData.age) / userData.lifeExpectancy * 100) : 50}
           livedSeconds={userData ? Math.floor(userData.age * 365.25 * 24 * 60 * 60) : 0}
           remainingSeconds={userData ? Math.floor((userData.lifeExpectancy - userData.age) * 365.25 * 24 * 60 * 60) : 0}
+          onParticleDrop={particleDropCallback}
         />
       )}
 
@@ -193,6 +195,7 @@ function App() {
             setPeople={setPeople}
             stats={isValidUser ? calculateLifeStats(userData.country, userData.age, userData.lifeExpectancy) : null}
             userSettingsRef={userSettingsRef}
+            onParticleDrop={(callback) => setParticleDropCallback(() => callback)}
           />
         )}
       </main>

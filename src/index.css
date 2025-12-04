@@ -42,22 +42,31 @@
   padding: 0;
 }
 
+html {
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
   font-family: var(--font-family);
   background: var(--color-bg);
   color: var(--color-text-primary);
-  min-height: 100vh;
+  height: 100vh;
+  width: 100vw;
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
-  position: relative;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
 }
 
 #root {
   width: 100%;
-  min-height: 100vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 button {
@@ -272,7 +281,10 @@ main.container {
 /* Visualization */
 .visualization-wrapper {
   width: 100%;
+  max-width: 100vw;
   transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  box-sizing: border-box;
+  padding: 1rem;
 }
 
 .countdown-card {
@@ -1674,20 +1686,51 @@ main.container {
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+  }
+
+  #root {
+    height: 100%;
+    overflow: hidden;
+  }
+
   .container {
     padding: 1rem;
   }
 
+  main.container {
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile */
+    overflow: hidden;
+  }
+
   .app-header {
-    margin-top: 2rem;
-    margin-bottom: 1.5rem;
-    padding: 0 1rem;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 0.5rem 1rem;
   }
 
   .app-title {
-    font-size: clamp(1.5rem, 5vw, 2rem);
+    font-size: clamp(1.2rem, 4vw, 1.8rem);
     padding: 0 0.5rem;
     line-height: 1.2;
+    margin-bottom: 1rem;
+  }
+
+  .visualization-wrapper {
+    padding: 0.5rem;
+    max-height: 100vh;
+    max-height: 100dvh;
+    overflow: hidden;
+  }
+
+  .countdown-card {
+    padding: 1.5rem 1rem;
+    margin: 0;
   }
 
   .app-subtitle {
@@ -1998,5 +2041,24 @@ main.container {
   
   .person-form-card {
     padding: 1rem 0.75rem;
+  }
+}
+
+/* Slide animations for counter */
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
   }
 }

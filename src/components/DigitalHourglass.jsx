@@ -301,7 +301,7 @@ function MaxCapacityGuide() {
     );
 }
 
-export default function DigitalHourglass({ remainingPercentage = 50, livedSeconds: initialLivedSeconds = 0, remainingSeconds: initialRemainingSeconds = 0 }) {
+export default function DigitalHourglass({ remainingPercentage = 50, livedSeconds: initialLivedSeconds = 0, remainingSeconds: initialRemainingSeconds = 0, onParticleDrop }) {
   const [topPulse, setTopPulse] = useState(1); // Top right pulse (remaining seconds)
   const [currentRemainingSeconds, setCurrentRemainingSeconds] = useState(initialRemainingSeconds);
   const [currentLivedSeconds, setCurrentLivedSeconds] = useState(initialLivedSeconds);
@@ -312,36 +312,29 @@ export default function DigitalHourglass({ remainingPercentage = 50, livedSecond
     setCurrentLivedSeconds(initialLivedSeconds);
   }, [initialRemainingSeconds, initialLivedSeconds]);
   
-  // Handle particle drop - update seconds when particle drops
+  // Handle particle drop - update seconds when particle drops and notify parent
   const handleParticleDrop = () => {
     // Update seconds when particle drops
     setCurrentRemainingSeconds(prev => Math.max(0, prev - 1));
     setCurrentLivedSeconds(prev => prev + 1);
-  };
-  
-  // Top right: natural heartbeat rhythm (ドクッドクッ) every 1 second
-  useEffect(() => {
-    const heartbeat = () => {
-      // First beat (ドクッ)
-      setTopPulse(1.05); // Subtle scale up
+    
+    // Notify parent component (Visualization) to synchronize counter blink
+    if (onParticleDrop) {
+      onParticleDrop();
+    }
+    
+    // Top right: pulse synchronized with particle drop
+    setTopPulse(1.05); // First beat
+    setTimeout(() => {
+      setTopPulse(1);
       setTimeout(() => {
-        setTopPulse(1); // Return to normal
-        // Second beat (ドクッ) - slightly delayed for natural rhythm
+        setTopPulse(1.03); // Second beat
         setTimeout(() => {
-          setTopPulse(1.03); // Even more subtle second beat
-          setTimeout(() => {
-            setTopPulse(1); // Return to normal
-          }, 100); // Quick second beat
-        }, 150); // Delay between beats
-      }, 120); // Duration of first beat
-    };
-    
-    // Start heartbeat immediately, then repeat every second
-    heartbeat();
-    const interval = setInterval(heartbeat, 1000);
-    
-    return () => clearInterval(interval);
-  }, []);
+          setTopPulse(1);
+        }, 100);
+      }, 150);
+    }, 120);
+  };
   
   const formatSeconds = (seconds) => {
     return new Intl.NumberFormat().format(Math.max(0, Math.floor(seconds)));

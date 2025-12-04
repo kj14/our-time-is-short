@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { calculateLifeStats, translations, lifeExpectancyData, healthyLifeExpectancyData, workingAgeLimitData } from '../utils/lifeData';
 import EnergyTank from './EnergyTank';
@@ -171,7 +171,7 @@ const DetailPage = ({
     const handleDisplayModeChange = onDisplayModeChange || setDisplayMode;
     
     // Save display mode to localStorage
-    React.useEffect(() => {
+    useEffect(() => {
         localStorage.setItem('lifevis_displayMode', currentDisplayMode);
     }, [currentDisplayMode]);
     

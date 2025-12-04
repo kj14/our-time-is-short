@@ -132,15 +132,25 @@ const calculateHoursWithPerson = (person, userAge, userCountry, remainingYears) 
     return Math.max(0, totalHours);
 };
 
-const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, healthyLifeExpectancy: customHealthyLifeExpectancy, workingAgeLimit: customWorkingAgeLimit, calculationBasis, onCalculationBasisChange, onReset, isSettingsOpen, onCloseSettings, editingPersonId, onOpenSettingsWithPerson, onUpdateUserSettings, people, setPeople, stats, userSettingsRef }) => {
+const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, healthyLifeExpectancy: customHealthyLifeExpectancy, workingAgeLimit: customWorkingAgeLimit, calculationBasis, onCalculationBasisChange, onReset, isSettingsOpen, onCloseSettings, editingPersonId, onOpenSettingsWithPerson, onUpdateUserSettings, people, setPeople, stats, userSettingsRef, onParticleDrop }) => {
     const [visible, setVisible] = useState(false);
     const [calculatedStats, setCalculatedStats] = useState(null);
-    const [secondsBlink, setSecondsBlink] = useState(1);
-    const [prevSeconds, setPrevSeconds] = useState(null);
 
     const visualizationRef = useRef(null);
+    const particleDropHandlerRef = useRef(null);
 
     const t = translations[country] || translations['default'];
+    
+    // Register particle drop handler with parent
+    useEffect(() => {
+        if (onParticleDrop) {
+            onParticleDrop(() => {
+                if (particleDropHandlerRef.current) {
+                    particleDropHandlerRef.current();
+                }
+            });
+        }
+    }, [onParticleDrop]);
 
     // Philosophy: Time is invisible, so we tend to postpone living.
     // Visualization turns vague "someday" into concrete "remaining time".
@@ -185,9 +195,19 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
     const [timeLeft, setTimeLeft] = useState(null);
 
     useEffect(() => {
-        if (!displayStats) return;
+        if (!displayStats || displayStats.remainingSeconds === undefined || displayStats.remainingSeconds === null) {
+            setTimeLeft(null);
+            return;
+        }
+        
+        // Set initial value immediately
+        const remainingSeconds = displayStats.remainingSeconds;
+        const remainingMs = remainingSeconds * 1000;
+        setTimeLeft(remainingMs);
+        
         const now = new Date();
-        const endDate = new Date(now.getTime() + displayStats.remainingSeconds * 1000);
+        const endDate = new Date(now.getTime() + remainingMs);
+        
         const timer = setInterval(() => {
             const current = new Date();
             const diff = endDate - current;
@@ -198,22 +218,33 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
                 setTimeLeft(diff);
             }
         }, 10);
+        
         return () => clearInterval(timer);
-    }, [displayStats]);
+    }, [displayStats?.remainingSeconds]);
 
-    // Blink seconds when they change (every second)
+    // Create particle drop handler (no animation needed)
+    const handleParticleDrop = () => {
+        // No animation - just a placeholder for particle drop callback
+    };
+    
+    // Store particle drop handler in ref
     useEffect(() => {
-        if (timeLeft === null) return;
-        const currentSeconds = Math.floor(timeLeft / 1000);
-        if (prevSeconds !== null && prevSeconds !== currentSeconds) {
-            // Seconds changed - trigger blink (opacity only, no scale)
-            setSecondsBlink(0.3); // Dim
-            setTimeout(() => {
-                setSecondsBlink(1); // Bright
-            }, 200);
-        }
-        setPrevSeconds(currentSeconds);
-    }, [timeLeft, prevSeconds]);
+        particleDropHandlerRef.current = handleParticleDrop;
+    }, [timeLeft]);
+
+    const getTimeComponents = (ms) => {
+        if (ms === null) return null;
+        const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((ms % (1000 * 60)) / 1000);
+        const milliseconds = Math.floor((ms % 1000) / 10);
+        return { days, hours, minutes, seconds, milliseconds };
+    };
+
+    const timeComponents = getTimeComponents(timeLeft);
+    const pad = (n) => n.toString().padStart(2, '0');
+
 
     if (!displayStats) return (
         <div style={{ color: 'white', textAlign: 'center', paddingTop: '20vh', position: 'relative', zIndex: 10 }}>
@@ -234,19 +265,6 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
             </button>
         </div>
     );
-
-    const getTimeComponents = (ms) => {
-        if (ms === null) return null;
-        const days = Math.floor(ms / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((ms % (1000 * 60)) / 1000);
-        const milliseconds = Math.floor((ms % 1000) / 10);
-        return { days, hours, minutes, seconds, milliseconds };
-    };
-
-    const timeComponents = getTimeComponents(timeLeft);
-    const pad = (n) => n.toString().padStart(2, '0');
 
     const totalWeeks = Math.floor(displayStats.expectancy * 52);
     const livedWeeks = Math.floor(age * 52);
@@ -313,16 +331,18 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
                             <TimeUnit value={pad(timeComponents.minutes)} label={t.minutes} isSmall />
                         </div>
                         
-                        {/* Second row: 秒 .00 (centered) */}
+                        {/* Second row: 秒 .00 (centered) with slide animation */}
                         <div style={{ 
                             display: 'flex', 
                             alignItems: 'baseline', 
                             justifyContent: 'center',
-                            gap: '0.3rem'
+                            gap: '0.3rem',
+                            position: 'relative',
+                            height: 'clamp(3rem, 7vw, 5rem)',
+                            overflow: 'hidden'
                         }}>
+                            {/* Seconds */}
                             <div style={{
-                                opacity: secondsBlink,
-                                transition: 'opacity 0.2s ease-out',
                                 display: 'flex',
                                 alignItems: 'baseline',
                                 gap: '0.3rem'
@@ -345,10 +365,10 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
                                     letterSpacing: '0.2em'
                                 }}>{t.seconds}</span>
                             </div>
+                            {/* Milliseconds */}
                             <span style={{
                                 fontSize: 'clamp(2rem, 5vw, 3rem)',
                                 fontWeight: 700,
-                                opacity: secondsBlink,
                                 fontFamily: 'var(--font-mono)',
                                 color: themeColor,
                                 transition: 'opacity 0.2s ease-out',
