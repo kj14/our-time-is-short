@@ -180,7 +180,7 @@ const PersonStar = ({ person, distance, radius, textureUrl, onClick, zoneColor, 
                 
                 {/* Person Label */}
                 <Html
-                    position={[0, radius + 0.5, 0]}
+                    position={[0, radius + 0.8, 0]}
                     center
                     style={{
                         pointerEvents: 'auto',
@@ -196,8 +196,8 @@ const PersonStar = ({ person, distance, radius, textureUrl, onClick, zoneColor, 
                             fontWeight: '600',
                             textShadow: '0 0 10px rgba(0,0,0,0.8), 0 0 5px rgba(0,0,0,0.8)',
                             whiteSpace: 'nowrap',
-                            transform: 'translateY(-50%)',
-                            padding: '10px'
+                            padding: '10px',
+                            textAlign: 'center'
                         }}
                     >
                         {person.name}
@@ -272,7 +272,7 @@ const EarthWrapper = forwardRef(({ targetCountry, onClick, isGlowing }, ref) => 
             <Earth targetCountry={targetCountry} onClick={onClick} />
             {/* Earth Label */}
             <Html
-                position={[0, 2.5, 0]}
+                position={[0, 3.0, 0]}
                 center
                 style={{
                     pointerEvents: 'auto',
@@ -288,8 +288,8 @@ const EarthWrapper = forwardRef(({ targetCountry, onClick, isGlowing }, ref) => 
                         fontWeight: '700',
                         textShadow: '0 0 15px rgba(59,130,246,0.8), 0 0 10px rgba(0,0,0,0.8)',
                         whiteSpace: 'nowrap',
-                        transform: 'translateY(-50%)',
-                        padding: '10px' // Increase hit area
+                        padding: '10px',
+                        textAlign: 'center'
                     }}
                 >
                     You
