@@ -4,7 +4,6 @@ import { Stars } from '@react-three/drei';
 import * as THREE from 'three';
 import SolarSystem from './SolarSystem';
 import DigitalHourglassScene from './DigitalHourglassScene';
-import { countryCoordinates } from '../utils/lifeData';
 
 // Scene component handling 3D transitions
 function SceneContent({ isVisualizing, isSettingsOpen, isEarthZoomed, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears }) {
@@ -24,7 +23,7 @@ function SceneContent({ isVisualizing, isSettingsOpen, isEarthZoomed, targetCoun
     const isInitialized = useRef(false);
     
     useFrame((state, delta) => {
-        const lerpSpeed = delta * 1.5;
+        const lerpSpeed = delta * 4; // Faster lerp for ~1 second movement
         
         // Initialize Earth position on first frame
         if (!isInitialized.current && solarSystemRef.current) {
@@ -54,53 +53,28 @@ function SceneContent({ isVisualizing, isSettingsOpen, isEarthZoomed, targetCoun
         
         let targetCameraPos, targetLookAt;
         
+        // Use current Earth position (animated)
+        const currentEarthCenter = currentEarthPos.current;
+        
+        // Earth dimensions
+        const earthRadius = 2; // Earth radius from Earth.jsx
+        const zoomDistance = earthRadius + 3.5; // Distance when fully zoomed in
+        
         if (isVisualizing) {
             // Visual Mode: Camera looks at particle center, Earth is far away
             targetCameraPos = new THREE.Vector3(0, 0, 40);
             targetLookAt = PARTICLE_CENTER;
         } else {
-            // TOP Country Selection: Earth is up close, camera shows selected country centered
-            // Calculate country position on Earth surface
-            const earthRadius = 2; // Earth radius from Earth.jsx
-            const cameraDistanceFromSurface = 3.5; // Distance from Earth surface for zoom (increased to avoid too close)
-            const totalDistance = earthRadius + cameraDistanceFromSurface;
+            // TOP Country Selection: Camera moves straight to Earth
+            // Earth rotates to show the selected country (handled in Earth.jsx)
             
-            // Use current Earth position (animated)
-            const currentEarthCenter = currentEarthPos.current;
+            // Camera position: directly in front of Earth, along Z axis
+            targetCameraPos = currentEarthCenter.clone().add(
+                new THREE.Vector3(0, 0, zoomDistance)
+            );
             
-            if (targetCountry && countryCoordinates[targetCountry]) {
-                const { lat, lng } = countryCoordinates[targetCountry];
-                const latRad = lat * (Math.PI / 180);
-                const lngRad = lng * (Math.PI / 180);
-                
-                // Convert lat/lng to 3D position on sphere surface
-                // Earth texture mapping offset
-                const adjustedLngRad = lngRad + Math.PI / 2;
-                
-                // Convert to cartesian coordinates
-                const x = Math.cos(latRad) * Math.sin(adjustedLngRad);
-                const y = Math.sin(latRad);
-                const z = Math.cos(latRad) * Math.cos(adjustedLngRad);
-                
-                // Country position on Earth surface (normalized direction vector)
-                const countryDirection = new THREE.Vector3(x, y, z).normalize();
-                
-                // Position camera at country position, moved away from Earth surface
-                // Camera is positioned outside Earth, looking at Earth center
-                // This makes the selected country appear at the center of the screen
-                targetCameraPos = currentEarthCenter.clone().add(
-                    countryDirection.clone().multiplyScalar(totalDistance)
-                );
-                
-                // Look at Earth center - the selected country will be centered
-                targetLookAt = currentEarthCenter;
-            } else {
-                // Fallback: side view without country-specific positioning
-                targetCameraPos = currentEarthCenter.clone().add(
-                    new THREE.Vector3(totalDistance, 0, 0)
-                );
-                targetLookAt = currentEarthCenter;
-            }
+            // Look at Earth center
+            targetLookAt = currentEarthCenter;
         }
         
         // Initialize if first frame
