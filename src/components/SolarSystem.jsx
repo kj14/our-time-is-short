@@ -108,12 +108,12 @@ const PersonStar = ({ person, distance, radius, textureUrl, onClick, zoneColor, 
             meshRef.current.rotation.y += 0.005 / radius;
         }
         
-        // Pulsing glow effect when visualizing this star
+        // Pulsing red outline effect when visualizing this star
         if (isGlowing && glowRef.current) {
-            // Slow pulse: 3 second cycle
-            const pulse = Math.sin(state.clock.elapsedTime * 0.7) * 0.5 + 0.5;
-            glowRef.current.material.opacity = 0.1 + pulse * 0.2;
-            glowRef.current.scale.setScalar(1 + pulse * 0.15);
+            // Scale animation: 1.05 to 1.15
+            const pulse = Math.sin(state.clock.elapsedTime * 2) * 0.5 + 0.5;
+            const scale = 1.05 + pulse * 0.1;
+            glowRef.current.scale.setScalar(scale);
         }
     });
     
@@ -143,14 +143,12 @@ const PersonStar = ({ person, distance, radius, textureUrl, onClick, zoneColor, 
                        document.body.style.cursor = 'auto';
                    }}
             >
-                {/* Glow sphere - visible when this star is being visualized */}
+                {/* Red outline - visible when this star is being visualized */}
                 {isGlowing && (
                     <mesh ref={glowRef} frustumCulled={false}>
-                        <sphereGeometry args={[radius * 1.5, 32, 32]} />
+                        <sphereGeometry args={[radius, 32, 32]} />
                         <meshBasicMaterial 
-                            color="#60a5fa" 
-                            transparent 
-                            opacity={0.2}
+                            color="#ef4444" 
                             side={THREE.BackSide}
                         />
                     </mesh>
@@ -163,14 +161,12 @@ const PersonStar = ({ person, distance, radius, textureUrl, onClick, zoneColor, 
                             <meshStandardMaterial 
                                 ref={materialRef}
                                 map={texture} 
-                                emissive={isGlowing ? '#3b82f6' : undefined} 
-                                emissiveIntensity={isGlowing ? 0.3 : 0.1} 
+                                roughness={0.5}
+                                metalness={0.1}
                             />
                         ) : (
                             <meshStandardMaterial 
                                 color={person.color || '#818cf8'} 
-                                emissive={isGlowing ? '#3b82f6' : (person.color || '#818cf8')} 
-                                emissiveIntensity={isGlowing ? 0.3 : 0.2} 
                             />
                         )}
                     </mesh>
@@ -234,25 +230,23 @@ const EarthWrapper = forwardRef(({ targetCountry, onClick, isGlowing }, ref) => 
         // Earth is at center
         earthPositionRef.current.set(0, 0, 0);
         
-        // Pulsing glow effect when visualizing Earth (You)
+        // Pulsing red outline effect when visualizing Earth (You)
         if (isGlowing && glowRef.current) {
-            // Slow pulse: 3 second cycle
-            const pulse = Math.sin(state.clock.elapsedTime * 0.7) * 0.5 + 0.5;
-            glowRef.current.material.opacity = 0.1 + pulse * 0.15;
-            glowRef.current.scale.setScalar(1 + pulse * 0.1);
+            // Scale animation: 1.05 to 1.15
+            const pulse = Math.sin(state.clock.elapsedTime * 2) * 0.5 + 0.5;
+            const scale = 1.05 + pulse * 0.1;
+            glowRef.current.scale.setScalar(scale);
         }
     });
     
     return (
         <group ref={groupRef}>
-            {/* Glow sphere - visible when You (Earth) is being visualized */}
+            {/* Red outline - visible when You (Earth) is being visualized */}
             {isGlowing && (
                 <mesh ref={glowRef} frustumCulled={false}>
-                    <sphereGeometry args={[3, 32, 32]} />
+                    <sphereGeometry args={[2.1, 32, 32]} />
                     <meshBasicMaterial 
-                        color="#3b82f6" 
-                        transparent 
-                        opacity={0.15}
+                        color="#ef4444" 
                         side={THREE.BackSide}
                     />
                 </mesh>
