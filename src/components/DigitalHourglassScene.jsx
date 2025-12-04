@@ -466,7 +466,6 @@ export default function DigitalHourglassScene({ remainingPercentage = 50, onPart
   
   return (
     <group>
-       <Moon country={country} />
        <DelicateSnowParticles remainingPercentage={remainingPercentage} onDrop={handleParticleDrop} />
        <MaxCapacityGuide />
     </group>
