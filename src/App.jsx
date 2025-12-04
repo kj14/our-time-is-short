@@ -139,12 +139,12 @@ function App() {
           setIsSettingsOpen(true);
         }}
         people={people}
-        userAge={userData ? userData.age : null}
+        userAge={userData ? userData.age : 44}
         userCountry={userData ? userData.country : currentCountry}
         remainingYears={userData ? (() => {
           const stats = calculateLifeStats(userData.country, userData.age, userData.lifeExpectancy);
           return stats.remainingYears;
-        })() : 0}
+        })() : 40}
         remainingSeconds={userData ? (() => {
           const stats = calculateLifeStats(userData.country, userData.age, userData.lifeExpectancy);
           return stats.remainingSeconds || 0;

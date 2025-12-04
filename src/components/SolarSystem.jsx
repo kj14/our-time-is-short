@@ -40,25 +40,29 @@ const calculateAge = (person) => {
 // Calculate shared hours with a person
 const calculateHoursWithPerson = (person, userAge, userCountry, remainingYears) => {
     const personAge = calculateAge(person);
-    if (personAge === null) return 0;
+    if (personAge === null) return 100; // Default value if age can't be calculated
+    
+    // Use defaults if values are null/undefined
+    const effectiveUserAge = userAge || 44;
+    const effectiveRemainingYears = remainingYears || 40;
     
     const userLifeExpectancy = lifeExpectancyData[userCountry] || lifeExpectancyData['Global'];
     const personLifeExpectancy = userLifeExpectancy;
     
     let limitLifeExpectancy;
-    if (personAge < userAge) {
+    if (personAge < effectiveUserAge) {
         limitLifeExpectancy = userLifeExpectancy;
     } else {
         limitLifeExpectancy = personLifeExpectancy;
     }
     
     const yearsWithPerson = Math.max(0, limitLifeExpectancy - personAge);
-    const effectiveYears = Math.min(yearsWithPerson, remainingYears);
+    const effectiveYears = Math.min(yearsWithPerson, effectiveRemainingYears);
     
-    const totalMeetings = effectiveYears * person.meetingFrequency;
-    const totalHours = totalMeetings * person.hoursPerMeeting;
+    const totalMeetings = effectiveYears * (person.meetingFrequency || 12);
+    const totalHours = totalMeetings * (person.hoursPerMeeting || 2);
     
-    return Math.max(0, totalHours);
+    return Math.max(1, totalHours); // At least 1 hour to ensure distance calculation works
 };
 
 // Person Star Component
@@ -202,16 +206,22 @@ const EarthWrapper = forwardRef(({ targetCountry, onClick }, ref) => {
 export default function SolarSystem({ onSunClick, targetCountry, earthRef, onEarthClick, onPersonClick, people, userAge, userCountry, remainingYears }) {
     // Calculate person stars data
     const personStars = useMemo(() => {
-        if (!people || people.length === 0) return [];
+        if (!people || people.length === 0) {
+            console.log('No people data for PersonStars');
+            return [];
+        }
+        
+        console.log('Calculating PersonStars for', people.length, 'people');
         
         // Calculate shared hours for each person
         const personData = people.map(person => {
             const sharedHours = calculateHoursWithPerson(person, userAge, userCountry, remainingYears);
             const personAge = calculateAge(person);
+            console.log('Person:', person.name, 'sharedHours:', sharedHours, 'age:', personAge);
             return {
                 ...person,
                 sharedHours,
-                personAge: personAge || 0
+                personAge: personAge || 30 // Default age if not calculated
             };
         });
         
