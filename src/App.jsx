@@ -109,11 +109,13 @@ function App() {
   };
 
   const handleEarthClick = () => {
-    if (visualizingPersonId || isValidUser) {
-      // From person visualization mode OR countdown mode: go to You's settings mode
-      setSelectedPersonId(null);
+    if (visualizingPersonId) {
+      // From person visualization mode: go to You's countdown mode
       setVisualizingPersonId(null);
-      handleReset();
+      // isValidUser is still true, so will show Visualization
+    } else if (isValidUser) {
+      // From You's countdown mode: do nothing (already showing You's countdown)
+      // Or could be used for other purposes in the future
     } else if (selectedPersonId) {
       // From star's settings mode: go to overview mode
       setSelectedPersonId(null);
@@ -149,11 +151,12 @@ function App() {
         onEarthClick={handleEarthClick}
         onSunClick={handleSunClick}
         onPersonClick={(personId) => {
-          if (visualizingPersonId || isValidUser) {
-            // From person visualization mode OR countdown mode: go to that star's settings mode
-            setSelectedPersonId(personId);
-            setUserData(null); // Clear user data to show settings
-            setVisualizingPersonId(null);
+          if (visualizingPersonId) {
+            // From person visualization mode: switch to that star's countdown mode
+            setVisualizingPersonId(personId);
+          } else if (isValidUser) {
+            // From You's countdown mode: go to that star's countdown mode
+            setVisualizingPersonId(personId);
           } else if (selectedPersonId === personId) {
             // Tapping same star in settings mode: go to overview
             setSelectedPersonId(null);
