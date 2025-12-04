@@ -273,7 +273,7 @@ export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, t
                 performance={{ min: 0.5 }}
                 style={{ touchAction: 'manipulation' }}
             >
-                <fog attach="fog" args={isVisualizing ? ['#141e35', 35, 65] : ['#0a0e1a', 10, 150]} />
+                <fog attach="fog" args={isVisualizing ? ['#141e35', 80, 200] : ['#0a0e1a', 10, 150]} />
                 <Suspense fallback={null}>
                     <SceneContent 
                         isVisualizing={isVisualizing}
