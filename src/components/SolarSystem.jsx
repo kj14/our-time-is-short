@@ -216,24 +216,29 @@ const Sun = ({ onClick }) => {
         }
     });
 
+    const handleClick = (e) => {
+        e.stopPropagation();
+        if (onClick) {
+            onClick();
+        }
+    };
+
     return (
-        <group onClick={(e) => {
-                e.stopPropagation();
-                onClick && onClick();
-            }}
+        <group 
+            onClick={handleClick}
             onPointerOver={() => document.body.style.cursor = 'pointer'}
             onPointerOut={() => document.body.style.cursor = 'auto'}
         >
-            <mesh ref={sunRef}>
+            <mesh ref={sunRef} onClick={handleClick}>
                 <sphereGeometry args={[4, 64, 64]} />
                 <meshStandardMaterial map={texture} emissiveMap={texture} emissive="#FDB813" emissiveIntensity={0.5} />
             </mesh>
             <pointLight intensity={2} distance={100} decay={2} color="#FDB813" />
-            <mesh scale={[1.2, 1.2, 1.2]}>
+            <mesh scale={[1.2, 1.2, 1.2]} onClick={handleClick}>
                 <sphereGeometry args={[4, 64, 64]} />
                 <meshBasicMaterial color="#FDB813" transparent opacity={0.15} />
             </mesh>
-             <mesh scale={[1.4, 1.4, 1.4]}>
+             <mesh scale={[1.4, 1.4, 1.4]} onClick={handleClick}>
                 <sphereGeometry args={[4, 64, 64]} />
                 <meshBasicMaterial color="#FDB813" transparent opacity={0.05} />
             </mesh>

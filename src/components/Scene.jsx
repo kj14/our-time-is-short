@@ -6,7 +6,7 @@ import SolarSystem from './SolarSystem';
 import DigitalHourglassScene from './DigitalHourglassScene';
 
 // Scene component handling 3D transitions
-function SceneContent({ isVisualizing, targetCountry, remainingPercentage, onParticleDrop, onEarthClick }) {
+function SceneContent({ isVisualizing, isSettingsOpen, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick }) {
     const solarSystemRef = useRef();
     const earthRef = useRef();
     const { camera } = useThree();
@@ -27,12 +27,14 @@ function SceneContent({ isVisualizing, targetCountry, remainingPercentage, onPar
             // Visual Mode: Camera looks at particle center
             targetCameraPos = new THREE.Vector3(0, 0, 40);
             targetLookAt = PARTICLE_CENTER;
+        } else if (isSettingsOpen) {
+            // Settings Modal Mode: Camera looks at Sun (settings entry point)
+            targetLookAt = SOLAR_POS;
+            // Camera position: Close to Sun, slightly above and offset
+            targetCameraPos = SOLAR_POS.clone().add(new THREE.Vector3(0, 3, 8));
         } else {
-            // Settings Mode: Camera looks at Earth
+            // Country Selection Mode: Camera looks at Earth
             if (earthRef.current && earthRef.current.position) {
-                // Calculate Earth's world position
-                // Earth is child of SolarSystem (SOLAR_POS)
-                // earthRef.current.position is local to SolarSystem (already calculated with angle)
                 const earthLocalPos = earthRef.current.position;
                 const earthWorldPos = SOLAR_POS.clone().add(earthLocalPos);
                 
@@ -40,9 +42,17 @@ function SceneContent({ isVisualizing, targetCountry, remainingPercentage, onPar
                 // Camera position: Close to Earth, slightly above and offset
                 targetCameraPos = earthWorldPos.clone().add(new THREE.Vector3(0, 3, 8));
             } else {
-                // Fallback if Earth not yet ready - look at Sun
-                 targetCameraPos = SOLAR_POS.clone().add(new THREE.Vector3(0, 3, 8));
-                 targetLookAt = SOLAR_POS;
+                // Fallback if Earth not yet ready - look at Earth's orbit position
+                const earthData = { distance: 18 };
+                const earthAngle = 0; // Default angle
+                const earthLocalPos = new THREE.Vector3(
+                    earthData.distance * Math.cos(earthAngle),
+                    0,
+                    -earthData.distance * Math.sin(earthAngle)
+                );
+                const earthWorldPos = SOLAR_POS.clone().add(earthLocalPos);
+                targetLookAt = earthWorldPos;
+                targetCameraPos = earthWorldPos.clone().add(new THREE.Vector3(0, 3, 8));
             }
         }
         
@@ -68,7 +78,7 @@ function SceneContent({ isVisualizing, targetCountry, remainingPercentage, onPar
             
             {/* Solar System - Always visible, but in background during visualization */}
             <group position={SOLAR_POS} ref={solarSystemRef}>
-                <SolarSystem onSunClick={undefined} targetCountry={targetCountry} earthRef={earthRef} onEarthClick={onEarthClick} />
+                <SolarSystem onSunClick={onSunClick} targetCountry={targetCountry} earthRef={earthRef} onEarthClick={onEarthClick} />
             </group>
             
             {/* Particles - Only visible when visualizing */}
@@ -85,7 +95,7 @@ function SceneContent({ isVisualizing, targetCountry, remainingPercentage, onPar
     );
 }
 
-export default function Scene({ isVisualizing, targetCountry, remainingPercentage, onParticleDrop, onEarthClick }) {
+export default function Scene({ isVisualizing, isSettingsOpen, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick }) {
     return (
         <div style={{
             position: 'fixed',
@@ -103,11 +113,13 @@ export default function Scene({ isVisualizing, targetCountry, remainingPercentag
                 <fog attach="fog" args={['#0a0e1a', 10, 150]} />
                 <Suspense fallback={null}>
                     <SceneContent 
-                        isVisualizing={isVisualizing} 
+                        isVisualizing={isVisualizing}
+                        isSettingsOpen={isSettingsOpen}
                         targetCountry={targetCountry}
                         remainingPercentage={remainingPercentage}
                         onParticleDrop={onParticleDrop}
                         onEarthClick={onEarthClick}
+                        onSunClick={onSunClick}
                     />
                 </Suspense>
             </Canvas>
