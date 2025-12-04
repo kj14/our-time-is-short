@@ -259,6 +259,7 @@ function App() {
           // Person visualization mode - show time together with particles
           <div style={{ pointerEvents: 'none', width: '100%', height: '100%' }}>
             <PersonVisualization
+              key={visualizingPersonId}
               person={people.find(p => p.id === visualizingPersonId)}
               displayMode={personDisplayMode}
               onDisplayModeChange={setPersonDisplayMode}
