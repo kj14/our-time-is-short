@@ -109,13 +109,11 @@ function App() {
   };
 
   const handleEarthClick = () => {
-    if (visualizingPersonId) {
-      // From person visualization mode: go to You's countdown mode
+    if (visualizingPersonId || isValidUser) {
+      // From countdown mode (You's or person's): go to You's settings mode
       setVisualizingPersonId(null);
-      // isValidUser is still true, so will show Visualization
-    } else if (isValidUser) {
-      // From You's countdown mode: do nothing (already showing You's countdown)
-      // Or could be used for other purposes in the future
+      setSelectedPersonId(null);
+      handleReset();
     } else if (selectedPersonId) {
       // From star's settings mode: go to overview mode
       setSelectedPersonId(null);
@@ -153,12 +151,11 @@ function App() {
         visualizingPersonId={visualizingPersonId}
         isEarthVisualized={isValidUser && !visualizingPersonId}
         onPersonClick={(personId) => {
-          if (visualizingPersonId) {
-            // From person visualization mode: switch to that star's countdown mode
-            setVisualizingPersonId(personId);
-          } else if (isValidUser) {
-            // From You's countdown mode: go to that star's countdown mode
-            setVisualizingPersonId(personId);
+          if (visualizingPersonId || isValidUser) {
+            // From countdown mode (You's or person's): go to that star's settings mode
+            setVisualizingPersonId(null);
+            setSelectedPersonId(personId);
+            setUserData(null); // Clear user data to show settings
           } else if (selectedPersonId === personId) {
             // Tapping same star in settings mode: go to overview
             setSelectedPersonId(null);
@@ -263,14 +260,6 @@ function App() {
               person={people.find(p => p.id === visualizingPersonId)}
               displayMode={personDisplayMode}
               onDisplayModeChange={setPersonDisplayMode}
-              onBack={() => {
-                setVisualizingPersonId(null);
-              }}
-              onSettingsClick={() => {
-                // Go to this star's settings mode
-                setSelectedPersonId(visualizingPersonId);
-                setVisualizingPersonId(null);
-              }}
               isJapan={currentCountry === 'Japan'}
             />
           </div>
@@ -374,10 +363,6 @@ function App() {
               stats={isValidUser ? calculateLifeStats(userData.country, userData.age, userData.lifeExpectancy) : null}
               userSettingsRef={userSettingsRef}
               onParticleDrop={(callback) => setParticleDropCallback(() => callback)}
-              onSettingsClick={() => {
-                // Go to You's settings mode (same as tapping Earth)
-                handleReset();
-              }}
             />
           </div>
         )}

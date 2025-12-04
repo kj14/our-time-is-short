@@ -93,41 +93,6 @@ const PersonVisualization = ({
                 position: 'relative',
                 overflow: 'hidden'
             }}>
-                    {/* Settings Button - Top Left (same style as Visualization) */}
-                    {onSettingsClick && (
-                        <button
-                            onClick={onSettingsClick}
-                            style={{
-                                position: 'absolute',
-                                top: '0.5rem',
-                                left: '0.5rem',
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '50%',
-                                border: '1px solid rgba(255, 255, 255, 0.2)',
-                                background: 'rgba(255, 255, 255, 0.1)',
-                                color: 'rgba(255, 255, 255, 0.7)',
-                                cursor: 'pointer',
-                                fontSize: '1rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                zIndex: 3,
-                                transition: 'all 0.2s ease',
-                                pointerEvents: 'auto'
-                            }}
-                            onMouseEnter={(e) => {
-                                e.target.style.background = 'rgba(255, 255, 255, 0.2)';
-                                e.target.style.color = 'rgba(255, 255, 255, 0.9)';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.target.style.background = 'rgba(255, 255, 255, 0.1)';
-                                e.target.style.color = 'rgba(255, 255, 255, 0.7)';
-                            }}
-                        >
-                            ⚙
-                        </button>
-                    )}
                     
                     {/* Display Mode Toggle - Top Right of Card */}
                     <div style={{
