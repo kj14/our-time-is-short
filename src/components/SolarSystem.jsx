@@ -11,7 +11,7 @@ const PLANET_TEXTURES = {
     Mars: '/textures/2k_mars.jpg',
     Jupiter: '/textures/2k_jupiter.jpg',
     Saturn: '/textures/2k_saturn.jpg',
-    SaturnRing: '/textures/2k_saturn_ring_alpha.png',
+    SaturnRing: '/textures/2k_saturn_ring.jpg',
     Uranus: '/textures/2k_uranus.jpg',
     Neptune: '/textures/2k_neptune.jpg',
     Sun: '/textures/2k_sun.jpg'

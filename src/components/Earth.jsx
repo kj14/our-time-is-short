@@ -12,7 +12,7 @@ export default function Earth({ targetCountry, onClick, onPointerOver, onPointer
     const [colorMap, specularMap, cloudsMap] = useLoader(THREE.TextureLoader, [
         '/textures/2k_earth_daymap.jpg',
         '/textures/2k_earth_specular_map.jpg',
-        '/textures/2k_earth_clouds.jpg'
+        '/textures/2k_earth_clouds.png'
     ]);
 
     useEffect(() => {
