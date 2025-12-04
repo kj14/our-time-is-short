@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import InputSection from './components/InputSection'
 import Visualization, { UserSettings, PeopleSettings } from './components/Visualization'
 import Earth3D from './components/Earth3D'
-import TimeMachineScene from './components/TimeMachineScene'
+import DigitalHourglass from './components/DigitalHourglass'
 import { lifeExpectancyData, healthyLifeExpectancyData, workingAgeLimitData, calculateLifeStats } from './utils/lifeData'
 
 function App() {
@@ -94,17 +94,34 @@ function App() {
 
   return (
     <div className="app-container">
-      {/* 3D Earth Background */}
+      {/* 3D Backgrounds */}
       {!isValidUser ? (
         <Earth3D targetCountry={currentCountry} />
       ) : (
-        <TimeMachineScene
-          remainingYears={userData ? (84.6 - userData.age) : 50}
+        <DigitalHourglass
+          remainingPercentage={userData ? ((userData.lifeExpectancy - userData.age) / userData.lifeExpectancy * 100) : 50}
+          livedSeconds={userData ? Math.floor(userData.age * 365.25 * 24 * 60 * 60) : 0}
+          remainingSeconds={userData ? Math.floor((userData.lifeExpectancy - userData.age) * 365.25 * 24 * 60 * 60) : 0}
         />
       )}
 
       <header className="container fade-in app-header">
-        <div style={{ position: 'relative', width: '100%' }}>
+        {isValidUser && (
+          <button 
+            className="header-settings-btn"
+            onClick={() => {
+              setEditingPersonId(null);
+              setIsSettingsOpen(true);
+            }}
+            aria-label="Settings"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
+        )}
+        <div style={{ width: '100%' }}>
           <h1 className="app-title">
             {(() => {
               const isJapan = (isValidUser ? userData.country : currentCountry) === 'Japan';
@@ -130,21 +147,6 @@ function App() {
               ? 'あなたの時間を可視化します。'
               : 'Visualize your time.'}
           </p>
-          {isValidUser && (
-            <button 
-              className="header-settings-btn"
-              onClick={() => {
-                setEditingPersonId(null);
-                setIsSettingsOpen(true);
-              }}
-              aria-label="Settings"
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-              </svg>
-            </button>
-          )}
         </div>
       </header>
 

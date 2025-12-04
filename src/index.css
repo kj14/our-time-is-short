@@ -1681,6 +1681,13 @@ a {
     margin-top: 0.5rem;
   }
 
+  .header-settings-btn {
+    top: -0.5rem;
+    right: 0.5rem;
+    width: 2.2rem;
+    height: 2.2rem;
+  }
+
   .input-form {
     padding: 1.2rem;
     margin: 0 0.5rem;

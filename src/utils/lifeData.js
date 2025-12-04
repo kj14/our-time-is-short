@@ -218,7 +218,7 @@ export const translations = {
         timeLived: "過ごした時間",
         remaining: "残りの時間",
         lifeInWeeks: "人生（週間）",
-        remainingSeconds: "残された時間",
+        remainingSeconds: "残り",
         timeMessage: "かけがえのない、今この瞬間",
         breakdownTitle: "残りの人生の内訳",
         startOver: "最初に戻る",
