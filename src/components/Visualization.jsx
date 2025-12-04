@@ -132,7 +132,7 @@ const calculateHoursWithPerson = (person, userAge, userCountry, remainingYears) 
     return Math.max(0, totalHours);
 };
 
-const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, healthyLifeExpectancy: customHealthyLifeExpectancy, workingAgeLimit: customWorkingAgeLimit, calculationBasis, onCalculationBasisChange, onReset, isSettingsOpen, onCloseSettings, editingPersonId, onOpenSettingsWithPerson, onUpdateUserSettings, people, setPeople, stats, userSettingsRef, onParticleDrop, onSettingsClick }) => {
+const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, healthyLifeExpectancy: customHealthyLifeExpectancy, workingAgeLimit: customWorkingAgeLimit, calculationBasis, onCalculationBasisChange, onReset, isSettingsOpen, onCloseSettings, editingPersonId, onOpenSettingsWithPerson, onUpdateUserSettings, people, setPeople, stats, userSettingsRef, onParticleDrop, onSettingsClick, onNavigate }) => {
     const [visible, setVisible] = useState(false);
     const [calculatedStats, setCalculatedStats] = useState(null);
 
@@ -299,11 +299,25 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
                     : `If life were ${lifeExpectancy.toFixed(1)} years`)}
             </h1>
             
-            {/* Countdown Timer */}
-            <div className="countdown-card" style={{
-                position: 'relative',
-                overflow: 'hidden'
-            }}>
+            {/* Navigation Wrapper */}
+            <div className="countdown-card-wrapper">
+                
+                {/* Prev Button */}
+                {onNavigate && (
+                    <button 
+                        className="nav-button prev"
+                        onClick={() => onNavigate('prev')}
+                        aria-label="Previous"
+                    >
+                        ‹
+                    </button>
+                )}
+
+                {/* Countdown Timer */}
+                <div className="countdown-card" style={{
+                    position: 'relative',
+                    overflow: 'hidden'
+                }}>
                 {/* Percentage Display - Bottom Left */}
                 {displayStats && (
                     <div style={{
@@ -441,6 +455,17 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
                 )}
             </div>
 
+                {/* Next Button */}
+                {onNavigate && (
+                    <button 
+                        className="nav-button next"
+                        onClick={() => onNavigate('next')}
+                        aria-label="Next"
+                    >
+                        ›
+                    </button>
+                )}
+            </div>
 
         </div>
     );

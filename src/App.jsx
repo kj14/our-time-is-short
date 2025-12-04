@@ -136,6 +136,22 @@ function App() {
     }
   };
 
+  const navigateTo = (direction) => {
+    // Items: [You (null), ...people]
+    const items = [null, ...people.map(p => p.id)];
+    const currentIndex = items.indexOf(visualizingPersonId);
+    
+    let nextIndex;
+    if (direction === 'next') {
+        nextIndex = (currentIndex + 1) % items.length;
+    } else {
+        nextIndex = (currentIndex - 1 + items.length) % items.length;
+    }
+    
+    const nextId = items[nextIndex];
+    setVisualizingPersonId(nextId);
+  };
+
   return (
     <div className="app-container">
       {/* Integrated 3D Scene */}
@@ -261,6 +277,7 @@ function App() {
               displayMode={personDisplayMode}
               onDisplayModeChange={setPersonDisplayMode}
               isJapan={currentCountry === 'Japan'}
+              onNavigate={navigateTo}
             />
           </div>
         ) : !isValidUser && selectedPersonId ? (
@@ -363,6 +380,7 @@ function App() {
               stats={isValidUser ? calculateLifeStats(userData.country, userData.age, userData.lifeExpectancy) : null}
               userSettingsRef={userSettingsRef}
               onParticleDrop={(callback) => setParticleDropCallback(() => callback)}
+              onNavigate={navigateTo}
             />
           </div>
         )}
