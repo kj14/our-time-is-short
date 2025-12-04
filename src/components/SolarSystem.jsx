@@ -20,6 +20,11 @@ const PLANET_TEXTURES = {
 const RealisticPlanet = ({ radius, distance, speed, angleOffset = 0, name, textureUrl, hasRing }) => {
   const ref = useRef();
   const texture = useLoader(THREE.TextureLoader, textureUrl);
+  // Fix for black artifacts on poles: Set texture wrapping to RepeatWrapping
+  if (texture) {
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+  }
   
   return (
       <PlanetMesh 
@@ -87,7 +92,7 @@ const PlanetMesh = ({ radius, distance, speed, angleOffset, name, texture, hasRi
             
             {/* Planet Body */}
             <group ref={ref}>
-                <mesh>
+                <mesh rotation={[0, 0, 0]}>
                     <sphereGeometry args={[radius, 64, 64]} />
                     <meshStandardMaterial map={texture} />
                 </mesh>
