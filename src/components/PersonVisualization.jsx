@@ -74,50 +74,6 @@ const PersonVisualization = ({
                 ← {isJapan ? '戻る' : 'Back'}
             </button>
 
-            {/* Display Mode Toggle */}
-            <div style={{
-                position: 'fixed',
-                top: '1rem',
-                right: '1rem',
-                display: 'flex',
-                background: 'rgba(255, 255, 255, 0.1)',
-                borderRadius: '8px',
-                padding: '4px',
-                pointerEvents: 'auto',
-                zIndex: 100
-            }}>
-                <button
-                    onClick={() => onDisplayModeChange('time')}
-                    style={{
-                        padding: '0.5rem 1rem',
-                        border: 'none',
-                        borderRadius: '6px',
-                        background: displayMode === 'time' ? 'rgba(59, 130, 246, 0.5)' : 'transparent',
-                        color: 'white',
-                        cursor: 'pointer',
-                        fontSize: '0.8rem',
-                        transition: 'background 0.2s'
-                    }}
-                >
-                    {isJapan ? '時間' : 'Time'}
-                </button>
-                <button
-                    onClick={() => onDisplayModeChange('percentage')}
-                    style={{
-                        padding: '0.5rem 1rem',
-                        border: 'none',
-                        borderRadius: '6px',
-                        background: displayMode === 'percentage' ? 'rgba(59, 130, 246, 0.5)' : 'transparent',
-                        color: 'white',
-                        cursor: 'pointer',
-                        fontSize: '0.8rem',
-                        transition: 'background 0.2s'
-                    }}
-                >
-                    %
-                </button>
-            </div>
-
             {/* Main Display */}
             <div style={{
                 display: 'flex',
@@ -137,21 +93,69 @@ const PersonVisualization = ({
                     {person.name} {isJapan ? 'との残り時間' : ' - Time Remaining'}
                 </h2>
 
+                {/* Card with Toggle */}
+                <div className="countdown-card" style={{
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    backdropFilter: 'blur(20px)',
+                    borderRadius: '20px',
+                    padding: '2rem',
+                    textAlign: 'center',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    position: 'relative',
+                    minWidth: '300px',
+                    pointerEvents: 'auto'
+                }}>
+                    {/* Display Mode Toggle - Top Right of Card */}
+                    <div style={{
+                        position: 'absolute',
+                        top: '0.75rem',
+                        right: '0.75rem',
+                        display: 'flex',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: '6px',
+                        padding: '3px'
+                    }}>
+                        <button
+                            onClick={() => onDisplayModeChange('time')}
+                            style={{
+                                padding: '0.35rem 0.75rem',
+                                border: 'none',
+                                borderRadius: '4px',
+                                background: displayMode === 'time' ? 'rgba(59, 130, 246, 0.5)' : 'transparent',
+                                color: 'white',
+                                cursor: 'pointer',
+                                fontSize: '0.7rem',
+                                transition: 'background 0.2s'
+                            }}
+                        >
+                            {isJapan ? '時間' : 'Time'}
+                        </button>
+                        <button
+                            onClick={() => onDisplayModeChange('percentage')}
+                            style={{
+                                padding: '0.35rem 0.75rem',
+                                border: 'none',
+                                borderRadius: '4px',
+                                background: displayMode === 'percentage' ? 'rgba(59, 130, 246, 0.5)' : 'transparent',
+                                color: 'white',
+                                cursor: 'pointer',
+                                fontSize: '0.7rem',
+                                transition: 'background 0.2s'
+                            }}
+                        >
+                            %
+                        </button>
+                    </div>
+
                 {displayMode === 'time' ? (
                     /* Time Display */
-                    <div className="countdown-card" style={{
-                        background: 'rgba(255, 255, 255, 0.05)',
-                        backdropFilter: 'blur(20px)',
-                        borderRadius: '20px',
-                        padding: '2rem',
-                        textAlign: 'center',
-                        border: '1px solid rgba(255, 255, 255, 0.1)'
-                    }}>
+                    <>
                         <div style={{
                             display: 'flex',
                             justifyContent: 'center',
                             gap: '2rem',
-                            flexWrap: 'wrap'
+                            flexWrap: 'wrap',
+                            marginTop: '1rem'
                         }}>
                             <div>
                                 <div style={{
@@ -214,18 +218,10 @@ const PersonVisualization = ({
                                 : `${person.meetingFrequency}x/year × ${person.hoursPerMeeting}h`
                             }
                         </div>
-                    </div>
+                    </>
                 ) : (
                     /* Percentage Display */
-                    <div className="countdown-card" style={{
-                        background: 'rgba(255, 255, 255, 0.05)',
-                        backdropFilter: 'blur(20px)',
-                        borderRadius: '20px',
-                        padding: '2rem',
-                        textAlign: 'center',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        minWidth: '280px'
-                    }}>
+                    <div style={{ marginTop: '1rem' }}>
                         <div style={{
                             fontSize: '4rem',
                             fontWeight: '700',
@@ -273,6 +269,7 @@ const PersonVisualization = ({
                         </div>
                     </div>
                 )}
+                </div>
             </div>
         </div>
     );
