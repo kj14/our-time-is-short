@@ -70,12 +70,11 @@ export default function Earth({ targetCountry, onClick, onPointerOver, onPointer
         >
             <mesh ref={earthRef}>
                 <sphereGeometry args={[2, 64, 64]} />
-                <meshStandardMaterial 
+                <meshPhongMaterial 
                     map={colorMap}
-                    roughness={0.5}
-                    metalness={0.1}
-                    emissive="#ffffff"
-                    emissiveIntensity={0.2}
+                    specularMap={specularMap}
+                    specular={new THREE.Color('grey')}
+                    shininess={10}
                 />
             </mesh>
             <mesh ref={cloudsRef}>
