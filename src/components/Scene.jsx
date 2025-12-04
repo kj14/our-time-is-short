@@ -165,7 +165,7 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
 
     return (
         <>
-            <ambientLight intensity={isVisualizing ? 0.7 : (isOverviewMode ? 0.8 : 0.3)} />
+            <ambientLight intensity={isVisualizing ? 1.5 : (isOverviewMode ? 0.8 : 0.3)} />
             {/* Point light for overview mode to illuminate person stars */}
             {isOverviewMode && !isVisualizing && (
                 <pointLight position={[0, 50, -10]} intensity={1.5} distance={120} />
