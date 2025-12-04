@@ -8,29 +8,50 @@ import DigitalHourglassScene from './DigitalHourglassScene';
 // Scene component handling 3D transitions
 function SceneContent({ isVisualizing, targetCountry, remainingPercentage, onParticleDrop, onEarthClick }) {
     const solarSystemRef = useRef();
+    const earthRef = useRef();
     const { camera } = useThree();
     
     // Constants
     const SOLAR_POS = new THREE.Vector3(0, 30, -50);
     const PARTICLE_CENTER = new THREE.Vector3(0, 0, 0);
     
-    // Target Definitions
-    // Settings Mode: Camera looks down at Sun from above/front
-    // Visual Mode: Camera looks at particle center
-    const targetCameraPos = isVisualizing 
-        ? new THREE.Vector3(0, 0, 40) 
-        : new THREE.Vector3(0, 40, -30); // Closer to Sun
-        
-    const targetLookAt = isVisualizing 
-        ? PARTICLE_CENTER 
-        : SOLAR_POS;
-
     // Current lookAt tracker
-    const currentLookAt = useRef(targetLookAt.clone());
+    const currentLookAt = useRef(new THREE.Vector3());
 
     useFrame((state, delta) => {
         const lerpSpeed = delta * 1.5;
         
+        let targetCameraPos, targetLookAt;
+        
+        if (isVisualizing) {
+            // Visual Mode: Camera looks at particle center
+            targetCameraPos = new THREE.Vector3(0, 0, 40);
+            targetLookAt = PARTICLE_CENTER;
+        } else {
+            // Settings Mode: Camera looks at Earth
+            if (earthRef.current && earthRef.current.position) {
+                // Calculate Earth's world position
+                // Earth is child of SolarSystem (SOLAR_POS)
+                // earthRef.current.position is local to SolarSystem
+                const earthWorldPos = SOLAR_POS.clone().add(earthRef.current.position);
+                
+                targetLookAt = earthWorldPos;
+                // Camera position: Close to Earth, slightly above and offset
+                targetCameraPos = earthWorldPos.clone().add(new THREE.Vector3(0, 3, 8));
+            } else {
+                // Fallback if Earth not yet ready
+                 targetCameraPos = new THREE.Vector3(0, 40, -30);
+                 targetLookAt = SOLAR_POS;
+            }
+        }
+        
+        // Initialize if first frame
+        if (currentLookAt.current.lengthSq() === 0) {
+            currentLookAt.current.copy(targetLookAt);
+            camera.position.copy(targetCameraPos);
+            camera.lookAt(targetLookAt);
+        }
+
         // Lerp Position
         camera.position.lerp(targetCameraPos, lerpSpeed);
         
@@ -46,7 +67,7 @@ function SceneContent({ isVisualizing, targetCountry, remainingPercentage, onPar
             
             {/* Solar System - Always visible, but in background during visualization */}
             <group position={SOLAR_POS} ref={solarSystemRef}>
-                <SolarSystem onSunClick={onEarthClick} targetCountry={targetCountry} />
+                <SolarSystem onSunClick={onEarthClick} targetCountry={targetCountry} earthRef={earthRef} />
             </group>
             
             {/* Particles - Only visible when visualizing */}

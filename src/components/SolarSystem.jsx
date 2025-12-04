@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, forwardRef } from 'react';
 import { useFrame, useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
 import Earth from './Earth';
@@ -117,12 +117,34 @@ const PlanetMesh = ({ radius, distance, speed, angleOffset, name, texture, hasRi
     );
 }
 
-function EarthWrapper({ distance, speed, angleOffset, targetCountry }) {
+const EarthWrapper = forwardRef(({ distance, speed, angleOffset, targetCountry }, ref) => {
     const groupRef = useRef();
-     useFrame((state) => {
+    const earthPositionRef = useRef(new THREE.Vector3());
+    
+    // Assign the local ref to the forwarded ref
+    if (ref) {
+        ref.current = {
+            get position() {
+                return earthPositionRef.current;
+            }
+        };
+    }
+
+    useFrame((state) => {
         const t = state.clock.getElapsedTime() * speed + angleOffset;
-        groupRef.current.position.x = Math.cos(t) * distance;
-        groupRef.current.position.z = Math.sin(t) * distance;
+        // Calculate position
+        const x = Math.cos(t) * distance;
+        const z = Math.sin(t) * distance;
+        
+        if (groupRef.current) {
+            groupRef.current.position.x = x;
+            groupRef.current.position.z = z;
+            // Store world position relative to parent (if parent is at 0,0,0)
+            // Since EarthWrapper is inside SolarSystem which is at SOLAR_POS, 
+            // we need to handle this in Scene or pass absolute. 
+            // For now, just expose local position.
+            earthPositionRef.current.set(x, 0, z);
+        }
     });
     
     return (
@@ -136,7 +158,7 @@ function EarthWrapper({ distance, speed, angleOffset, targetCountry }) {
             </group>
         </group>
     )
-}
+});
 
 const Sun = ({ onClick }) => {
     const sunRef = useRef();
@@ -174,7 +196,7 @@ const Sun = ({ onClick }) => {
     );
 }
 
-export default function SolarSystem({ onSunClick, targetCountry }) {
+export default function SolarSystem({ onSunClick, targetCountry, earthRef }) {
     return (
         <group>
             <Sun onClick={onSunClick} />
@@ -195,7 +217,7 @@ export default function SolarSystem({ onSunClick, targetCountry }) {
                 textureUrl={PLANET_TEXTURES.Venus} 
             />
             
-            <EarthWrapper distance={18} speed={0.4} angleOffset={2} targetCountry={targetCountry} />
+            <EarthWrapper ref={earthRef} distance={18} speed={0.4} angleOffset={2} targetCountry={targetCountry} />
             
             <RealisticPlanet 
                 name="Mars" 
