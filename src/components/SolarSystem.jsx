@@ -253,9 +253,12 @@ export default function SolarSystem({ onSunClick, targetCountry, earthRef, onEar
             const ageRatio = person.personAge / lifeExpectancy;
             const radius = minRadius + (ageRatio * (maxRadius - minRadius));
             
-            // Random texture
-            const textureIndex = Math.abs(person.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % PLANET_TEXTURES.length;
-            const textureUrl = PLANET_TEXTURES[textureIndex];
+            // Use person's selected texture or fallback to random
+            let textureUrl = person.textureUrl;
+            if (!textureUrl) {
+                const textureIndex = Math.abs(person.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % PLANET_TEXTURES.length;
+                textureUrl = PLANET_TEXTURES[textureIndex];
+            }
             
             return {
                 person,

@@ -3,6 +3,7 @@ import InputSection from './components/InputSection'
 import Visualization, { UserSettings, PeopleSettings } from './components/Visualization'
 import DetailPage from './components/DetailPage'
 import Scene from './components/Scene'
+import PersonSettings from './components/PersonSettings'
 import { lifeExpectancyData, healthyLifeExpectancyData, workingAgeLimitData, calculateLifeStats } from './utils/lifeData'
 
 function App() {
@@ -52,6 +53,8 @@ function App() {
   });
   const [particleDropCallback, setParticleDropCallback] = useState(null);
   const [isOverviewMode, setIsOverviewMode] = useState(false); // True = 俯瞰視点, False = 地球ズーム
+  const [isAddingPerson, setIsAddingPerson] = useState(false); // True when adding new person
+  const [selectedPersonId, setSelectedPersonId] = useState(null); // ID of person being edited (star zoomed)
   const userSettingsRef = useRef(null);
 
   // Save to localStorage whenever people changes
@@ -134,9 +137,11 @@ function App() {
         onEarthClick={handleEarthClick}
         onSunClick={handleSunClick}
         onPersonClick={(personId) => {
-          setEditingPersonId(personId);
-          setIsSettingsOpen(true);
+          // Zoom to the person's star and show their settings
+          setSelectedPersonId(personId);
+          setIsOverviewMode(false); // Exit overview mode to zoom to star
         }}
+        selectedPersonId={selectedPersonId}
         people={people}
         userAge={userData ? userData.age : 44}
         userCountry={userData ? userData.country : currentCountry}
@@ -160,8 +165,73 @@ function App() {
         </div>
       </header>
 
+      {/* Add Person Button - shown in overview mode */}
+      {!isValidUser && isOverviewMode && !isAddingPerson && !selectedPersonId && (
+        <button
+          onClick={() => setIsAddingPerson(true)}
+          style={{
+            position: 'fixed',
+            bottom: '2rem',
+            right: '2rem',
+            width: '60px',
+            height: '60px',
+            borderRadius: '50%',
+            border: 'none',
+            background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+            color: 'white',
+            fontSize: '2rem',
+            cursor: 'pointer',
+            boxShadow: '0 4px 20px rgba(59, 130, 246, 0.4)',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'transform 0.2s, box-shadow 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = 'scale(1.1)';
+            e.target.style.boxShadow = '0 6px 25px rgba(59, 130, 246, 0.5)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = 'scale(1)';
+            e.target.style.boxShadow = '0 4px 20px rgba(59, 130, 246, 0.4)';
+          }}
+        >
+          +
+        </button>
+      )}
+
       <main className="container" style={{ position: 'relative', zIndex: 2, pointerEvents: 'none' }}>
-        {!isValidUser ? (
+        {/* Adding new person */}
+        {!isValidUser && isAddingPerson ? (
+          <div style={{ pointerEvents: 'auto' }}>
+            <PersonSettings
+              person={null}
+              onSave={(newPerson) => {
+                setPeople([...people, newPerson]);
+                setIsAddingPerson(false);
+              }}
+              onCancel={() => setIsAddingPerson(false)}
+              isJapan={currentCountry === 'Japan'}
+            />
+          </div>
+        ) : !isValidUser && selectedPersonId ? (
+          <div style={{ pointerEvents: 'auto' }}>
+            <PersonSettings
+              person={people.find(p => p.id === selectedPersonId)}
+              onSave={(updatedPerson) => {
+                setPeople(people.map(p => p.id === updatedPerson.id ? updatedPerson : p));
+                setSelectedPersonId(null);
+              }}
+              onDelete={(id) => {
+                setPeople(people.filter(p => p.id !== id));
+                setSelectedPersonId(null);
+              }}
+              onCancel={() => setSelectedPersonId(null)}
+              isJapan={currentCountry === 'Japan'}
+            />
+          </div>
+        ) : !isValidUser ? (
           <div style={{ 
             pointerEvents: 'none',
             opacity: isOverviewMode ? 0 : 1,

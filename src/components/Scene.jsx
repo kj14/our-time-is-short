@@ -6,7 +6,7 @@ import SolarSystem from './SolarSystem';
 import DigitalHourglassScene from './DigitalHourglassScene';
 
 // Scene component handling 3D transitions
-function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears }) {
+function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears, selectedPersonId }) {
     const solarSystemRef = useRef();
     const earthRef = useRef();
     const { camera } = useThree();
@@ -145,7 +145,7 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
     );
 }
 
-export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears, remainingSeconds, livedSeconds }) {
+export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears, remainingSeconds, livedSeconds, selectedPersonId }) {
     const [topPulse, setTopPulse] = useState(1);
     const [currentRemainingSeconds, setCurrentRemainingSeconds] = useState(remainingSeconds || 0);
     const [currentLivedSeconds, setCurrentLivedSeconds] = useState(livedSeconds || 0);
@@ -231,6 +231,7 @@ export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, t
                         userAge={userAge}
                         userCountry={userCountry}
                         remainingYears={remainingYears}
+                        selectedPersonId={selectedPersonId}
                     />
                 </Suspense>
             </Canvas>
