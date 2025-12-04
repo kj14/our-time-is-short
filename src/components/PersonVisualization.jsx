@@ -52,12 +52,12 @@ const PersonVisualization = ({
     const percentage = userRemainingHours > 0 ? (totalHours / userRemainingHours) * 100 : 0;
 
     return (
-        <div className="visualization-wrapper" style={{ pointerEvents: 'auto' }}>
+        <div className="visualization-wrapper">
             {/* Back Button */}
             <button
                 onClick={onBack}
                 style={{
-                    position: 'absolute',
+                    position: 'fixed',
                     top: '1rem',
                     left: '1rem',
                     padding: '0.5rem 1rem',
@@ -67,7 +67,8 @@ const PersonVisualization = ({
                     color: 'white',
                     cursor: 'pointer',
                     fontSize: '0.85rem',
-                    zIndex: 100
+                    zIndex: 1000,
+                    pointerEvents: 'auto'
                 }}
             >
                 ← {isJapan ? '戻る' : 'Back'}
@@ -75,13 +76,14 @@ const PersonVisualization = ({
 
             {/* Display Mode Toggle */}
             <div style={{
-                position: 'absolute',
+                position: 'fixed',
                 top: '1rem',
                 right: '1rem',
                 display: 'flex',
                 background: 'rgba(255, 255, 255, 0.1)',
                 borderRadius: '8px',
                 padding: '4px',
+                pointerEvents: 'auto',
                 zIndex: 100
             }}>
                 <button

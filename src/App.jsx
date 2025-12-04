@@ -139,7 +139,7 @@ function App() {
     <div className="app-container">
       {/* Integrated 3D Scene */}
       <Scene 
-        isVisualizing={isValidUser && !isSettingsOpen}
+        isVisualizing={(isValidUser && !isSettingsOpen) || visualizingPersonId}
         isSettingsOpen={isSettingsOpen}
         isOverviewMode={isOverviewMode}
         targetCountry={userData ? userData.country : currentCountry}
@@ -248,16 +248,15 @@ function App() {
               isJapan={currentCountry === 'Japan'}
             />
           </div>
-        ) : !isValidUser && visualizingPersonId ? (
-          // Person visualization mode - show time together
-          <div style={{ pointerEvents: 'auto' }}>
+        ) : visualizingPersonId ? (
+          // Person visualization mode - show time together with particles
+          <div style={{ pointerEvents: 'none', width: '100%', height: '100%' }}>
             <PersonVisualization
               person={people.find(p => p.id === visualizingPersonId)}
               displayMode={personDisplayMode}
               onDisplayModeChange={setPersonDisplayMode}
               onBack={() => {
                 setVisualizingPersonId(null);
-                setSelectedPersonId(visualizingPersonId);
               }}
               isJapan={currentCountry === 'Japan'}
             />
