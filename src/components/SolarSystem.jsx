@@ -1,32 +1,101 @@
 import React, { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
 import Earth from './Earth';
 
-const Planet = ({ radius, distance, color, speed, angleOffset = 0, name }) => {
-  const ref = useRef();
-  
-  useFrame((state) => {
-    const t = state.clock.getElapsedTime() * speed + angleOffset;
-    ref.current.position.x = Math.cos(t) * distance;
-    ref.current.position.z = Math.sin(t) * distance;
-  });
+// High quality textures for planets
+const PLANET_TEXTURES = {
+    Mercury: 'https://assets.codepen.io/127738/mercury_texture.jpg',
+    Venus: 'https://assets.codepen.io/127738/venus_texture.jpg',
+    Mars: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/mars_1k.jpg',
+    Jupiter: 'https://assets.codepen.io/127738/jupiter_texture.jpg',
+    Saturn: 'https://assets.codepen.io/127738/saturn_texture.jpg',
+    SaturnRing: 'https://assets.codepen.io/127738/saturn_ring_texture.png',
+    Uranus: 'https://assets.codepen.io/127738/uranus_texture.jpg',
+    Neptune: 'https://assets.codepen.io/127738/neptune_texture.jpg',
+    Sun: 'https://assets.codepen.io/127738/sun_texture.jpg'
+};
 
+const RealisticPlanet = ({ radius, distance, speed, angleOffset = 0, name, textureUrl, hasRing, ringUrl }) => {
+  const ref = useRef();
+  const texture = useLoader(THREE.TextureLoader, textureUrl);
+  // Conditionally load ring texture if needed
+  // Note: Hooks must be called unconditionally in the same order. 
+  // Since we can't conditionalize useLoader easily inside a component without wrapper, 
+  // we'll load null if not needed but better to separate or just load it.
+  // However, let's use a pattern where we load based on prop, but ensuring hook order is tricky if we conditionally call.
+  // Safer approach: Split into Planet and PlanetWithRing or just load it if passed.
+  
+  // Actually, useLoader can take an array or single. If we pass a url, it loads.
+  // If ringUrl is undefined, useLoader might fail?
+  // Let's pre-load textures in parent or just assume simple conditional component structure.
+  
   return (
-    <group>
-        {/* Orbit Line */}
-        <mesh rotation={[-Math.PI/2, 0, 0]}>
-            <ringGeometry args={[distance - 0.05, distance + 0.05, 64]} />
-            <meshBasicMaterial color="#ffffff" opacity={0.1} transparent side={THREE.DoubleSide} />
-        </mesh>
-        {/* Planet Body */}
-        <mesh ref={ref}>
-            <sphereGeometry args={[radius, 32, 32]} />
-            <meshStandardMaterial color={color} roughness={0.7} />
-        </mesh>
-    </group>
+      <PlanetMesh 
+        radius={radius} 
+        distance={distance} 
+        speed={speed} 
+        angleOffset={angleOffset} 
+        name={name} 
+        texture={texture}
+        hasRing={hasRing}
+        ringUrl={ringUrl}
+      />
   );
 };
+
+// Inner component to handle the mesh and logic
+const PlanetMesh = ({ radius, distance, speed, angleOffset, name, texture, hasRing, ringUrl }) => {
+    const ref = useRef();
+    const ringTexture = hasRing ? useLoader(THREE.TextureLoader, ringUrl) : null;
+
+    useFrame((state) => {
+        const t = state.clock.getElapsedTime() * speed + angleOffset;
+        ref.current.position.x = Math.cos(t) * distance;
+        ref.current.position.z = Math.sin(t) * distance;
+        // Self rotation
+        ref.current.rotation.y += 0.005 / radius; // Smaller planets rotate faster visually
+    });
+
+    return (
+        <group>
+            {/* Orbit Line */}
+            <mesh rotation={[-Math.PI/2, 0, 0]}>
+                <ringGeometry args={[distance - 0.05, distance + 0.05, 128]} />
+                <meshBasicMaterial color="#ffffff" opacity={0.08} transparent side={THREE.DoubleSide} />
+            </mesh>
+            
+            {/* Planet Body */}
+            <group ref={ref}>
+                <mesh>
+                    <sphereGeometry args={[radius, 64, 64]} />
+                    <meshStandardMaterial map={texture} />
+                </mesh>
+                
+                {/* Atmosphere Glow (Simple) for Venus */}
+                {name === 'Venus' && (
+                     <mesh scale={[1.02, 1.02, 1.02]}>
+                        <sphereGeometry args={[radius, 64, 64]} />
+                        <meshBasicMaterial color="#ffbf00" transparent opacity={0.15} side={THREE.BackSide} />
+                    </mesh>
+                )}
+
+                {/* Ring for Saturn */}
+                {hasRing && ringTexture && (
+                    <mesh rotation={[-Math.PI/2 + 0.5, 0, 0]}>
+                        <ringGeometry args={[radius * 1.2, radius * 2.2, 64]} />
+                        <meshStandardMaterial 
+                            map={ringTexture} 
+                            side={THREE.DoubleSide} 
+                            transparent 
+                            opacity={0.9} 
+                        />
+                    </mesh>
+                )}
+            </group>
+        </group>
+    );
+}
 
 function EarthWrapper({ distance, speed, angleOffset, targetCountry }) {
     const groupRef = useRef();
@@ -39,8 +108,8 @@ function EarthWrapper({ distance, speed, angleOffset, targetCountry }) {
     return (
         <group>
              <mesh rotation={[-Math.PI/2, 0, 0]}>
-                <ringGeometry args={[distance - 0.05, distance + 0.05, 64]} />
-                <meshBasicMaterial color="#ffffff" opacity={0.1} transparent side={THREE.DoubleSide} />
+                <ringGeometry args={[distance - 0.05, distance + 0.05, 128]} />
+                <meshBasicMaterial color="#ffffff" opacity={0.08} transparent side={THREE.DoubleSide} />
             </mesh>
             <group ref={groupRef}>
                 <Earth targetCountry={targetCountry} />
@@ -49,51 +118,107 @@ function EarthWrapper({ distance, speed, angleOffset, targetCountry }) {
     )
 }
 
-export default function SolarSystem({ onSunClick, targetCountry }) {
+const Sun = ({ onClick }) => {
     const sunRef = useRef();
+    const texture = useLoader(THREE.TextureLoader, PLANET_TEXTURES.Sun);
 
-    // Sun rotation
     useFrame((state, delta) => {
         if (sunRef.current) {
-            sunRef.current.rotation.y += delta * 0.05;
+            sunRef.current.rotation.y += delta * 0.02;
         }
     });
 
     return (
-        <group>
-            {/* Sun */}
-            <group onClick={(e) => {
-                    e.stopPropagation();
-                    onSunClick && onSunClick();
-                }}
-                onPointerOver={() => document.body.style.cursor = 'pointer'}
-                onPointerOut={() => document.body.style.cursor = 'auto'}
-            >
-                <mesh ref={sunRef}>
-                    <sphereGeometry args={[4, 32, 32]} />
-                    <meshBasicMaterial color="#FDB813" />
-                </mesh>
-                {/* Sun Glow/Light */}
-                <pointLight intensity={2} distance={100} decay={2} color="#FDB813" />
-                <mesh scale={[1.2, 1.2, 1.2]}>
-                    <sphereGeometry args={[4, 32, 32]} />
-                    <meshBasicMaterial color="#FDB813" transparent opacity={0.2} />
-                </mesh>
-            </group>
-
-            {/* Planets */}
-            <Planet name="Mercury" distance={8} radius={0.4} color="#A5A5A5" speed={0.8} />
-            <Planet name="Venus" distance={12} radius={0.9} color="#E3BB76" speed={0.6} angleOffset={1} />
-            
-            {/* Earth */}
-            <EarthWrapper distance={18} speed={0.4} angleOffset={2} targetCountry={targetCountry} />
-            
-            <Planet name="Mars" distance={24} radius={0.5} color="#DD4C22" speed={0.3} angleOffset={3} />
-            <Planet name="Jupiter" distance={35} radius={2.5} color="#D8CA9D" speed={0.15} angleOffset={4} />
-            <Planet name="Saturn" distance={45} radius={2.0} color="#C5AB6E" speed={0.1} angleOffset={5} />
-            <Planet name="Uranus" distance={55} radius={1.5} color="#93B8BE" speed={0.08} angleOffset={0} />
-            <Planet name="Neptune" distance={65} radius={1.5} color="#5B5DDF" speed={0.06} angleOffset={1} />
+        <group onClick={(e) => {
+                e.stopPropagation();
+                onClick && onClick();
+            }}
+            onPointerOver={() => document.body.style.cursor = 'pointer'}
+            onPointerOut={() => document.body.style.cursor = 'auto'}
+        >
+            <mesh ref={sunRef}>
+                <sphereGeometry args={[4, 64, 64]} />
+                <meshBasicMaterial map={texture} />
+            </mesh>
+            {/* Sun Glow/Light */}
+            <pointLight intensity={2} distance={100} decay={2} color="#FDB813" />
+            <mesh scale={[1.2, 1.2, 1.2]}>
+                <sphereGeometry args={[4, 64, 64]} />
+                <meshBasicMaterial color="#FDB813" transparent opacity={0.15} />
+            </mesh>
+             <mesh scale={[1.4, 1.4, 1.4]}>
+                <sphereGeometry args={[4, 64, 64]} />
+                <meshBasicMaterial color="#FDB813" transparent opacity={0.05} />
+            </mesh>
         </group>
     );
 }
 
+export default function SolarSystem({ onSunClick, targetCountry }) {
+    return (
+        <group>
+            <Sun onClick={onSunClick} />
+
+            <RealisticPlanet 
+                name="Mercury" 
+                distance={8} 
+                radius={0.4} 
+                speed={0.8} 
+                textureUrl={PLANET_TEXTURES.Mercury} 
+            />
+            <RealisticPlanet 
+                name="Venus" 
+                distance={12} 
+                radius={0.9} 
+                speed={0.6} 
+                angleOffset={1} 
+                textureUrl={PLANET_TEXTURES.Venus} 
+            />
+            
+            <EarthWrapper distance={18} speed={0.4} angleOffset={2} targetCountry={targetCountry} />
+            
+            <RealisticPlanet 
+                name="Mars" 
+                distance={24} 
+                radius={0.5} 
+                speed={0.3} 
+                angleOffset={3} 
+                textureUrl={PLANET_TEXTURES.Mars} 
+            />
+            <RealisticPlanet 
+                name="Jupiter" 
+                distance={35} 
+                radius={2.5} 
+                speed={0.15} 
+                angleOffset={4} 
+                textureUrl={PLANET_TEXTURES.Jupiter} 
+            />
+            <RealisticPlanet 
+                name="Saturn" 
+                distance={45} 
+                radius={2.0} 
+                speed={0.1} 
+                angleOffset={5} 
+                textureUrl={PLANET_TEXTURES.Saturn} 
+                hasRing={true}
+                ringUrl={PLANET_TEXTURES.SaturnRing}
+            />
+            <RealisticPlanet 
+                name="Uranus" 
+                distance={55} 
+                radius={1.5} 
+                speed={0.08} 
+                angleOffset={0} 
+                textureUrl={PLANET_TEXTURES.Uranus} 
+            />
+            <RealisticPlanet 
+                name="Neptune" 
+                distance={65} 
+                radius={1.5} 
+                speed={0.06} 
+                angleOffset={1} 
+                textureUrl={PLANET_TEXTURES.Neptune} 
+            />
+        </group>
+    );
+}
