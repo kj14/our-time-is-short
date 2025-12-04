@@ -116,7 +116,11 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
 
     return (
         <>
-            <ambientLight intensity={isVisualizing ? 0.7 : 0.2} />
+            <ambientLight intensity={isVisualizing ? 0.7 : (isOverviewMode ? 0.8 : 0.3)} />
+            {/* Point light for overview mode to illuminate person stars */}
+            {isOverviewMode && !isVisualizing && (
+                <pointLight position={[0, 80, -50]} intensity={1.5} distance={200} />
+            )}
             {/* Sun light is inside SolarSystem, but we need ambient */}
             
             {/* Invisible plane for clicking in overview mode to return */}

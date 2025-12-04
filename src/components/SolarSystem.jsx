@@ -88,9 +88,9 @@ const PersonStar = ({ person, distance, radius, textureUrl, onClick }) => {
     return (
         <group rotation={[0, angle, 0]}>
             {/* Orbit Line */}
-            <mesh rotation={[-Math.PI/2, 0, 0]}>
+            <mesh rotation={[-Math.PI/2, 0, 0]} frustumCulled={false}>
                 <ringGeometry args={[distance - 0.05, distance + 0.05, 128]} />
-                <meshBasicMaterial color="#ffffff" opacity={0.08} transparent side={THREE.DoubleSide} />
+                <meshBasicMaterial color="#ffffff" opacity={0.15} transparent side={THREE.DoubleSide} />
             </mesh>
             
             {/* Person Star positioned at distance */}
@@ -117,12 +117,12 @@ const PersonStar = ({ person, distance, radius, textureUrl, onClick }) => {
                    }}
             >
                 <group ref={meshRef}>
-                    <mesh rotation={[0, 0, 0]}>
+                    <mesh rotation={[0, 0, 0]} frustumCulled={false}>
                         <sphereGeometry args={[radius, 64, 64]} />
                         {texture ? (
-                            <meshStandardMaterial map={texture} />
+                            <meshStandardMaterial map={texture} emissive={texture ? undefined : '#333'} emissiveIntensity={0.1} />
                         ) : (
-                            <meshStandardMaterial color={person.color || '#818cf8'} />
+                            <meshStandardMaterial color={person.color || '#818cf8'} emissive={person.color || '#818cf8'} emissiveIntensity={0.2} />
                         )}
                     </mesh>
                 </group>
