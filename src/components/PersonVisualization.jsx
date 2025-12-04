@@ -34,11 +34,15 @@ const PersonVisualization = ({
 }) => {
     const [visible, setVisible] = useState(false);
     
-    // Trigger fade-in animation on mount
+    // Trigger fade-in animation on mount AND when person changes
     useEffect(() => {
+        // Reset visibility when person changes
+        setVisible(false);
+        
+        // Trigger fade-in after a brief delay
         const timer = setTimeout(() => setVisible(true), 50);
         return () => clearTimeout(timer);
-    }, []);
+    }, [person?.id]); // Re-trigger when switching between people
     
     if (!person) {
         return null;
