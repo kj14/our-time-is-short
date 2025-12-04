@@ -32,15 +32,16 @@ function SceneContent({ isVisualizing, targetCountry, remainingPercentage, onPar
             if (earthRef.current && earthRef.current.position) {
                 // Calculate Earth's world position
                 // Earth is child of SolarSystem (SOLAR_POS)
-                // earthRef.current.position is local to SolarSystem
-                const earthWorldPos = SOLAR_POS.clone().add(earthRef.current.position);
+                // earthRef.current.position is local to SolarSystem (already calculated with angle)
+                const earthLocalPos = earthRef.current.position;
+                const earthWorldPos = SOLAR_POS.clone().add(earthLocalPos);
                 
                 targetLookAt = earthWorldPos;
                 // Camera position: Close to Earth, slightly above and offset
                 targetCameraPos = earthWorldPos.clone().add(new THREE.Vector3(0, 3, 8));
             } else {
-                // Fallback if Earth not yet ready
-                 targetCameraPos = new THREE.Vector3(0, 40, -30);
+                // Fallback if Earth not yet ready - look at Sun
+                 targetCameraPos = SOLAR_POS.clone().add(new THREE.Vector3(0, 3, 8));
                  targetLookAt = SOLAR_POS;
             }
         }
