@@ -99,18 +99,17 @@ function App() {
     setUserData(null);
     setIsDetailPageOpen(false);
     setIsSettingsOpen(false);
-    setIsEarthZoomed(false);
+    setIsOverviewMode(false); // Always start in zoom mode (settings), not overview
   };
 
   const handleEarthClick = () => {
-    // Toggle between overview mode (top-down view) and Earth zoom
-    setIsOverviewMode(prev => !prev);
-    
-    // If user is already set up, reset to input screen
     if (isValidUser) {
+      // From visualization screen: go back to input screen (always start in zoom mode)
       handleReset();
+    } else {
+      // From input screen: Toggle between overview mode (top-down view) and Earth zoom
+      setIsOverviewMode(prev => !prev);
     }
-    // If !isValidUser, InputSection is already displayed, so no action needed
   };
 
   const handleSunClick = () => {
