@@ -12,7 +12,7 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
     const { camera } = useThree();
     
     // Constants - Earth is at center now
-    const EARTH_POS = new THREE.Vector3(0, 30, -50); // Same position as old SOLAR_POS
+    const EARTH_POS = new THREE.Vector3(0, 0, -10); // Earth position for settings mode
     const PARTICLE_CENTER = new THREE.Vector3(0, 0, 0);
     
     // Current lookAt tracker
@@ -38,7 +38,7 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
         if (isVisualizing) {
             // Earth moves far away (back/behind, up)
             // Move in Z direction (backward) and slightly up, keep X centered
-            targetEarthPos = new THREE.Vector3(0, 25, -60);
+            targetEarthPos = new THREE.Vector3(0, 20, -50);
         } else {
             // Earth at center for country selection
             targetEarthPos = EARTH_POS.clone();
@@ -109,13 +109,13 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
         } else if (isOverviewMode) {
             // Overview Mode: Top-down view to see the entire relationship map
             // PersonStars can be at distance 8-65, so camera needs to be high enough
-            const overviewHeight = 100; // Height above Earth to see all stars
+            const overviewHeight = 80; // Height above Earth to see all stars
             
             // Camera positioned directly above Earth, looking straight down
             targetCameraPos = new THREE.Vector3(
                 currentEarthCenter.x,
                 currentEarthCenter.y + overviewHeight,
-                currentEarthCenter.z + 5 // Slight Z offset for better angle
+                currentEarthCenter.z + 10 // Slight Z offset for better angle
             );
             
             // Look at Earth center from above
@@ -153,7 +153,7 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
             <ambientLight intensity={isVisualizing ? 0.7 : (isOverviewMode ? 0.8 : 0.3)} />
             {/* Point light for overview mode to illuminate person stars */}
             {isOverviewMode && !isVisualizing && (
-                <pointLight position={[0, 80, -50]} intensity={1.5} distance={200} />
+                <pointLight position={[0, 60, -10]} intensity={1.5} distance={200} />
             )}
             
             {/* Solar System - Earth-centered with person stars */}
