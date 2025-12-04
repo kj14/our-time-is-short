@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { useFrame, useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
 import Earth from './Earth';
@@ -11,25 +11,15 @@ const PLANET_TEXTURES = {
     Mars: '/textures/2k_mars.jpg',
     Jupiter: '/textures/2k_jupiter.jpg',
     Saturn: '/textures/2k_saturn.jpg',
-    SaturnRing: '/textures/2k_saturn_ring.jpg',
+    // SaturnRing is generated procedurally
     Uranus: '/textures/2k_uranus.jpg',
     Neptune: '/textures/2k_neptune.jpg',
     Sun: '/textures/2k_sun.jpg'
 };
 
-const RealisticPlanet = ({ radius, distance, speed, angleOffset = 0, name, textureUrl, hasRing, ringUrl }) => {
+const RealisticPlanet = ({ radius, distance, speed, angleOffset = 0, name, textureUrl, hasRing }) => {
   const ref = useRef();
   const texture = useLoader(THREE.TextureLoader, textureUrl);
-  // Conditionally load ring texture if needed
-  // Note: Hooks must be called unconditionally in the same order. 
-  // Since we can't conditionalize useLoader easily inside a component without wrapper, 
-  // we'll load null if not needed but better to separate or just load it.
-  // However, let's use a pattern where we load based on prop, but ensuring hook order is tricky if we conditionally call.
-  // Safer approach: Split into Planet and PlanetWithRing or just load it if passed.
-  
-  // Actually, useLoader can take an array or single. If we pass a url, it loads.
-  // If ringUrl is undefined, useLoader might fail?
-  // Let's pre-load textures in parent or just assume simple conditional component structure.
   
   return (
       <PlanetMesh 
@@ -40,15 +30,44 @@ const RealisticPlanet = ({ radius, distance, speed, angleOffset = 0, name, textu
         name={name} 
         texture={texture}
         hasRing={hasRing}
-        ringUrl={ringUrl}
       />
   );
 };
 
 // Inner component to handle the mesh and logic
-const PlanetMesh = ({ radius, distance, speed, angleOffset, name, texture, hasRing, ringUrl }) => {
+const PlanetMesh = ({ radius, distance, speed, angleOffset, name, texture, hasRing }) => {
     const ref = useRef();
-    const ringTexture = hasRing ? useLoader(THREE.TextureLoader, ringUrl) : null;
+
+    // Procedural Saturn Ring Texture
+    const ringTexture = useMemo(() => {
+        if (!hasRing) return null;
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = 1024;
+        canvas.height = 64;
+        const context = canvas.getContext('2d');
+        const gradient = context.createLinearGradient(0, 0, 1024, 0);
+        
+        // Simple ring pattern with transparency
+        gradient.addColorStop(0.0, 'rgba(0,0,0,0)');
+        gradient.addColorStop(0.1, 'rgba(30,30,30,0)');
+        gradient.addColorStop(0.2, 'rgba(200,200,180,0.2)'); // C Ring
+        gradient.addColorStop(0.4, 'rgba(255,255,230,0.8)'); // B Ring
+        gradient.addColorStop(0.6, 'rgba(255,255,230,0.9)'); 
+        gradient.addColorStop(0.65, 'rgba(0,0,0,0.1)');     // Cassini Division
+        gradient.addColorStop(0.7, 'rgba(230,230,210,0.6)'); // A Ring
+        gradient.addColorStop(0.9, 'rgba(230,230,210,0.5)');
+        gradient.addColorStop(1.0, 'rgba(0,0,0,0)');
+        
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, 1024, 64);
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.rotation = -Math.PI / 2; // Rotate to align with ring geometry UVs
+        return texture;
+    }, [hasRing]);
 
     useFrame((state) => {
         const t = state.clock.getElapsedTime() * speed + angleOffset;
@@ -83,13 +102,13 @@ const PlanetMesh = ({ radius, distance, speed, angleOffset, name, texture, hasRi
 
                 {/* Ring for Saturn */}
                 {hasRing && ringTexture && (
-                    <mesh rotation={[-Math.PI/2 + 0.5, 0, 0]}>
-                        <ringGeometry args={[radius * 1.2, radius * 2.2, 64]} />
+                    <mesh rotation={[-Math.PI/2, 0, 0]}>
+                        <ringGeometry args={[radius * 1.4, radius * 2.4, 64]} />
                         <meshStandardMaterial 
                             map={ringTexture} 
                             side={THREE.DoubleSide} 
                             transparent 
-                            opacity={0.9} 
+                            opacity={0.8} 
                         />
                     </mesh>
                 )}
@@ -139,7 +158,7 @@ const Sun = ({ onClick }) => {
         >
             <mesh ref={sunRef}>
                 <sphereGeometry args={[4, 64, 64]} />
-                <meshBasicMaterial map={texture} />
+                <meshBasicMaterial map={texture} emissiveMap={texture} emissive="#FDB813" emissiveIntensity={0.5} />
             </mesh>
             {/* Sun Glow/Light */}
             <pointLight intensity={2} distance={100} decay={2} color="#FDB813" />
@@ -202,7 +221,6 @@ export default function SolarSystem({ onSunClick, targetCountry }) {
                 angleOffset={5} 
                 textureUrl={PLANET_TEXTURES.Saturn} 
                 hasRing={true}
-                ringUrl={PLANET_TEXTURES.SaturnRing}
             />
             <RealisticPlanet 
                 name="Uranus" 
