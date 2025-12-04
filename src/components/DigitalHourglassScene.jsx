@@ -50,16 +50,6 @@ function Moon({ country }) {
         };
     }, [country]);
 
-    // Animate moon rotation
-    useFrame((state) => {
-        if (moonGroupRef.current && isNight) {
-            // Slow rotation for realism
-            moonGroupRef.current.rotation.y += 0.001;
-        }
-    });
-
-    if (!isNight || !position) return null;
-
     // Create realistic moon material with procedural textures
     const moonMaterial = useMemo(() => {
         // Create a canvas for moon texture
@@ -143,7 +133,17 @@ function Moon({ country }) {
             roughness: 0.9,
             metalness: 0.1,
         });
-    }, []);
+    }, []); // Dependencies are empty, runs once
+
+    // Animate moon rotation
+    useFrame((state) => {
+        if (moonGroupRef.current && isNight) {
+            // Slow rotation for realism
+            moonGroupRef.current.rotation.y += 0.001;
+        }
+    });
+
+    if (!isNight || !position) return null;
 
     return (
         <group ref={moonGroupRef} position={position}>
@@ -158,6 +158,7 @@ function Moon({ country }) {
     );
 }
 
+// ... (Rest of the file remains same)
 // Delicate snowflake-like particle shader
 const particleVertexShader = `
   uniform float time;
