@@ -165,7 +165,7 @@ function App() {
 
       <main className="container" style={{ position: 'relative', zIndex: 2, pointerEvents: 'none' }}>
         {!isValidUser ? (
-          <div style={{ pointerEvents: 'auto' }}>
+          <div style={{ pointerEvents: 'none' }}>
             <InputSection
               onVisualize={handleVisualize}
               onCountryChange={setCurrentCountry}
@@ -201,12 +201,9 @@ function App() {
             />
           </div>
         ) : (
-          <div style={{ pointerEvents: 'auto', width: '100%', height: '100%' }}>
-             {/* Visualization needs pointerEvents: auto for interactive elements, 
-                 but we might want clicks to pass through for Earth.
-                 However, Visualization has settings buttons etc. 
-                 Let's handle it by making only interactive parts auto in Visualization.jsx
-                 For now, wrap it in auto. */}
+          <div style={{ pointerEvents: 'none', width: '100%', height: '100%' }}>
+             {/* Visualization wrapper is pointer-events: none to allow Earth clicks through.
+                 Interactive elements like countdown-card have pointer-events: auto set in CSS. */}
             <Visualization
               country={userData.country}
               age={userData.age}

@@ -169,6 +169,10 @@ main.container {
 }
 
 /* Input Section */
+.input-section {
+  pointer-events: auto;
+}
+
 .input-section-tagline {
   text-align: center;
   font-size: 1.2rem;
