@@ -37,10 +37,20 @@ const calculateAge = (person) => {
     return age;
 };
 
-// Calculate shared hours with a person
-const calculateHoursWithPerson = (person, userAge, userCountry, remainingYears) => {
+// 3 orbit zones based on remaining time
+// Zone 1 (Closest - Critical): < 24 hours OR < 10 meetings
+// Zone 2 (Middle - Warning): < 100 hours OR < 50 meetings  
+// Zone 3 (Outer - Stable): >= 100 hours AND >= 50 meetings
+const ORBIT_ZONES = {
+    critical: { distance: 10, color: '#ef4444' },   // Red - urgent
+    warning: { distance: 22, color: '#f59e0b' },    // Amber - attention needed
+    stable: { distance: 38, color: '#10b981' }      // Green - healthy relationship
+};
+
+// Calculate shared hours and meetings with a person
+const calculateTimeWithPerson = (person, userAge, userCountry, remainingYears) => {
     const personAge = calculateAge(person);
-    if (personAge === null) return 100; // Default value if age can't be calculated
+    if (personAge === null) return { hours: 100, meetings: 50 }; // Default values
     
     // Use defaults if values are null/undefined
     const effectiveUserAge = userAge || 44;
@@ -62,11 +72,25 @@ const calculateHoursWithPerson = (person, userAge, userCountry, remainingYears) 
     const totalMeetings = effectiveYears * (person.meetingFrequency || 12);
     const totalHours = totalMeetings * (person.hoursPerMeeting || 2);
     
-    return Math.max(1, totalHours); // At least 1 hour to ensure distance calculation works
+    return {
+        hours: Math.max(0, totalHours),
+        meetings: Math.max(0, totalMeetings)
+    };
+};
+
+// Determine which orbit zone a person belongs to
+const getOrbitZone = (hours, meetings) => {
+    if (hours < 24 || meetings < 10) {
+        return 'critical';
+    } else if (hours < 100 || meetings < 50) {
+        return 'warning';
+    } else {
+        return 'stable';
+    }
 };
 
 // Person Star Component
-const PersonStar = ({ person, distance, radius, textureUrl, onClick }) => {
+const PersonStar = ({ person, distance, radius, textureUrl, onClick, zoneColor }) => {
     const meshRef = useRef();
     const texture = useLoader(THREE.TextureLoader, textureUrl);
     
@@ -91,12 +115,6 @@ const PersonStar = ({ person, distance, radius, textureUrl, onClick }) => {
     
     return (
         <group rotation={[0, angle, 0]}>
-            {/* Orbit Line */}
-            <mesh rotation={[-Math.PI/2, 0, 0]} frustumCulled={false}>
-                <ringGeometry args={[distance - 0.05, distance + 0.05, 128]} />
-                <meshBasicMaterial color="#ffffff" opacity={0.15} transparent side={THREE.DoubleSide} />
-            </mesh>
-            
             {/* Person Star positioned at distance */}
             <group position={[distance, 0, 0]}
                    onClick={(e) => {
@@ -156,6 +174,19 @@ const PersonStar = ({ person, distance, radius, textureUrl, onClick }) => {
     );
 };
 
+// Orbit Zone Circle Component
+const OrbitZoneCircle = ({ distance, color, label }) => {
+    return (
+        <group>
+            {/* Orbit Ring */}
+            <mesh rotation={[-Math.PI/2, 0, 0]} frustumCulled={false}>
+                <ringGeometry args={[distance - 0.1, distance + 0.1, 128]} />
+                <meshBasicMaterial color={color} opacity={0.3} transparent side={THREE.DoubleSide} />
+            </mesh>
+        </group>
+    );
+};
+
 const EarthWrapper = forwardRef(({ targetCountry, onClick }, ref) => {
     const groupRef = useRef();
     const earthPositionRef = useRef(new THREE.Vector3());
@@ -207,50 +238,24 @@ export default function SolarSystem({ onSunClick, targetCountry, earthRef, onEar
     // Calculate person stars data
     const personStars = useMemo(() => {
         if (!people || people.length === 0) {
-            console.log('No people data for PersonStars');
             return [];
         }
         
-        console.log('Calculating PersonStars for', people.length, 'people');
-        
-        // Calculate shared hours for each person
-        const personData = people.map(person => {
-            const sharedHours = calculateHoursWithPerson(person, userAge, userCountry, remainingYears);
-            const personAge = calculateAge(person);
-            console.log('Person:', person.name, 'sharedHours:', sharedHours, 'age:', personAge);
-            return {
-                ...person,
-                sharedHours,
-                personAge: personAge || 30 // Default age if not calculated
-            };
-        });
-        
-        // Sort by shared hours (descending) - more hours = closer
-        personData.sort((a, b) => b.sharedHours - a.sharedHours);
-        
-        // Calculate max shared hours for distance normalization
-        const maxHours = Math.max(...personData.map(p => p.sharedHours), 1);
-        const minHours = Math.min(...personData.map(p => p.sharedHours), 0);
-        const hoursRange = maxHours - minHours || 1;
-        
-        // Calculate distances: more hours = closer (distance 8-65)
-        // Invert: max hours = distance 8, min hours = distance 65
-        const minDistance = 8;
-        const maxDistance = 65;
-        
-        // Calculate sizes: age closer to life expectancy = larger (sun size = 4)
-        // Max age (life expectancy) = radius 4, younger = smaller
         const lifeExpectancy = lifeExpectancyData[userCountry] || lifeExpectancyData['Global'];
-        const maxRadius = 4; // Sun size
-        const minRadius = 0.4; // Mercury size
+        const maxRadius = 3; // Maximum star radius for oldest people
+        const minRadius = 0.5; // Minimum star radius for youngest
         
-        return personData.map((person, index) => {
-            // Distance based on shared hours (inverted: more hours = closer)
-            const hoursRatio = (person.sharedHours - minHours) / hoursRange;
-            const distance = maxDistance - (hoursRatio * (maxDistance - minDistance));
+        return people.map(person => {
+            const timeData = calculateTimeWithPerson(person, userAge, userCountry, remainingYears);
+            const personAge = calculateAge(person) || 30;
             
-            // Size based on age (closer to life expectancy = larger)
-            const ageRatio = person.personAge / lifeExpectancy;
+            // Determine orbit zone based on remaining time/meetings
+            const zone = getOrbitZone(timeData.hours, timeData.meetings);
+            const distance = ORBIT_ZONES[zone].distance;
+            const zoneColor = ORBIT_ZONES[zone].color;
+            
+            // Size based on age (older = larger)
+            const ageRatio = Math.min(personAge / lifeExpectancy, 1);
             const radius = minRadius + (ageRatio * (maxRadius - minRadius));
             
             // Use person's selected texture or fallback to random
@@ -264,18 +269,48 @@ export default function SolarSystem({ onSunClick, targetCountry, earthRef, onEar
                 person,
                 distance,
                 radius,
-                textureUrl
+                textureUrl,
+                zone,
+                zoneColor,
+                hours: timeData.hours,
+                meetings: timeData.meetings
             };
         });
     }, [people, userAge, userCountry, remainingYears]);
     
+    // Check which zones have people
+    const hasPersonInZone = useMemo(() => {
+        const zones = { critical: false, warning: false, stable: false };
+        personStars.forEach(star => {
+            zones[star.zone] = true;
+        });
+        return zones;
+    }, [personStars]);
+    
     return (
         <group>
-            {/* Earth at center (replacing Sun position) */}
+            {/* Earth at center (You) */}
             <EarthWrapper ref={earthRef} targetCountry={targetCountry} onClick={onEarthClick} />
             
+            {/* 3 Orbit Zone Circles - always visible */}
+            <OrbitZoneCircle 
+                distance={ORBIT_ZONES.critical.distance} 
+                color={ORBIT_ZONES.critical.color}
+                label="Critical"
+            />
+            <OrbitZoneCircle 
+                distance={ORBIT_ZONES.warning.distance} 
+                color={ORBIT_ZONES.warning.color}
+                label="Warning"
+            />
+            <OrbitZoneCircle 
+                distance={ORBIT_ZONES.stable.distance} 
+                color={ORBIT_ZONES.stable.color}
+                label="Stable"
+            />
+            
             {/* Person Stars */}
-            {personStars.map(({ person, distance, radius, textureUrl }) => (
+            {personStars.map(({ person, distance, radius, textureUrl, zoneColor }) => (
                 <PersonStar
                     key={person.id}
                     person={person}
@@ -283,6 +318,7 @@ export default function SolarSystem({ onSunClick, targetCountry, earthRef, onEar
                     radius={radius}
                     textureUrl={textureUrl}
                     onClick={onPersonClick}
+                    zoneColor={zoneColor}
                 />
             ))}
         </group>

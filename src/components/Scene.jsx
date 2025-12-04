@@ -74,8 +74,27 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
                 const hash = selectedPerson.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
                 const angle = (hash % 360) * (Math.PI / 180);
                 
-                // Calculate distance (use medium distance for simplicity)
-                const distance = 20;
+                // Calculate distance based on orbit zone (same as SolarSystem.jsx)
+                // Zone distances: critical=10, warning=22, stable=38
+                const getPersonDistance = () => {
+                    const personAge = selectedPerson.age || 30;
+                    const effectiveUserAge = userAge || 44;
+                    const effectiveRemainingYears = remainingYears || 40;
+                    
+                    const userLifeExpectancy = 84.6; // Default
+                    let limitLifeExpectancy = personAge < effectiveUserAge ? userLifeExpectancy : userLifeExpectancy;
+                    const yearsWithPerson = Math.max(0, limitLifeExpectancy - personAge);
+                    const effectiveYears = Math.min(yearsWithPerson, effectiveRemainingYears);
+                    
+                    const meetings = effectiveYears * (selectedPerson.meetingFrequency || 12);
+                    const hours = meetings * (selectedPerson.hoursPerMeeting || 2);
+                    
+                    if (hours < 24 || meetings < 10) return 10;      // critical
+                    if (hours < 100 || meetings < 50) return 22;     // warning
+                    return 38;                                        // stable
+                };
+                
+                const distance = getPersonDistance();
                 
                 // Star position relative to Earth (Y-axis rotation then X translation)
                 const starX = distance * Math.cos(angle);
