@@ -107,33 +107,12 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
         camera.lookAt(currentLookAt.current);
     });
 
-    // Handle background click in overview mode to return to zoom view
-    const handleBackgroundClick = (e) => {
-        if (isOverviewMode && onEarthClick) {
-            e.stopPropagation();
-            onEarthClick();
-        }
-    };
-
     return (
         <>
             <ambientLight intensity={isVisualizing ? 0.7 : (isOverviewMode ? 0.8 : 0.3)} />
             {/* Point light for overview mode to illuminate person stars */}
             {isOverviewMode && !isVisualizing && (
                 <pointLight position={[0, 80, -50]} intensity={1.5} distance={200} />
-            )}
-            {/* Sun light is inside SolarSystem, but we need ambient */}
-            
-            {/* Invisible plane for clicking in overview mode to return */}
-            {isOverviewMode && !isVisualizing && (
-                <mesh 
-                    position={[0, 30, -50]} 
-                    rotation={[-Math.PI / 2, 0, 0]}
-                    onClick={handleBackgroundClick}
-                >
-                    <planeGeometry args={[500, 500]} />
-                    <meshBasicMaterial visible={false} />
-                </mesh>
             )}
             
             {/* Solar System - Earth-centered with person stars */}
