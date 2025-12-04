@@ -28,7 +28,6 @@ const PersonVisualization = ({
     onDisplayModeChange,
     onBack,
     onSettingsClick,
-    onNavigate,
     isJapan = true,
     userAge = 44,
     userCountry = 'Japan'
@@ -89,25 +88,11 @@ const PersonVisualization = ({
                 {person.name} {isJapan ? 'との残り時間' : ' - Time Remaining'}
             </h1>
 
-            {/* Navigation Wrapper */}
-            <div className="countdown-card-wrapper">
-                
-                {/* Prev Button */}
-                {onNavigate && (
-                    <button 
-                        className="nav-button prev"
-                        onClick={() => onNavigate('prev')}
-                        aria-label="Previous"
-                    >
-                        ‹
-                    </button>
-                )}
-
-                {/* Card with Toggle - same style as Visualization */}
-                <div className="countdown-card" style={{
-                    position: 'relative',
-                    overflow: 'hidden'
-                }}>
+            {/* Card with Toggle - same style as Visualization */}
+            <div className="countdown-card" style={{
+                position: 'relative',
+                overflow: 'hidden'
+            }}>
                     
                     {/* Display Mode Toggle - Top Right of Card */}
                     <div style={{
@@ -303,19 +288,6 @@ const PersonVisualization = ({
                         )}
                     </div>
                 </div>
-
-                {/* Next Button */}
-                {onNavigate && (
-                    <button 
-                        className="nav-button next"
-                        onClick={() => onNavigate('next')}
-                        aria-label="Next"
-                    >
-                        ›
-                    </button>
-                )}
-            </div>
-
         </div>
     );
 };
