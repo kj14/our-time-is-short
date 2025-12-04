@@ -170,10 +170,11 @@ main.container {
 
 /* Input Section */
 .input-section {
-  pointer-events: auto;
+  pointer-events: none;
 }
 
 .input-section-tagline {
+  pointer-events: auto;
   text-align: center;
   font-size: 1.2rem;
   color: var(--color-text-secondary);
@@ -196,6 +197,7 @@ main.container {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: var(--radius-xl);
+  pointer-events: auto;
   box-shadow: var(--shadow-lg);
   border: 1px solid rgba(255, 255, 255, 0.05);
   transition: transform 0.3s ease, box-shadow 0.3s ease;

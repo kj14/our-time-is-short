@@ -197,8 +197,8 @@ export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, t
                   `
                 : 'none',
             transition: 'background 1s ease',
-            pointerEvents: 'auto', // Allow clicks on canvas
-            touchAction: 'none' // Prevent default touch actions for better 3D interaction
+            pointerEvents: 'auto',
+            touchAction: 'manipulation' // Allow touch while preventing double-tap zoom
         }}>
             <Canvas 
                 camera={isVisualizing ? { position: [0, 0, 40], fov: 45 } : { position: [0, 50, 30], fov: 45 }}
@@ -209,19 +209,7 @@ export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, t
                 }}
                 dpr={[1, 2]}
                 performance={{ min: 0.5 }}
-                style={{ touchAction: 'none' }}
-                events={(store) => ({
-                    // Ensure pointer events work on mobile
-                    priority: 1,
-                    filter: (intersections) => intersections,
-                    compute: (event, state) => {
-                        state.pointer.set(
-                            (event.offsetX / state.size.width) * 2 - 1,
-                            -(event.offsetY / state.size.height) * 2 + 1
-                        );
-                        state.raycaster.setFromCamera(state.pointer, state.camera);
-                    }
-                })}
+                style={{ touchAction: 'manipulation' }}
             >
                 <fog attach="fog" args={isVisualizing ? ['#141e35', 35, 65] : ['#0a0e1a', 10, 150]} />
                 <Suspense fallback={null}>
