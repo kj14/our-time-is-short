@@ -23,7 +23,7 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
     const isInitialized = useRef(false);
     
     useFrame((state, delta) => {
-        const lerpSpeed = delta * 4; // Faster lerp for ~1 second movement
+        const lerpSpeed = delta * 2; // Slower lerp for ~2 second movement
         
         // Initialize Earth position on first frame
         if (!isInitialized.current && solarSystemRef.current) {
