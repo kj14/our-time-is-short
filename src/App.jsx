@@ -206,9 +206,9 @@ function App() {
         {!isValidUser && isAddingPerson ? (
           <div style={{ 
             pointerEvents: 'auto', 
-            maxHeight: '100vh', 
+            height: '100vh',
             overflowY: 'auto',
-            paddingBottom: '2rem'
+            WebkitOverflowScrolling: 'touch'
           }}>
             <PersonSettings
               person={null}
@@ -223,9 +223,9 @@ function App() {
         ) : !isValidUser && selectedPersonId ? (
           <div style={{ 
             pointerEvents: 'auto', 
-            maxHeight: '100vh', 
+            height: '100vh',
             overflowY: 'auto',
-            paddingBottom: '2rem'
+            WebkitOverflowScrolling: 'touch'
           }}>
             <PersonSettings
               person={people.find(p => p.id === selectedPersonId)}

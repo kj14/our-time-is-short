@@ -126,20 +126,38 @@ const PersonSettings = ({
         onSave(savedPerson);
     };
 
+    // Calculate shared time preview
+    const calculateSharedTime = () => {
+        if (calculatedAge === null) return null;
+        
+        const userAge = 44; // Default user age for preview
+        const lifeExpectancy = 84.6; // Default life expectancy
+        const remainingYears = lifeExpectancy - userAge;
+        
+        const personRemainingYears = Math.max(0, lifeExpectancy - calculatedAge);
+        const effectiveYears = Math.min(personRemainingYears, remainingYears);
+        
+        const totalMeetings = effectiveYears * formData.meetingFrequency;
+        const totalHours = totalMeetings * formData.hoursPerMeeting;
+        
+        return {
+            totalMeetings: Math.round(totalMeetings),
+            totalHours: Math.round(totalHours),
+            totalDays: Math.round(totalHours / 24 * 10) / 10
+        };
+    };
+
+    const sharedTime = calculateSharedTime();
+
     return (
         <section 
             className="input-section fade-in" 
-            style={{ 
-                animationDelay: '0.2s',
-                maxHeight: '100vh',
-                overflowY: 'auto',
-                paddingBottom: '2rem'
-            }}
+            style={{ animationDelay: '0.2s' }}
         >
             <p className="input-section-tagline">
                 {isJapan ? '大切な人との時間を可視化' : 'Visualize time with someone special'}
             </p>
-            <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="input-form" style={{ marginBottom: '2rem' }}>
+            <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="input-form">
                 {/* Name */}
                 <div className="input-group">
                     <label className="input-label">
@@ -303,6 +321,80 @@ const PersonSettings = ({
                         ))}
                     </select>
                 </div>
+
+                {/* Shared Time Preview */}
+                {sharedTime && (
+                    <div style={{
+                        padding: '1.5rem',
+                        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(59, 130, 246, 0.2)',
+                        textAlign: 'center'
+                    }}>
+                        <div style={{ 
+                            fontSize: '0.85rem', 
+                            color: 'rgba(255, 255, 255, 0.6)',
+                            marginBottom: '0.75rem'
+                        }}>
+                            {isJapan ? '残りの共有時間（目安）' : 'Estimated Remaining Time Together'}
+                        </div>
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            gap: '2rem',
+                            flexWrap: 'wrap'
+                        }}>
+                            <div>
+                                <div style={{ 
+                                    fontSize: '1.75rem', 
+                                    fontWeight: '700',
+                                    color: '#3b82f6',
+                                    fontFamily: 'var(--font-mono)'
+                                }}>
+                                    {sharedTime.totalHours.toLocaleString()}
+                                </div>
+                                <div style={{ 
+                                    fontSize: '0.75rem', 
+                                    color: 'rgba(255, 255, 255, 0.5)' 
+                                }}>
+                                    {isJapan ? '時間' : 'hours'}
+                                </div>
+                            </div>
+                            <div>
+                                <div style={{ 
+                                    fontSize: '1.75rem', 
+                                    fontWeight: '700',
+                                    color: '#8b5cf6',
+                                    fontFamily: 'var(--font-mono)'
+                                }}>
+                                    {sharedTime.totalMeetings.toLocaleString()}
+                                </div>
+                                <div style={{ 
+                                    fontSize: '0.75rem', 
+                                    color: 'rgba(255, 255, 255, 0.5)' 
+                                }}>
+                                    {isJapan ? '回' : 'times'}
+                                </div>
+                            </div>
+                            <div>
+                                <div style={{ 
+                                    fontSize: '1.75rem', 
+                                    fontWeight: '700',
+                                    color: '#10b981',
+                                    fontFamily: 'var(--font-mono)'
+                                }}>
+                                    {sharedTime.totalDays}
+                                </div>
+                                <div style={{ 
+                                    fontSize: '0.75rem', 
+                                    color: 'rgba(255, 255, 255, 0.5)' 
+                                }}>
+                                    {isJapan ? '日' : 'days'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Planet (Texture) Selection */}
                 <div className="input-group">
