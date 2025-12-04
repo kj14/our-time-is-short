@@ -27,6 +27,10 @@
   --font-mono: 'Space Mono', monospace;
 }
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 html, body, #root {
   width: 100%;
   height: 100%;
@@ -116,19 +120,26 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 100%;
 }
 
 /* Make sure nav buttons are visible on mobile even if they overflow the wrapper */
 @media (max-width: 600px) {
     .nav-button.prev {
-        left: -20px; /* Push out a bit */
+        left: 0;
         transform: translateY(-50%);
-        background: rgba(0, 0, 0, 0.2);
+        background: rgba(0, 0, 0, 0.4);
+        border-radius: 0 8px 8px 0;
+        width: 32px;
+        padding-left: 4px;
     }
     .nav-button.next {
-        right: -20px;
+        right: 0;
         transform: translateY(-50%);
-        background: rgba(0, 0, 0, 0.2);
+        background: rgba(0, 0, 0, 0.4);
+        border-radius: 8px 0 0 8px;
+        width: 32px;
+        padding-right: 4px;
     }
 }
 
@@ -204,6 +215,7 @@ body {
   align-items: center;
   justify-content: center;
   pointer-events: none; /* Child elements will re-enable pointer events */
+  position: relative;
 }
 
 .countdown-card {
