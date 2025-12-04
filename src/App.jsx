@@ -100,6 +100,16 @@ function App() {
     setIsSettingsOpen(false);
   };
 
+  const handleEarthClick = () => {
+    // Earth is the country selection screen
+    // If user is already set up, reset to input screen
+    // If not set up, ensure input screen is visible (it already is)
+    if (isValidUser) {
+      handleReset();
+    }
+    // If !isValidUser, InputSection is already displayed, so no action needed
+  };
+
   return (
     <div className="app-container">
       {/* Integrated 3D Scene */}
@@ -108,7 +118,7 @@ function App() {
         targetCountry={userData ? userData.country : currentCountry}
         remainingPercentage={userData ? ((userData.lifeExpectancy - userData.age) / userData.lifeExpectancy * 100) : 50}
         onParticleDrop={particleDropCallback}
-        onEarthClick={isValidUser ? handleReset : undefined}
+        onEarthClick={handleEarthClick}
       />
 
       <header className="container fade-in app-header">

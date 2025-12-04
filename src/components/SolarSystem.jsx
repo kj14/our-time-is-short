@@ -241,7 +241,7 @@ const Sun = ({ onClick }) => {
     );
 }
 
-export default function SolarSystem({ onSunClick, targetCountry, earthRef }) {
+export default function SolarSystem({ onSunClick, targetCountry, earthRef, onEarthClick }) {
     const handlePlanetClick = (name) => {
         console.log(`Clicked on ${name}`);
         // Future: Show modal or info
@@ -282,8 +282,7 @@ export default function SolarSystem({ onSunClick, targetCountry, earthRef }) {
             <EarthWrapper 
                 ref={earthRef} 
                 targetCountry={targetCountry} 
-                // onClick is handled inside Earth component but we can pass additional handler if needed
-                // Current Earth component handles click to reset.
+                onClick={onEarthClick}
             />
         </group>
     );

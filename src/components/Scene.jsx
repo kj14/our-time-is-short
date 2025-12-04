@@ -68,7 +68,7 @@ function SceneContent({ isVisualizing, targetCountry, remainingPercentage, onPar
             
             {/* Solar System - Always visible, but in background during visualization */}
             <group position={SOLAR_POS} ref={solarSystemRef}>
-                <SolarSystem onSunClick={onEarthClick} targetCountry={targetCountry} earthRef={earthRef} />
+                <SolarSystem onSunClick={undefined} targetCountry={targetCountry} earthRef={earthRef} onEarthClick={onEarthClick} />
             </group>
             
             {/* Particles - Only visible when visualizing */}
