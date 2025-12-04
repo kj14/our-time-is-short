@@ -128,12 +128,6 @@ const PersonStar = ({ person, distance, radius, textureUrl, onClick, zoneColor, 
         <group rotation={[0, angle, 0]}>
             {/* Person Star positioned at distance */}
             <group position={[distance, 0, 0]}
-                   onClick={(e) => {
-                       e.stopPropagation();
-                       if (onClick) {
-                           onClick(person.id);
-                       }
-                   }}
                    onPointerDown={(e) => {
                        e.stopPropagation();
                        if (onClick) {

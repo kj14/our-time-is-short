@@ -58,7 +58,6 @@ export default function Earth({ targetCountry, onClick, onPointerOver, onPointer
     return (
         <group 
             {...props}
-            onClick={onClick}
             onPointerDown={handlePointerDown}
             onPointerOver={() => {
                 document.body.style.cursor = 'pointer';
