@@ -158,7 +158,7 @@ const Sun = ({ onClick }) => {
         >
             <mesh ref={sunRef}>
                 <sphereGeometry args={[4, 64, 64]} />
-                <meshBasicMaterial map={texture} emissiveMap={texture} emissive="#FDB813" emissiveIntensity={0.5} />
+                <meshStandardMaterial map={texture} emissiveMap={texture} emissive="#FDB813" emissiveIntensity={0.5} />
             </mesh>
             {/* Sun Glow/Light */}
             <pointLight intensity={2} distance={100} decay={2} color="#FDB813" />

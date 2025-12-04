@@ -223,12 +223,8 @@ function DelicateSnowParticles({ remainingPercentage = 50, onDrop }) {
         
       } else {
         // Bottom Static (Snow)
-        // Subtle glisten effect - Less prominent
-        if (Math.random() < 0.005) {
-            alphas[i] = 0.5 + Math.random() * 0.2; // Subtle flash
-        } else {
-            alphas[i] += (0.35 - alphas[i]) * 0.05; // Return to softer base
-        }
+        // Fixed static alpha - Remove glistening to stop blinking
+        alphas[i] = 0.3 + Math.random() * 0.1; 
       }
       
       positions[i * 3] = x;

@@ -58,7 +58,7 @@ function SceneContent({ isVisualizing, targetCountry, remainingPercentage, onPar
                 />
             </group>
             
-            <Stars radius={300} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
+            <Stars radius={300} depth={50} count={2000} factor={3} saturation={0} fade speed={0.5} />
         </>
     );
 }
