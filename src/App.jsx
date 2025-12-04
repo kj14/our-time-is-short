@@ -51,6 +51,7 @@ function App() {
     return saved || 'percentage';
   });
   const [particleDropCallback, setParticleDropCallback] = useState(null);
+  const [isEarthZoomed, setIsEarthZoomed] = useState(false);
   const userSettingsRef = useRef(null);
 
   // Save to localStorage whenever people changes
@@ -98,12 +99,16 @@ function App() {
     setUserData(null);
     setIsDetailPageOpen(false);
     setIsSettingsOpen(false);
+    setIsEarthZoomed(false);
   };
 
   const handleEarthClick = () => {
     // Earth is the country selection screen
+    // Zoom in to Earth to show the selected country
+    console.log('Earth clicked, setting isEarthZoomed to true');
+    setIsEarthZoomed(true);
+    
     // If user is already set up, reset to input screen
-    // If not set up, ensure input screen is visible (it already is)
     if (isValidUser) {
       handleReset();
     }
@@ -112,6 +117,7 @@ function App() {
 
   const handleSunClick = () => {
     // Sun is the settings screen entry point (gear icon settings modal)
+    setIsEarthZoomed(false);
     if (isValidUser) {
       setEditingPersonId(null);
       setIsSettingsOpen(true);
@@ -124,11 +130,32 @@ function App() {
       <Scene 
         isVisualizing={isValidUser && !isSettingsOpen}
         isSettingsOpen={isSettingsOpen}
+        isEarthZoomed={isEarthZoomed}
         targetCountry={userData ? userData.country : currentCountry}
         remainingPercentage={userData ? ((userData.lifeExpectancy - userData.age) / userData.lifeExpectancy * 100) : 50}
         onParticleDrop={particleDropCallback}
         onEarthClick={handleEarthClick}
         onSunClick={handleSunClick}
+        onPersonClick={(personId) => {
+          setEditingPersonId(personId);
+          setIsSettingsOpen(true);
+        }}
+        people={people}
+        userAge={userData ? userData.age : null}
+        userCountry={userData ? userData.country : currentCountry}
+        remainingYears={userData ? (() => {
+          const stats = calculateLifeStats(userData.country, userData.age, userData.lifeExpectancy);
+          return stats.remainingYears;
+        })() : 0}
+        remainingSeconds={userData ? (() => {
+          const stats = calculateLifeStats(userData.country, userData.age, userData.lifeExpectancy);
+          return stats.remainingSeconds || 0;
+        })() : 0}
+        livedSeconds={userData ? (() => {
+          const lifeExpectancy = userData.lifeExpectancy || lifeExpectancyData[userData.country] || lifeExpectancyData['Global'];
+          const livedYears = userData.age;
+          return livedYears * 365.25 * 24 * 60 * 60;
+        })() : 0}
       />
 
       <header className="container fade-in app-header">
@@ -192,6 +219,7 @@ function App() {
               isSettingsOpen={isSettingsOpen}
               onCloseSettings={() => {
                 setIsSettingsOpen(false);
+                setIsEarthZoomed(false);
                 setEditingPersonId(null);
               }}
               editingPersonId={editingPersonId}
@@ -219,6 +247,7 @@ function App() {
         <>
           <div className="settings-overlay" onClick={() => {
             setIsSettingsOpen(false);
+            setIsEarthZoomed(false);
             setEditingPersonId(null);
           }}></div>
           <div className="settings-modal">
@@ -227,6 +256,7 @@ function App() {
                 <h2 className="settings-title">設定</h2>
                 <button className="close-btn" onClick={() => {
                   setIsSettingsOpen(false);
+                  setIsEarthZoomed(false);
                   setEditingPersonId(null);
                 }}>×</button>
               </div>

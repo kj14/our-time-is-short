@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -297,15 +297,9 @@ function MaxCapacityGuide() {
 }
 
 export default function DigitalHourglassScene({ remainingPercentage = 50, onParticleDrop, country = 'Japan' }) {
-  const handleParticleDrop = () => {
-    if (onParticleDrop) {
-      onParticleDrop();
-    }
-  };
-  
   return (
     <group>
-       <DelicateSnowParticles remainingPercentage={remainingPercentage} onDrop={handleParticleDrop} />
+       <DelicateSnowParticles remainingPercentage={remainingPercentage} onDrop={onParticleDrop} />
        <MaxCapacityGuide />
     </group>
   );

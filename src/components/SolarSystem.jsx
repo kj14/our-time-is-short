@@ -192,7 +192,7 @@ const EarthWrapper = forwardRef(({ targetCountry, onClick }, ref) => {
                     whiteSpace: 'nowrap',
                     transform: 'translateY(-50%)'
                 }}>
-                    Earth (You)
+                    You
                 </div>
             </Html>
         </group>
