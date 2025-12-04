@@ -110,6 +110,7 @@ function App() {
           livedSeconds={userData ? Math.floor(userData.age * 365.25 * 24 * 60 * 60) : 0}
           remainingSeconds={userData ? Math.floor((userData.lifeExpectancy - userData.age) * 365.25 * 24 * 60 * 60) : 0}
           onParticleDrop={particleDropCallback}
+          country={userData ? userData.country : currentCountry}
         />
       )}
 

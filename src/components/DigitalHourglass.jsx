@@ -2,6 +2,73 @@ import React, { useRef, useMemo, Suspense, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Stars } from '@react-three/drei';
+import { countryCoordinates } from '../utils/lifeData';
+
+function Moon({ country }) {
+    const mesh = useRef();
+    
+    // Calculate sun/moon position based on country's local time
+    const position = useMemo(() => {
+        const coords = countryCoordinates[country] || countryCoordinates['Japan'];
+        const lng = coords.lng;
+        
+        // Calculate approximate local time
+        const now = new Date();
+        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+        const offset = lng / 15; // Roughly 15 degrees per hour
+        const localTime = new Date(utc + (3600000 * offset));
+        const hours = localTime.getHours() + localTime.getMinutes() / 60;
+        
+        // Check if it's night (approx 6PM to 6AM)
+        const isNight = hours < 6 || hours > 18;
+        
+        if (!isNight) return null;
+        
+        // Calculate moon position in the sky
+        // We want it "far away" and "small"
+        // Use spherical coordinates roughly based on time
+        // Midnight (24/0) -> highest point
+        
+        // Normalize night hours to 0-1 range (18->0, 24->0.5, 6->1)
+        let progress;
+        if (hours > 18) {
+            progress = (hours - 18) / 12;
+        } else {
+            progress = (hours + 6) / 12;
+        }
+        
+        // Arc position: East -> Up -> West
+        // x: -30 to 30
+        // y: 10 to 25
+        // z: -40 (far away)
+        
+        const angle = (progress - 0.5) * Math.PI; // -PI/2 to PI/2
+        
+        return [
+            Math.sin(angle) * 30, // X: movement
+            Math.cos(angle) * 20 + 5, // Y: height (arc)
+            -40 // Z: distance
+        ];
+    }, [country]);
+
+    if (!position) return null;
+
+    return (
+        <group position={position}>
+            <mesh ref={mesh}>
+                <sphereGeometry args={[1.5, 32, 32]} /> {/* Small size */}
+                <meshStandardMaterial 
+                    color="#fbbf24" 
+                    emissive="#fbbf24"
+                    emissiveIntensity={0.5}
+                    roughness={0.5}
+                />
+            </mesh>
+            {/* Moon glow */}
+            <pointLight intensity={1} distance={50} color="#fbbf24" />
+        </group>
+    );
+}
 
 // Delicate snowflake-like particle shader
 const particleVertexShader = `
@@ -301,7 +368,7 @@ function MaxCapacityGuide() {
     );
 }
 
-export default function DigitalHourglass({ remainingPercentage = 50, livedSeconds: initialLivedSeconds = 0, remainingSeconds: initialRemainingSeconds = 0, onParticleDrop }) {
+export default function DigitalHourglass({ remainingPercentage = 50, livedSeconds: initialLivedSeconds = 0, remainingSeconds: initialRemainingSeconds = 0, onParticleDrop, country = 'Japan' }) {
   const [topPulse, setTopPulse] = useState(1); // Top right pulse (remaining seconds)
   const [currentRemainingSeconds, setCurrentRemainingSeconds] = useState(initialRemainingSeconds);
   const [currentLivedSeconds, setCurrentLivedSeconds] = useState(initialLivedSeconds);
@@ -349,13 +416,20 @@ export default function DigitalHourglass({ remainingPercentage = 50, livedSecond
       height: '100%',
       zIndex: 0,
       pointerEvents: 'none',
-      // Softer, more beautiful background - deep blue/purple instead of black
-      background: 'radial-gradient(circle at center, #1a1f3a 0%, #0a0e1a 100%)'
+      // Beautiful cosmic background - deep space with nebula colors
+      background: 'radial-gradient(ellipse at top, #1e1b4b 0%, #312e81 25%, #1e1b4b 50%, #0f172a 100%)',
+      backgroundImage: `
+        radial-gradient(ellipse at 20% 30%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 70%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 70%)
+      `
     }}>
       <Canvas camera={{ position: [0, 0, 40], fov: 45 }}>
-        <fog attach="fog" args={['#0a0e1a', 35, 65]} />
+        <fog attach="fog" args={['#0f172a', 35, 65]} />
         <ambientLight intensity={0.5} />
         <Suspense fallback={null}>
+           <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
+           <Moon country={country} />
            <DelicateSnowParticles remainingPercentage={remainingPercentage} onDrop={handleParticleDrop} />
            <MaxCapacityGuide />
         </Suspense>

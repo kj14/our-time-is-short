@@ -300,14 +300,74 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
             </h1>
             
             {/* Countdown Timer */}
-            <div className="countdown-card">
+            <div className="countdown-card" style={{
+                position: 'relative',
+                overflow: 'hidden'
+            }}>
+                {/* Percentage Display - Bottom Left */}
+                {displayStats && (
+                    <div style={{
+                        position: 'absolute',
+                        bottom: '0.5rem',
+                        left: '0.5rem',
+                        fontSize: '0.75rem',
+                        fontWeight: 500,
+                        color: 'rgba(255, 255, 255, 0.6)',
+                        zIndex: 3,
+                        fontFamily: 'var(--font-mono)',
+                        letterSpacing: '0.05em'
+                    }}>
+                        {Math.round(displayStats.remainingYears / displayStats.expectancy * 100)}%
+                    </div>
+                )}
+                
+                {/* Used Life - Right Side (erased part) */}
+                {displayStats && (
+                    <div style={{
+                        position: 'absolute',
+                        right: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: `${100 - (displayStats.remainingYears / displayStats.expectancy * 100)}%`,
+                        background: 'rgba(0, 0, 0, 0.3)',
+                        transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                        zIndex: 1
+                    }} />
+                )}
+                
+                {/* Remaining Life - Left Side (beautiful gradient) */}
+                {displayStats && (
+                    <div style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: `${displayStats.remainingYears / displayStats.expectancy * 100}%`,
+                        background: (() => {
+                            const percentage = displayStats ? (displayStats.remainingYears / displayStats.expectancy * 100) : 0;
+                            if (percentage > 60) {
+                                return 'linear-gradient(to right, #10b981 0%, #34d399 50%, #6ee7b7 100%)'; // Green gradient
+                            } else if (percentage > 30) {
+                                return 'linear-gradient(to right, #f59e0b 0%, #fbbf24 50%, #fcd34d 100%)'; // Amber gradient
+                            } else {
+                                return 'linear-gradient(to right, #ef4444 0%, #f87171 50%, #fca5a5 100%)'; // Red gradient
+                            }
+                        })(),
+                        opacity: 0.15,
+                        transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                        zIndex: 1
+                    }} />
+                )}
+                
                 {timeComponents ? (
                     <div style={{ 
                         display: 'flex', 
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        gap: '1rem'
+                        gap: '1rem',
+                        position: 'relative',
+                        zIndex: 2
                     }}>
                         {/* First row: 残り 日 時間 分 */}
                         <div style={{ 
