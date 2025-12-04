@@ -132,7 +132,7 @@ const calculateHoursWithPerson = (person, userAge, userCountry, remainingYears) 
     return Math.max(0, totalHours);
 };
 
-const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, healthyLifeExpectancy: customHealthyLifeExpectancy, workingAgeLimit: customWorkingAgeLimit, calculationBasis, onCalculationBasisChange, onReset, isSettingsOpen, onCloseSettings, editingPersonId, onOpenSettingsWithPerson, onUpdateUserSettings, people, setPeople, stats, userSettingsRef, onParticleDrop, onSettingsClick }) => {
+const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, healthyLifeExpectancy: customHealthyLifeExpectancy, workingAgeLimit: customWorkingAgeLimit, calculationBasis, onCalculationBasisChange, onReset, isSettingsOpen, onCloseSettings, editingPersonId, onOpenSettingsWithPerson, onUpdateUserSettings, people, setPeople, stats, userSettingsRef, onParticleDrop, onSettingsClick, onNavigate }) => {
     const [visible, setVisible] = useState(false);
     const [calculatedStats, setCalculatedStats] = useState(null);
 
@@ -441,6 +441,63 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
                 )}
             </div>
 
+            {/* Navigation Buttons */}
+            {onNavigate && (
+                <>
+                    <button
+                        onClick={() => onNavigate('prev')}
+                        style={{
+                            position: 'absolute',
+                            left: '10px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            background: 'rgba(0,0,0,0.3)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            color: 'rgba(255,255,255,0.6)',
+                            fontSize: '2rem',
+                            width: '44px',
+                            height: '44px',
+                            borderRadius: '50%',
+                            cursor: 'pointer',
+                            zIndex: 100,
+                            pointerEvents: 'auto',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backdropFilter: 'blur(4px)'
+                        }}
+                        aria-label="Previous"
+                    >
+                        ‹
+                    </button>
+                    <button
+                        onClick={() => onNavigate('next')}
+                        style={{
+                            position: 'absolute',
+                            right: '10px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            background: 'rgba(0,0,0,0.3)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            color: 'rgba(255,255,255,0.6)',
+                            fontSize: '2rem',
+                            width: '44px',
+                            height: '44px',
+                            borderRadius: '50%',
+                            cursor: 'pointer',
+                            zIndex: 100,
+                            pointerEvents: 'auto',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backdropFilter: 'blur(4px)'
+                        }}
+                        aria-label="Next"
+                    >
+                        ›
+                    </button>
+                </>
+            )}
 
         </div>
     );

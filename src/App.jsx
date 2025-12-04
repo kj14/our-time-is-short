@@ -82,7 +82,7 @@ function App() {
     }
   }, [userData]);
 
-    const handleVisualize = (country, age) => {
+  const handleVisualize = (country, age) => {
     // Philosophy: Stop postponing life. Start visualizing it.
     // 思想：人生を後回しにするのをやめる。可視化から始める。
     const lifeExpectancy = lifeExpectancyData[country] || lifeExpectancyData['Global'];
@@ -134,6 +134,22 @@ function App() {
       setEditingPersonId(null);
       setIsSettingsOpen(true);
     }
+  };
+
+  const navigateTo = (direction) => {
+    // Items: [You (null), ...people]
+    const items = [null, ...people.map(p => p.id)];
+    const currentIndex = items.indexOf(visualizingPersonId);
+    
+    let nextIndex;
+    if (direction === 'next') {
+        nextIndex = (currentIndex + 1) % items.length;
+    } else {
+        nextIndex = (currentIndex - 1 + items.length) % items.length;
+    }
+    
+    const nextId = items[nextIndex];
+    setVisualizingPersonId(nextId);
   };
 
   return (
@@ -261,6 +277,7 @@ function App() {
               displayMode={personDisplayMode}
               onDisplayModeChange={setPersonDisplayMode}
               isJapan={currentCountry === 'Japan'}
+              onNavigate={navigateTo}
             />
           </div>
         ) : !isValidUser && selectedPersonId ? (
@@ -295,10 +312,10 @@ function App() {
             transition: 'opacity 0.5s ease',
             visibility: isOverviewMode ? 'hidden' : 'visible'
           }}>
-            <InputSection
-              onVisualize={handleVisualize}
-              onCountryChange={setCurrentCountry}
-            />
+          <InputSection
+            onVisualize={handleVisualize}
+            onCountryChange={setCurrentCountry}
+          />
           </div>
         ) : isDetailPageOpen ? (
           <div style={{ pointerEvents: 'auto', height: '100%' }}>
@@ -333,15 +350,15 @@ function App() {
           <div style={{ pointerEvents: 'none', width: '100%', height: '100%' }}>
              {/* Visualization wrapper is pointer-events: none to allow Earth clicks through.
                  Interactive elements like countdown-card have pointer-events: auto set in CSS. */}
-            <Visualization
-              country={userData.country}
-              age={userData.age}
+          <Visualization
+            country={userData.country}
+            age={userData.age}
               lifeExpectancy={userData.lifeExpectancy}
               healthyLifeExpectancy={userData.healthyLifeExpectancy}
               workingAgeLimit={userData.workingAgeLimit}
               calculationBasis={calculationBasis}
               onCalculationBasisChange={setCalculationBasis}
-              onReset={handleReset}
+            onReset={handleReset}
               isSettingsOpen={isSettingsOpen}
               onCloseSettings={() => {
                 setIsSettingsOpen(false);
@@ -363,7 +380,8 @@ function App() {
               stats={isValidUser ? calculateLifeStats(userData.country, userData.age, userData.lifeExpectancy) : null}
               userSettingsRef={userSettingsRef}
               onParticleDrop={(callback) => setParticleDropCallback(() => callback)}
-            />
+              onNavigate={navigateTo}
+          />
           </div>
         )}
       </main>
