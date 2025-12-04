@@ -163,7 +163,12 @@ function App() {
 
       <main className="container" style={{ position: 'relative', zIndex: 2, pointerEvents: 'none' }}>
         {!isValidUser ? (
-          <div style={{ pointerEvents: 'none' }}>
+          <div style={{ 
+            pointerEvents: 'none',
+            opacity: isOverviewMode ? 0 : 1,
+            transition: 'opacity 0.5s ease',
+            visibility: isOverviewMode ? 'hidden' : 'visible'
+          }}>
             <InputSection
               onVisualize={handleVisualize}
               onCountryChange={setCurrentCountry}
