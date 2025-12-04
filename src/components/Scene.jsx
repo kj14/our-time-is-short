@@ -88,15 +88,13 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
                     currentEarthCenter.z + starZ
                 );
                 
-                // Camera position: directly in front of the star (same distance as Earth zoom)
-                // Direction from Earth to star
-                const dirFromEarth = new THREE.Vector3(starX, 0, starZ).normalize();
-                
-                // Camera at same zoom level as You - straight in front of the star
-                targetCameraPos = starWorldPos.clone().add(
-                    dirFromEarth.clone().multiplyScalar(zoomDistance)
+                // Camera position: always in front of the star (+Z direction)
+                // This creates a smooth, consistent movement from any position
+                targetCameraPos = new THREE.Vector3(
+                    starWorldPos.x,
+                    starWorldPos.y,
+                    starWorldPos.z + zoomDistance
                 );
-                // No Y offset - camera stays at same height for straight movement
                 
                 targetLookAt = starWorldPos;
             } else {
