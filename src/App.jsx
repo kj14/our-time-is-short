@@ -107,11 +107,19 @@ function App() {
 
   const handleEarthClick = () => {
     if (isValidUser) {
-      // From visualization screen: go back to input screen (always start in zoom mode)
+      // From countdown mode: go back to You's settings mode
+      setSelectedPersonId(null);
       handleReset();
+    } else if (selectedPersonId) {
+      // From star's settings mode: go to overview mode
+      setSelectedPersonId(null);
+      setIsOverviewMode(true);
+    } else if (isOverviewMode) {
+      // From overview mode: go to You's settings mode
+      setIsOverviewMode(false);
     } else {
-      // From input screen: Toggle between overview mode (top-down view) and Earth zoom
-      setIsOverviewMode(prev => !prev);
+      // From You's settings mode: go to overview mode
+      setIsOverviewMode(true);
     }
   };
 
@@ -137,9 +145,26 @@ function App() {
         onEarthClick={handleEarthClick}
         onSunClick={handleSunClick}
         onPersonClick={(personId) => {
-          // Zoom to the person's star and show their settings
-          setSelectedPersonId(personId);
-          setIsOverviewMode(false); // Exit overview mode to zoom to star
+          if (isValidUser) {
+            // From countdown mode: go to that star's settings mode
+            setSelectedPersonId(personId);
+            handleReset(); // Go back to settings screen
+          } else if (selectedPersonId === personId) {
+            // Tapping same star in settings mode: go to overview
+            setSelectedPersonId(null);
+            setIsOverviewMode(true);
+          } else if (selectedPersonId) {
+            // From another star's settings mode: go to overview first
+            setSelectedPersonId(null);
+            setIsOverviewMode(true);
+          } else if (isOverviewMode) {
+            // From overview mode: zoom to that star's settings
+            setSelectedPersonId(personId);
+            setIsOverviewMode(false);
+          } else {
+            // From You's settings mode: go to overview
+            setIsOverviewMode(true);
+          }
         }}
         selectedPersonId={selectedPersonId}
         people={people}

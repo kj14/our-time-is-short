@@ -74,28 +74,32 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
                 const hash = selectedPerson.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
                 const angle = (hash % 360) * (Math.PI / 180);
                 
-                // Calculate distance (simplified - use default 20 for now, actual calc is complex)
-                const distance = 20; // Medium distance
+                // Calculate distance (use medium distance for simplicity)
+                const distance = 20;
                 
-                // Star position relative to Earth center
-                const starX = Math.cos(angle) * distance;
-                const starZ = Math.sin(angle) * distance;
+                // Star position relative to Earth (Y-axis rotation then X translation)
+                // After Y rotation: x = distance * cos(angle), z = -distance * sin(angle)
+                const starX = distance * Math.cos(angle);
+                const starZ = -distance * Math.sin(angle);
                 
-                // Star world position
+                // Star world position (relative to Earth center)
                 const starWorldPos = new THREE.Vector3(
                     currentEarthCenter.x + starX,
                     currentEarthCenter.y,
                     currentEarthCenter.z + starZ
                 );
                 
-                // Camera position: slightly behind and above the star, looking at it
-                const cameraOffset = new THREE.Vector3(
-                    -Math.cos(angle) * 8,
-                    5,
-                    -Math.sin(angle) * 8
-                );
+                // Camera position: in front of the star (opposite side from Earth)
+                // Direction from Earth to star
+                const dirFromEarth = new THREE.Vector3(starX, 0, starZ).normalize();
                 
-                targetCameraPos = starWorldPos.clone().add(cameraOffset);
+                // Camera slightly beyond the star, looking back at it
+                const cameraDistance = 6; // Distance from star to camera
+                targetCameraPos = starWorldPos.clone().add(
+                    dirFromEarth.clone().multiplyScalar(cameraDistance)
+                );
+                targetCameraPos.y += 3; // Slightly above
+                
                 targetLookAt = starWorldPos;
             } else {
                 // Fallback to Earth zoom
