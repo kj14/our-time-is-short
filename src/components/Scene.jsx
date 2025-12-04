@@ -6,7 +6,7 @@ import SolarSystem from './SolarSystem';
 import DigitalHourglassScene from './DigitalHourglassScene';
 
 // Scene component handling 3D transitions
-function SceneContent({ isVisualizing, isSettingsOpen, isEarthZoomed, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears }) {
+function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears }) {
     const solarSystemRef = useRef();
     const earthRef = useRef();
     const { camera } = useThree();
@@ -64,8 +64,22 @@ function SceneContent({ isVisualizing, isSettingsOpen, isEarthZoomed, targetCoun
             // Visual Mode: Camera looks at particle center, Earth is far away
             targetCameraPos = new THREE.Vector3(0, 0, 40);
             targetLookAt = PARTICLE_CENTER;
+        } else if (isOverviewMode) {
+            // Overview Mode: Top-down view to see the entire relationship map
+            // Camera positioned above and slightly offset to see depth
+            const overviewHeight = 50; // Height above Earth
+            const overviewDistance = 30; // Slight offset for better perspective
+            
+            targetCameraPos = new THREE.Vector3(
+                currentEarthCenter.x,
+                currentEarthCenter.y + overviewHeight,
+                currentEarthCenter.z + overviewDistance
+            );
+            
+            // Look at Earth center from above
+            targetLookAt = currentEarthCenter;
         } else {
-            // TOP Country Selection: Camera moves straight to Earth
+            // TOP Country Selection: Camera moves straight to Earth (zoomed in)
             // Earth rotates to show the selected country (handled in Earth.jsx)
             
             // Camera position: directly in front of Earth, along Z axis
@@ -127,7 +141,7 @@ function SceneContent({ isVisualizing, isSettingsOpen, isEarthZoomed, targetCoun
     );
 }
 
-export default function Scene({ isVisualizing, isSettingsOpen, isEarthZoomed, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears, remainingSeconds, livedSeconds }) {
+export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears, remainingSeconds, livedSeconds }) {
     const [topPulse, setTopPulse] = useState(1);
     const [currentRemainingSeconds, setCurrentRemainingSeconds] = useState(remainingSeconds || 0);
     const [currentLivedSeconds, setCurrentLivedSeconds] = useState(livedSeconds || 0);
@@ -214,7 +228,7 @@ export default function Scene({ isVisualizing, isSettingsOpen, isEarthZoomed, ta
                     <SceneContent 
                         isVisualizing={isVisualizing}
                         isSettingsOpen={isSettingsOpen}
-                        isEarthZoomed={isEarthZoomed}
+                        isOverviewMode={isOverviewMode}
                         targetCountry={targetCountry}
                         remainingPercentage={remainingPercentage}
                         onParticleDrop={handleParticleDrop}

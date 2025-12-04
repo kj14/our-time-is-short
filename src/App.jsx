@@ -51,7 +51,7 @@ function App() {
     return saved || 'percentage';
   });
   const [particleDropCallback, setParticleDropCallback] = useState(null);
-  const [isEarthZoomed, setIsEarthZoomed] = useState(false);
+  const [isOverviewMode, setIsOverviewMode] = useState(false); // True = 俯瞰視点, False = 地球ズーム
   const userSettingsRef = useRef(null);
 
   // Save to localStorage whenever people changes
@@ -103,10 +103,8 @@ function App() {
   };
 
   const handleEarthClick = () => {
-    // Earth is the country selection screen
-    // Zoom in to Earth to show the selected country
-    console.log('Earth clicked, setting isEarthZoomed to true');
-    setIsEarthZoomed(true);
+    // Toggle between overview mode (top-down view) and Earth zoom
+    setIsOverviewMode(prev => !prev);
     
     // If user is already set up, reset to input screen
     if (isValidUser) {
@@ -130,7 +128,7 @@ function App() {
       <Scene 
         isVisualizing={isValidUser && !isSettingsOpen}
         isSettingsOpen={isSettingsOpen}
-        isEarthZoomed={isEarthZoomed}
+        isOverviewMode={isOverviewMode}
         targetCountry={userData ? userData.country : currentCountry}
         remainingPercentage={userData ? ((userData.lifeExpectancy - userData.age) / userData.lifeExpectancy * 100) : 50}
         onParticleDrop={particleDropCallback}
