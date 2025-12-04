@@ -4,6 +4,7 @@ import Visualization, { UserSettings, PeopleSettings } from './components/Visual
 import DetailPage from './components/DetailPage'
 import Scene from './components/Scene'
 import PersonSettings from './components/PersonSettings'
+import PersonVisualization from './components/PersonVisualization'
 import { lifeExpectancyData, healthyLifeExpectancyData, workingAgeLimitData, calculateLifeStats } from './utils/lifeData'
 
 function App() {
@@ -55,6 +56,8 @@ function App() {
   const [isOverviewMode, setIsOverviewMode] = useState(false); // True = 俯瞰視点, False = 地球ズーム
   const [isAddingPerson, setIsAddingPerson] = useState(false); // True when adding new person
   const [selectedPersonId, setSelectedPersonId] = useState(null); // ID of person being edited (star zoomed)
+  const [visualizingPersonId, setVisualizingPersonId] = useState(null); // ID of person whose time is being visualized
+  const [personDisplayMode, setPersonDisplayMode] = useState('time'); // 'time' or 'percentage'
   const userSettingsRef = useRef(null);
 
   // Save to localStorage whenever people changes
@@ -245,6 +248,20 @@ function App() {
               isJapan={currentCountry === 'Japan'}
             />
           </div>
+        ) : !isValidUser && visualizingPersonId ? (
+          // Person visualization mode - show time together
+          <div style={{ pointerEvents: 'auto' }}>
+            <PersonVisualization
+              person={people.find(p => p.id === visualizingPersonId)}
+              displayMode={personDisplayMode}
+              onDisplayModeChange={setPersonDisplayMode}
+              onBack={() => {
+                setVisualizingPersonId(null);
+                setSelectedPersonId(visualizingPersonId);
+              }}
+              isJapan={currentCountry === 'Japan'}
+            />
+          </div>
         ) : !isValidUser && selectedPersonId ? (
           <div style={{ 
             pointerEvents: 'auto', 
@@ -263,6 +280,10 @@ function App() {
                 setSelectedPersonId(null);
               }}
               onCancel={() => setSelectedPersonId(null)}
+              onVisualize={(personId) => {
+                setVisualizingPersonId(personId);
+                setSelectedPersonId(null);
+              }}
               isJapan={currentCountry === 'Japan'}
             />
           </div>

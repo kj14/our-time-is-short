@@ -37,6 +37,7 @@ const PersonSettings = ({
     onSave, 
     onDelete, 
     onCancel,
+    onVisualize, // Callback to visualize time with this person
     isJapan = true 
 }) => {
     const [formData, setFormData] = useState({
@@ -493,6 +494,23 @@ const PersonSettings = ({
                         {person ? (isJapan ? '更新する' : 'Update') : (isJapan ? '追加する' : 'Add')}
                     </button>
                 </div>
+
+                {/* Visualize Button (only for editing existing person) */}
+                {person && onVisualize && (
+                    <button 
+                        type="button"
+                        onClick={() => onVisualize(person.id)}
+                        className="visualize-btn"
+                        style={{
+                            width: '100%',
+                            padding: '0.75rem',
+                            fontSize: '0.9rem',
+                            marginTop: '0.75rem'
+                        }}
+                    >
+                        {isJapan ? 'この人との時間を可視化' : 'Visualize time together'}
+                    </button>
+                )}
 
                 {/* Delete Button (only for editing) */}
                 {person && onDelete && (
