@@ -109,9 +109,13 @@ function App() {
   };
 
   const handleEarthClick = () => {
-    if (isValidUser) {
+    if (visualizingPersonId) {
+      // From person visualization mode: go back to countdown mode
+      setVisualizingPersonId(null);
+    } else if (isValidUser) {
       // From countdown mode: go back to You's settings mode
       setSelectedPersonId(null);
+      setVisualizingPersonId(null);
       handleReset();
     } else if (selectedPersonId) {
       // From star's settings mode: go to overview mode
@@ -148,10 +152,14 @@ function App() {
         onEarthClick={handleEarthClick}
         onSunClick={handleSunClick}
         onPersonClick={(personId) => {
-          if (isValidUser) {
+          if (visualizingPersonId) {
+            // From person visualization mode: switch to that star's visualization
+            setVisualizingPersonId(personId);
+          } else if (isValidUser) {
             // From countdown mode: go to that star's settings mode
             setSelectedPersonId(personId);
-            handleReset(); // Go back to settings screen
+            setUserData(null); // Clear user data to show settings
+            setVisualizingPersonId(null);
           } else if (selectedPersonId === personId) {
             // Tapping same star in settings mode: go to overview
             setSelectedPersonId(null);
