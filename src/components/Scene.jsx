@@ -66,14 +66,14 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
             targetLookAt = PARTICLE_CENTER;
         } else if (isOverviewMode) {
             // Overview Mode: Top-down view to see the entire relationship map
-            // Camera positioned above and slightly offset to see depth
-            const overviewHeight = 50; // Height above Earth
-            const overviewDistance = 30; // Slight offset for better perspective
+            // PersonStars can be at distance 8-65, so camera needs to be high enough
+            const overviewHeight = 100; // Height above Earth to see all stars
             
+            // Camera positioned directly above Earth, looking straight down
             targetCameraPos = new THREE.Vector3(
                 currentEarthCenter.x,
                 currentEarthCenter.y + overviewHeight,
-                currentEarthCenter.z + overviewDistance
+                currentEarthCenter.z + 5 // Slight Z offset for better angle
             );
             
             // Look at Earth center from above
@@ -106,10 +106,30 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
         camera.lookAt(currentLookAt.current);
     });
 
+    // Handle background click in overview mode to return to zoom view
+    const handleBackgroundClick = (e) => {
+        if (isOverviewMode && onEarthClick) {
+            e.stopPropagation();
+            onEarthClick();
+        }
+    };
+
     return (
         <>
             <ambientLight intensity={isVisualizing ? 0.7 : 0.2} />
             {/* Sun light is inside SolarSystem, but we need ambient */}
+            
+            {/* Invisible plane for clicking in overview mode to return */}
+            {isOverviewMode && !isVisualizing && (
+                <mesh 
+                    position={[0, 30, -50]} 
+                    rotation={[-Math.PI / 2, 0, 0]}
+                    onClick={handleBackgroundClick}
+                >
+                    <planeGeometry args={[500, 500]} />
+                    <meshBasicMaterial visible={false} />
+                </mesh>
+            )}
             
             {/* Solar System - Earth-centered with person stars */}
             {/* Position is animated in useFrame */}
