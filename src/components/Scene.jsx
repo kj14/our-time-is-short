@@ -65,6 +65,43 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
             // Visual Mode: Camera looks at particle center, Earth is far away
             targetCameraPos = new THREE.Vector3(0, 0, 40);
             targetLookAt = PARTICLE_CENTER;
+        } else if (selectedPersonId && people && people.length > 0) {
+            // Zoom to selected person's star
+            const selectedPerson = people.find(p => p.id === selectedPersonId);
+            if (selectedPerson) {
+                // Calculate the star's position (same logic as SolarSystem.jsx)
+                // Calculate angle from person.id hash
+                const hash = selectedPerson.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                const angle = (hash % 360) * (Math.PI / 180);
+                
+                // Calculate distance (simplified - use default 20 for now, actual calc is complex)
+                const distance = 20; // Medium distance
+                
+                // Star position relative to Earth center
+                const starX = Math.cos(angle) * distance;
+                const starZ = Math.sin(angle) * distance;
+                
+                // Star world position
+                const starWorldPos = new THREE.Vector3(
+                    currentEarthCenter.x + starX,
+                    currentEarthCenter.y,
+                    currentEarthCenter.z + starZ
+                );
+                
+                // Camera position: slightly behind and above the star, looking at it
+                const cameraOffset = new THREE.Vector3(
+                    -Math.cos(angle) * 8,
+                    5,
+                    -Math.sin(angle) * 8
+                );
+                
+                targetCameraPos = starWorldPos.clone().add(cameraOffset);
+                targetLookAt = starWorldPos;
+            } else {
+                // Fallback to Earth zoom
+                targetCameraPos = currentEarthCenter.clone().add(new THREE.Vector3(0, 0, zoomDistance));
+                targetLookAt = currentEarthCenter;
+            }
         } else if (isOverviewMode) {
             // Overview Mode: Top-down view to see the entire relationship map
             // PersonStars can be at distance 8-65, so camera needs to be high enough
