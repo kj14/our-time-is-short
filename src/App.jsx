@@ -57,7 +57,7 @@ function App() {
   const [isAddingPerson, setIsAddingPerson] = useState(false); // True when adding new person
   const [selectedPersonId, setSelectedPersonId] = useState(null); // ID of person being edited (star zoomed)
   const [visualizingPersonId, setVisualizingPersonId] = useState(null); // ID of person whose time is being visualized
-  const [personDisplayMode, setPersonDisplayMode] = useState('time'); // 'time' or 'percentage'
+  const [personDisplayMode, setPersonDisplayMode] = useState('percentage'); // 'time' or 'percentage'
   const userSettingsRef = useRef(null);
 
   // Save to localStorage whenever people changes

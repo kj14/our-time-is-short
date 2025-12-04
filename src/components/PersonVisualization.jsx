@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { lifeExpectancyData } from '../utils/lifeData';
 
 // Calculate age from birthdate or use direct age
@@ -32,6 +32,14 @@ const PersonVisualization = ({
     userAge = 44,
     userCountry = 'Japan'
 }) => {
+    const [visible, setVisible] = useState(false);
+    
+    // Trigger fade-in animation on mount
+    useEffect(() => {
+        const timer = setTimeout(() => setVisible(true), 50);
+        return () => clearTimeout(timer);
+    }, []);
+    
     if (!person) {
         return null;
     }
@@ -53,46 +61,42 @@ const PersonVisualization = ({
     const percentage = userRemainingHours > 0 ? (totalHours / userRemainingHours) * 100 : 0;
 
     return (
-        <div className="visualization-wrapper">
-            {/* Main Display */}
-            <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: '100vh',
-                padding: '2rem'
+        <div className={`visualization-wrapper ${visible ? 'visible' : ''}`} style={{
+            opacity: visible ? 1 : 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: visible ? 'translate(-50%, -50%)' : 'translate(-50%, -30%)',
+            zIndex: 10,
+            transition: 'opacity 0.8s ease-out, transform 0.8s ease-out'
+        }}>
+            {/* Title above card - same style as Visualization */}
+            <h1 className="app-title" style={{
+                fontSize: 'clamp(1.2rem, 3vw, 1.8rem)',
+                marginBottom: '1.5rem',
+                textAlign: 'center'
             }}>
-                {/* Person Name */}
-                <h2 style={{
-                    fontSize: '1.2rem',
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    marginBottom: '0.5rem',
-                    fontWeight: '400'
-                }}>
-                    {person.name} {isJapan ? 'との残り時間' : ' - Time Remaining'}
-                </h2>
+                {person.name} {isJapan ? 'との残り時間' : ' - Time Remaining'}
+            </h1>
 
-                {/* Card with Toggle */}
-                <div className="countdown-card" style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    backdropFilter: 'blur(20px)',
-                    borderRadius: '20px',
-                    padding: '2rem',
-                    textAlign: 'center',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    position: 'relative',
-                    minWidth: '300px',
-                    pointerEvents: 'auto'
-                }}>
-                    {/* Settings Button - Top Left */}
+            {/* Card with Toggle - same style as Visualization */}
+            <div className="countdown-card" style={{
+                position: 'relative',
+                overflow: 'hidden'
+            }}>
+                    {/* Settings Button - Top Left (same style as Visualization) */}
                     {onSettingsClick && (
                         <button
                             onClick={onSettingsClick}
                             style={{
                                 position: 'absolute',
-                                top: '0.75rem',
-                                left: '0.75rem',
+                                top: '0.5rem',
+                                left: '0.5rem',
                                 width: '32px',
                                 height: '32px',
                                 borderRadius: '50%',
@@ -105,7 +109,8 @@ const PersonVisualization = ({
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 zIndex: 3,
-                                transition: 'all 0.2s ease'
+                                transition: 'all 0.2s ease',
+                                pointerEvents: 'auto'
                             }}
                             onMouseEnter={(e) => {
                                 e.target.style.background = 'rgba(255, 255, 255, 0.2)';
@@ -123,12 +128,13 @@ const PersonVisualization = ({
                     {/* Display Mode Toggle - Top Right of Card */}
                     <div style={{
                         position: 'absolute',
-                        top: '0.75rem',
-                        right: '0.75rem',
+                        top: '0.5rem',
+                        right: '0.5rem',
                         display: 'flex',
                         background: 'rgba(255, 255, 255, 0.1)',
                         borderRadius: '6px',
-                        padding: '3px'
+                        padding: '3px',
+                        zIndex: 3
                     }}>
                         <button
                             onClick={() => onDisplayModeChange('time')}
@@ -140,6 +146,7 @@ const PersonVisualization = ({
                                 color: 'white',
                                 cursor: 'pointer',
                                 fontSize: '0.7rem',
+                                fontFamily: 'var(--font-mono)',
                                 transition: 'background 0.2s'
                             }}
                         >
@@ -155,6 +162,7 @@ const PersonVisualization = ({
                                 color: 'white',
                                 cursor: 'pointer',
                                 fontSize: '0.7rem',
+                                fontFamily: 'var(--font-mono)',
                                 transition: 'background 0.2s'
                             }}
                         >
@@ -162,130 +170,155 @@ const PersonVisualization = ({
                         </button>
                     </div>
 
-                {displayMode === 'time' ? (
-                    /* Time Display */
-                    <>
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'center',
-                            gap: '2rem',
-                            flexWrap: 'wrap',
-                            marginTop: '1rem'
-                        }}>
-                            <div>
-                                <div style={{
-                                    fontSize: '3rem',
-                                    fontWeight: '700',
-                                    color: '#3b82f6',
-                                    fontFamily: 'var(--font-mono)'
-                                }}>
-                                    {Math.round(totalHours).toLocaleString()}
-                                </div>
-                                <div style={{
-                                    fontSize: '0.9rem',
-                                    color: 'rgba(255, 255, 255, 0.6)'
-                                }}>
-                                    {isJapan ? '時間' : 'hours'}
-                                </div>
-                            </div>
-                            <div>
-                                <div style={{
-                                    fontSize: '3rem',
-                                    fontWeight: '700',
-                                    color: '#8b5cf6',
-                                    fontFamily: 'var(--font-mono)'
-                                }}>
-                                    {Math.round(totalMeetings).toLocaleString()}
-                                </div>
-                                <div style={{
-                                    fontSize: '0.9rem',
-                                    color: 'rgba(255, 255, 255, 0.6)'
-                                }}>
-                                    {isJapan ? '回' : 'times'}
-                                </div>
-                            </div>
-                            <div>
-                                <div style={{
-                                    fontSize: '3rem',
-                                    fontWeight: '700',
-                                    color: '#10b981',
-                                    fontFamily: 'var(--font-mono)'
-                                }}>
-                                    {totalDays.toFixed(1)}
-                                </div>
-                                <div style={{
-                                    fontSize: '0.9rem',
-                                    color: 'rgba(255, 255, 255, 0.6)'
-                                }}>
-                                    {isJapan ? '日' : 'days'}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        {/* Sub info */}
-                        <div style={{
-                            marginTop: '1.5rem',
-                            fontSize: '0.85rem',
-                            color: 'rgba(255, 255, 255, 0.5)'
-                        }}>
-                            {isJapan 
-                                ? `${person.meetingFrequency >= 12 ? '月' + Math.round(person.meetingFrequency / 12) + '回' : '年' + person.meetingFrequency + '回'} × ${person.hoursPerMeeting}時間`
-                                : `${person.meetingFrequency}x/year × ${person.hoursPerMeeting}h`
-                            }
-                        </div>
-                    </>
-                ) : (
-                    /* Percentage Display */
-                    <div style={{ marginTop: '1rem' }}>
-                        <div style={{
-                            fontSize: '4rem',
-                            fontWeight: '700',
-                            background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            backgroundClip: 'text',
-                            fontFamily: 'var(--font-mono)'
-                        }}>
-                            {percentage.toFixed(2)}%
-                        </div>
-                        <div style={{
-                            fontSize: '0.9rem',
-                            color: 'rgba(255, 255, 255, 0.6)',
-                            marginTop: '0.5rem'
-                        }}>
-                            {isJapan ? 'あなたの残り人生のうち' : 'of your remaining life'}
-                        </div>
-                        
-                        {/* Visual bar */}
-                        <div style={{
-                            marginTop: '1.5rem',
-                            width: '100%',
-                            height: '12px',
-                            background: 'rgba(255, 255, 255, 0.1)',
-                            borderRadius: '6px',
-                            overflow: 'hidden'
-                        }}>
-                            <div style={{
-                                width: `${Math.min(percentage, 100)}%`,
-                                height: '100%',
-                                background: 'linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%)',
-                                borderRadius: '6px',
-                                transition: 'width 0.5s ease'
-                            }} />
-                        </div>
-                        
-                        {/* Hours equivalent */}
-                        <div style={{
-                            marginTop: '1rem',
-                            fontSize: '0.85rem',
-                            color: 'rgba(255, 255, 255, 0.5)'
-                        }}>
-                            = {Math.round(totalHours).toLocaleString()} {isJapan ? '時間' : 'hours'}
-                        </div>
+                    {/* Percentage Display - Bottom Left (same as Visualization) */}
+                    <div style={{
+                        position: 'absolute',
+                        bottom: '0.5rem',
+                        left: '0.5rem',
+                        fontSize: '0.75rem',
+                        fontWeight: 500,
+                        color: 'rgba(255, 255, 255, 0.6)',
+                        zIndex: 3,
+                        fontFamily: 'var(--font-mono)',
+                        letterSpacing: '0.05em'
+                    }}>
+                        {percentage.toFixed(2)}%
                     </div>
-                )}
+
+                    {/* Content wrapper with padding for buttons */}
+                    <div style={{
+                        position: 'relative',
+                        zIndex: 2,
+                        paddingTop: '0.5rem'
+                    }}>
+                        {displayMode === 'time' ? (
+                            /* Time Display */
+                            <>
+                                <div style={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    gap: '1.5rem',
+                                    flexWrap: 'wrap',
+                                    marginTop: '0.5rem'
+                                }}>
+                                    <div>
+                                        <div style={{
+                                            fontSize: 'clamp(2rem, 5vw, 3rem)',
+                                            fontWeight: '200',
+                                            color: '#3b82f6',
+                                            fontFamily: 'var(--font-mono)',
+                                            lineHeight: 1
+                                        }}>
+                                            {Math.round(totalHours).toLocaleString()}
+                                        </div>
+                                        <div style={{
+                                            fontSize: 'clamp(0.6rem, 1.5vw, 0.8rem)',
+                                            color: 'rgba(255, 255, 255, 0.5)',
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.2em',
+                                            marginTop: '0.25rem'
+                                        }}>
+                                            {isJapan ? '時間' : 'hours'}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div style={{
+                                            fontSize: 'clamp(2rem, 5vw, 3rem)',
+                                            fontWeight: '200',
+                                            color: '#8b5cf6',
+                                            fontFamily: 'var(--font-mono)',
+                                            lineHeight: 1
+                                        }}>
+                                            {Math.round(totalMeetings).toLocaleString()}
+                                        </div>
+                                        <div style={{
+                                            fontSize: 'clamp(0.6rem, 1.5vw, 0.8rem)',
+                                            color: 'rgba(255, 255, 255, 0.5)',
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.2em',
+                                            marginTop: '0.25rem'
+                                        }}>
+                                            {isJapan ? '回' : 'times'}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div style={{
+                                            fontSize: 'clamp(2rem, 5vw, 3rem)',
+                                            fontWeight: '200',
+                                            color: '#10b981',
+                                            fontFamily: 'var(--font-mono)',
+                                            lineHeight: 1
+                                        }}>
+                                            {totalDays.toFixed(1)}
+                                        </div>
+                                        <div style={{
+                                            fontSize: 'clamp(0.6rem, 1.5vw, 0.8rem)',
+                                            color: 'rgba(255, 255, 255, 0.5)',
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.2em',
+                                            marginTop: '0.25rem'
+                                        }}>
+                                            {isJapan ? '日' : 'days'}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* Sub info */}
+                                <div style={{
+                                    marginTop: '1rem',
+                                    fontSize: 'clamp(0.7rem, 1.5vw, 0.85rem)',
+                                    color: 'rgba(255, 255, 255, 0.4)',
+                                    fontFamily: 'var(--font-mono)'
+                                }}>
+                                    {isJapan 
+                                        ? `${person.meetingFrequency >= 12 ? '月' + Math.round(person.meetingFrequency / 12) + '回' : '年' + person.meetingFrequency + '回'} × ${person.hoursPerMeeting}時間`
+                                        : `${person.meetingFrequency}x/year × ${person.hoursPerMeeting}h`
+                                    }
+                                </div>
+                            </>
+                        ) : (
+                            /* Percentage Display - Large centered percentage */
+                            <div style={{ 
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: '1rem 0'
+                            }}>
+                                <div style={{
+                                    fontSize: 'clamp(3rem, 8vw, 5rem)',
+                                    fontWeight: '200',
+                                    background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    backgroundClip: 'text',
+                                    fontFamily: 'var(--font-mono)',
+                                    lineHeight: 1,
+                                    textShadow: '0 0 30px rgba(59, 130, 246, 0.3)'
+                                }}>
+                                    {percentage.toFixed(2)}%
+                                </div>
+                                <div style={{
+                                    fontSize: 'clamp(0.7rem, 1.5vw, 0.9rem)',
+                                    color: 'rgba(255, 255, 255, 0.5)',
+                                    marginTop: '0.75rem'
+                                }}>
+                                    {isJapan ? 'あなたの残り人生のうち' : 'of your remaining life'}
+                                </div>
+                                
+                                {/* Hours equivalent */}
+                                <div style={{
+                                    marginTop: '1rem',
+                                    fontSize: 'clamp(0.7rem, 1.5vw, 0.85rem)',
+                                    color: 'rgba(255, 255, 255, 0.4)',
+                                    fontFamily: 'var(--font-mono)'
+                                }}>
+                                    = {Math.round(totalHours).toLocaleString()} {isJapan ? '時間' : 'hours'}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </div>
         </div>
     );
 };
