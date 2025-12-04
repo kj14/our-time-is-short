@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import InputSection from './components/InputSection'
 import Visualization, { UserSettings, PeopleSettings } from './components/Visualization'
 import DetailPage from './components/DetailPage'
-import Earth3D from './components/Earth3D'
-import DigitalHourglass from './components/DigitalHourglass'
+import Scene from './components/Scene'
 import { lifeExpectancyData, healthyLifeExpectancyData, workingAgeLimitData, calculateLifeStats } from './utils/lifeData'
 
 function App() {
@@ -97,22 +96,20 @@ function App() {
 
   const handleReset = () => {
     setUserData(null);
+    setIsDetailPageOpen(false);
+    setIsSettingsOpen(false);
   };
 
   return (
     <div className="app-container">
-      {/* 3D Backgrounds */}
-      {!isValidUser ? (
-        <Earth3D targetCountry={currentCountry} />
-      ) : (
-        <DigitalHourglass
-          remainingPercentage={userData ? ((userData.lifeExpectancy - userData.age) / userData.lifeExpectancy * 100) : 50}
-          livedSeconds={userData ? Math.floor(userData.age * 365.25 * 24 * 60 * 60) : 0}
-          remainingSeconds={userData ? Math.floor((userData.lifeExpectancy - userData.age) * 365.25 * 24 * 60 * 60) : 0}
-          onParticleDrop={particleDropCallback}
-          country={userData ? userData.country : currentCountry}
-        />
-      )}
+      {/* Integrated 3D Scene */}
+      <Scene 
+        isVisualizing={isValidUser}
+        targetCountry={userData ? userData.country : currentCountry}
+        remainingPercentage={userData ? ((userData.lifeExpectancy - userData.age) / userData.lifeExpectancy * 100) : 50}
+        onParticleDrop={particleDropCallback}
+        onEarthClick={isValidUser ? handleReset : undefined}
+      />
 
       <header className="container fade-in app-header">
         {isValidUser && (
@@ -134,70 +131,81 @@ function App() {
         </div>
       </header>
 
-      <main className="container" style={{ position: 'relative', zIndex: 2 }}>
+      <main className="container" style={{ position: 'relative', zIndex: 2, pointerEvents: 'none' }}>
         {!isValidUser ? (
-          <InputSection
-            onVisualize={handleVisualize}
-            onCountryChange={setCurrentCountry}
-          />
+          <div style={{ pointerEvents: 'auto' }}>
+            <InputSection
+              onVisualize={handleVisualize}
+              onCountryChange={setCurrentCountry}
+            />
+          </div>
         ) : isDetailPageOpen ? (
-          <DetailPage
-            country={userData.country}
-            age={userData.age}
-            lifeExpectancy={userData.lifeExpectancy}
-            healthyLifeExpectancy={userData.healthyLifeExpectancy}
-            workingAgeLimit={userData.workingAgeLimit}
-            calculationBasis={calculationBasis}
-            onCalculationBasisChange={setCalculationBasis}
-            onReset={() => {
-              setIsDetailPageOpen(false);
-              handleReset();
-            }}
-            onOpenSettingsWithPerson={(personId) => {
-              if (personId === 'user-settings') {
-                setEditingPersonId(null);
-              } else {
-                setEditingPersonId(personId);
-              }
-              setIsDetailPageOpen(false);
-              setIsSettingsOpen(true);
-            }}
-            people={people}
-            displayMode={displayMode}
-            onDisplayModeChange={setDisplayMode}
-            onBack={() => setIsDetailPageOpen(false)}
-          />
+          <div style={{ pointerEvents: 'auto', height: '100%' }}>
+            <DetailPage
+              country={userData.country}
+              age={userData.age}
+              lifeExpectancy={userData.lifeExpectancy}
+              healthyLifeExpectancy={userData.healthyLifeExpectancy}
+              workingAgeLimit={userData.workingAgeLimit}
+              calculationBasis={calculationBasis}
+              onCalculationBasisChange={setCalculationBasis}
+              onReset={() => {
+                setIsDetailPageOpen(false);
+                handleReset();
+              }}
+              onOpenSettingsWithPerson={(personId) => {
+                if (personId === 'user-settings') {
+                  setEditingPersonId(null);
+                } else {
+                  setEditingPersonId(personId);
+                }
+                setIsDetailPageOpen(false);
+                setIsSettingsOpen(true);
+              }}
+              people={people}
+              displayMode={displayMode}
+              onDisplayModeChange={setDisplayMode}
+              onBack={() => setIsDetailPageOpen(false)}
+            />
+          </div>
         ) : (
-          <Visualization
-            country={userData.country}
-            age={userData.age}
-            lifeExpectancy={userData.lifeExpectancy}
-            healthyLifeExpectancy={userData.healthyLifeExpectancy}
-            workingAgeLimit={userData.workingAgeLimit}
-            calculationBasis={calculationBasis}
-            onCalculationBasisChange={setCalculationBasis}
-            onReset={handleReset}
-            isSettingsOpen={isSettingsOpen}
-            onCloseSettings={() => {
-              setIsSettingsOpen(false);
-              setEditingPersonId(null);
-            }}
-            editingPersonId={editingPersonId}
-            onOpenSettingsWithPerson={(personId) => {
-              if (personId === 'user-settings') {
+          <div style={{ pointerEvents: 'auto', width: '100%', height: '100%' }}>
+             {/* Visualization needs pointerEvents: auto for interactive elements, 
+                 but we might want clicks to pass through for Earth.
+                 However, Visualization has settings buttons etc. 
+                 Let's handle it by making only interactive parts auto in Visualization.jsx
+                 For now, wrap it in auto. */}
+            <Visualization
+              country={userData.country}
+              age={userData.age}
+              lifeExpectancy={userData.lifeExpectancy}
+              healthyLifeExpectancy={userData.healthyLifeExpectancy}
+              workingAgeLimit={userData.workingAgeLimit}
+              calculationBasis={calculationBasis}
+              onCalculationBasisChange={setCalculationBasis}
+              onReset={handleReset}
+              isSettingsOpen={isSettingsOpen}
+              onCloseSettings={() => {
+                setIsSettingsOpen(false);
                 setEditingPersonId(null);
-              } else {
-                setEditingPersonId(personId);
-              }
-              setIsSettingsOpen(true);
-            }}
-            onUpdateUserSettings={handleUpdateUserSettings}
-            people={people}
-            setPeople={setPeople}
-            stats={isValidUser ? calculateLifeStats(userData.country, userData.age, userData.lifeExpectancy) : null}
-            userSettingsRef={userSettingsRef}
-            onParticleDrop={(callback) => setParticleDropCallback(() => callback)}
-          />
+              }}
+              editingPersonId={editingPersonId}
+              onOpenSettingsWithPerson={(personId) => {
+                if (personId === 'user-settings') {
+                  setEditingPersonId(null);
+                } else {
+                  setEditingPersonId(personId);
+                }
+                setIsSettingsOpen(true);
+              }}
+              onUpdateUserSettings={handleUpdateUserSettings}
+              people={people}
+              setPeople={setPeople}
+              stats={isValidUser ? calculateLifeStats(userData.country, userData.age, userData.lifeExpectancy) : null}
+              userSettingsRef={userSettingsRef}
+              onParticleDrop={(callback) => setParticleDropCallback(() => callback)}
+            />
+          </div>
         )}
       </main>
 
@@ -221,8 +229,8 @@ function App() {
                 <div ref={userSettingsRef}>
                   <UserSettings
                     lifeExpectancy={userData.lifeExpectancy || lifeExpectancyData[userData.country] || lifeExpectancyData['Global']}
-                    healthyLifeExpectancy={userData.healthyLifeExpectancy || healthyLifeExpectancyData[userData.country] || healthyLifeExpectancyData['Global']}
-                    workingAgeLimit={userData.workingAgeLimit || workingAgeLimitData[userData.country] || workingAgeLimitData['Global']}
+                    healthyLifeExpectancy={userData.country === 'Japan' ? healthyLifeExpectancyData['Japan'] : healthyLifeExpectancyData['Global']}
+                    workingAgeLimit={userData.country === 'Japan' ? workingAgeLimitData['Japan'] : workingAgeLimitData['Global']}
                     calculationBasis={calculationBasis}
                     onCalculationBasisChange={setCalculationBasis}
                     onUpdate={handleUpdateUserSettings}
@@ -243,8 +251,6 @@ function App() {
                     setEditingPersonId(null);
                   }}
                 />
-                
-                {/* Detail Page Link */}
                 <div style={{ 
                   marginTop: '2rem', 
                   paddingTop: '2rem', 

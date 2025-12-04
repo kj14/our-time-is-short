@@ -285,6 +285,7 @@ main.container {
   transition: opacity 0.8s ease-out, transform 0.8s ease-out;
   box-sizing: border-box;
   padding: 1rem;
+  pointer-events: none;
 }
 
 .countdown-card {
@@ -304,6 +305,7 @@ main.container {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  pointer-events: auto;
 }
 
 .primary-actions {

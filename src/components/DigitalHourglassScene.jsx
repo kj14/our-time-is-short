@@ -1,5 +1,5 @@
 import React, { useRef, useMemo, Suspense, useState, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Stars } from '@react-three/drei';
 import { countryCoordinates } from '../utils/lifeData';
@@ -456,100 +456,18 @@ function MaxCapacityGuide() {
     );
 }
 
-export default function DigitalHourglass({ remainingPercentage = 50, livedSeconds: initialLivedSeconds = 0, remainingSeconds: initialRemainingSeconds = 0, onParticleDrop, country = 'Japan' }) {
-  const [topPulse, setTopPulse] = useState(1); // Top right pulse (remaining seconds)
-  const [currentRemainingSeconds, setCurrentRemainingSeconds] = useState(initialRemainingSeconds);
-  const [currentLivedSeconds, setCurrentLivedSeconds] = useState(initialLivedSeconds);
-  
-  // Update initial values when props change
-  useEffect(() => {
-    setCurrentRemainingSeconds(initialRemainingSeconds);
-    setCurrentLivedSeconds(initialLivedSeconds);
-  }, [initialRemainingSeconds, initialLivedSeconds]);
-  
-  // Handle particle drop - update seconds when particle drops and notify parent
+export default function DigitalHourglassScene({ remainingPercentage = 50, onParticleDrop, country = 'Japan' }) {
   const handleParticleDrop = () => {
-    // Update seconds when particle drops
-    setCurrentRemainingSeconds(prev => Math.max(0, prev - 1));
-    setCurrentLivedSeconds(prev => prev + 1);
-    
-    // Notify parent component (Visualization) to synchronize counter blink
     if (onParticleDrop) {
       onParticleDrop();
     }
-    
-    // Top right: pulse synchronized with particle drop
-    setTopPulse(1.05); // First beat
-    setTimeout(() => {
-      setTopPulse(1);
-      setTimeout(() => {
-        setTopPulse(1.03); // Second beat
-        setTimeout(() => {
-          setTopPulse(1);
-        }, 100);
-      }, 150);
-    }, 120);
-  };
-  
-  const formatSeconds = (seconds) => {
-    return new Intl.NumberFormat().format(Math.max(0, Math.floor(seconds)));
   };
   
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      zIndex: 0,
-      pointerEvents: 'none',
-      // Beautiful cosmic background - deep space with nebula colors
-      background: 'radial-gradient(ellipse at top, #1e1b4b 0%, #312e81 25%, #1e1b4b 50%, #0f172a 100%)',
-      backgroundImage: `
-        radial-gradient(ellipse at 20% 30%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 70%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 70%)
-      `
-    }}>
-      <Canvas camera={{ position: [0, 0, 40], fov: 45 }}>
-        <fog attach="fog" args={['#0f172a', 35, 65]} />
-        <ambientLight intensity={0.5} />
-        <Suspense fallback={null}>
-           <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
-           <Moon country={country} />
-           <DelicateSnowParticles remainingPercentage={remainingPercentage} onDrop={handleParticleDrop} />
-           <MaxCapacityGuide />
-        </Suspense>
-      </Canvas>
-      
-      {/* Top Right - Remaining Seconds (Heartbeat pulse every 1 second) */}
-      <div style={{
-        position: 'absolute',
-        top: '1rem',
-        right: '1rem',
-        fontSize: '0.75rem',
-        color: 'rgba(255, 255, 255, 0.6)',
-        fontFamily: 'monospace',
-        transform: `scale(${topPulse})`,
-        transition: 'transform 0.12s ease-in-out',
-        textShadow: '0 0 10px rgba(255, 255, 255, 0.3)'
-      }}>
-        {formatSeconds(currentRemainingSeconds)}
-      </div>
-      
-      {/* Bottom Right - Used Seconds (No animation, just numbers) */}
-      <div style={{
-        position: 'absolute',
-        bottom: '1rem',
-        right: '1rem',
-        fontSize: '0.75rem',
-        color: 'rgba(255, 255, 255, 0.6)',
-        fontFamily: 'monospace',
-        textShadow: '0 0 10px rgba(255, 255, 255, 0.3)'
-      }}>
-        {formatSeconds(currentLivedSeconds)}
-      </div>
-    </div>
+    <group>
+       <Moon country={country} />
+       <DelicateSnowParticles remainingPercentage={remainingPercentage} onDrop={handleParticleDrop} />
+       <MaxCapacityGuide />
+    </group>
   );
 }

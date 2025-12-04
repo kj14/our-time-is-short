@@ -1,0 +1,94 @@
+import React, { useRef, useEffect } from 'react';
+import { useFrame, useLoader } from '@react-three/fiber';
+import * as THREE from 'three';
+import { countryCoordinates } from '../utils/lifeData';
+
+export default function Earth({ targetCountry, onClick, onPointerOver, onPointerOut }) {
+    const earthRef = useRef();
+    const cloudsRef = useRef();
+    const targetRotation = useRef(new THREE.Quaternion());
+
+    // Load textures
+    const [colorMap, specularMap, cloudsMap] = useLoader(THREE.TextureLoader, [
+        'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg',
+        'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_specular_2048.jpg',
+        'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_clouds_1024.png'
+    ]);
+
+    useEffect(() => {
+        if (targetCountry && countryCoordinates[targetCountry]) {
+            const { lat, lng } = countryCoordinates[targetCountry];
+            const latRad = lat * (Math.PI / 180);
+            const lngRad = lng * (Math.PI / 180);
+
+            const finalEuler = new THREE.Euler(
+                -latRad, // Inverted latitude rotation
+                -lngRad - Math.PI / 2,
+                0,
+                'YXZ'
+            );
+
+            // Create quaternion from euler
+            const q = new THREE.Quaternion().setFromEuler(finalEuler);
+            targetRotation.current.copy(q);
+        }
+    }, [targetCountry]);
+
+    useFrame((state, delta) => {
+        if (earthRef.current) {
+            // Smoothly interpolate current rotation to target rotation
+            earthRef.current.quaternion.slerp(targetRotation.current, 2 * delta);
+
+            // Rotate clouds slightly faster/independent
+            if (cloudsRef.current) {
+                cloudsRef.current.rotation.y += 0.0005;
+            }
+        }
+    });
+
+    return (
+        <group 
+            onClick={onClick} 
+            onPointerOver={() => {
+                document.body.style.cursor = 'pointer';
+                if (onPointerOver) onPointerOver();
+            }} 
+            onPointerOut={() => {
+                document.body.style.cursor = 'auto';
+                if (onPointerOut) onPointerOut();
+            }}
+        >
+            <mesh ref={earthRef}>
+                <sphereGeometry args={[2, 64, 64]} />
+                <meshPhongMaterial 
+                    map={colorMap}
+                    specularMap={specularMap}
+                    specular={new THREE.Color('grey')}
+                    shininess={10}
+                />
+            </mesh>
+            <mesh ref={cloudsRef}>
+                <sphereGeometry args={[2.02, 64, 64]} />
+                <meshPhongMaterial 
+                    map={cloudsMap}
+                    transparent={true}
+                    opacity={0.8}
+                    side={THREE.DoubleSide}
+                    blending={THREE.AdditiveBlending}
+                    depthWrite={false}
+                />
+            </mesh>
+            {/* Atmosphere Glow */}
+            <mesh scale={[2.1, 2.1, 2.1]}>
+                <sphereGeometry args={[1, 64, 64]} />
+                <meshPhongMaterial
+                    color="#3b82f6"
+                    transparent={true}
+                    opacity={0.1}
+                    side={THREE.BackSide}
+                    blending={THREE.AdditiveBlending}
+                />
+            </mesh>
+        </group>
+    );
+}

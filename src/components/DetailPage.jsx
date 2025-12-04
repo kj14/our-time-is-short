@@ -152,7 +152,8 @@ const DetailPage = ({
     onOpenSettingsWithPerson,
     people,
     displayMode: externalDisplayMode,
-    onDisplayModeChange
+    onDisplayModeChange,
+    onBack
 }) => {
     const [displayMode, setDisplayMode] = useState(() => {
         const saved = localStorage.getItem('lifevis_displayMode');
@@ -561,17 +562,33 @@ const DetailPage = ({
                 </div>
             )}
 
-            <div className="primary-actions">
+            <div className="primary-actions" style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '1rem',
+                marginTop: '3rem',
+                marginBottom: '3rem'
+            }}>
                 {onBack && (
-                    <button className="outline-button" onClick={onBack} style={{ marginBottom: '1rem' }}>
+                    <button className="outline-button" onClick={onBack} style={{ 
+                        width: '100%',
+                        maxWidth: '300px'
+                    }}>
                         {country === 'Japan' ? 'メイン画面に戻る' : 'Back to Main'}
                     </button>
                 )}
-                <button className="share-button share-x" onClick={handleShareToX} disabled={isCapturing}>
+                <button className="share-button share-x" onClick={handleShareToX} disabled={isCapturing} style={{
+                    width: '100%',
+                    maxWidth: '300px'
+                }}>
                     <span className="share-icon">𝕏</span>
                     <span>{shareButtonLabel}</span>
                 </button>
-                <button className="outline-button" onClick={onReset}>
+                <button className="outline-button" onClick={onReset} style={{
+                    width: '100%',
+                    maxWidth: '300px'
+                }}>
                     {t.startOver}
                 </button>
             </div>
