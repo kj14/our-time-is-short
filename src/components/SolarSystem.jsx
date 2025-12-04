@@ -143,6 +143,12 @@ const PersonStar = ({ person, distance, radius, textureUrl, onClick, zoneColor, 
                        document.body.style.cursor = 'auto';
                    }}
             >
+                {/* Invisible Hit Sphere for easier tapping on mobile */}
+                <mesh visible={false} onClick={(e) => { e.stopPropagation(); if(onClick) onClick(person.id); }} onPointerDown={(e) => { e.stopPropagation(); if(onClick) onClick(person.id); }}>
+                    <sphereGeometry args={[Math.max(radius * 2.5, 2), 16, 16]} />
+                    <meshBasicMaterial />
+                </mesh>
+
                 {/* Red outline - visible when this star is being visualized */}
                 {isGlowing && (
                     <mesh ref={glowRef} frustumCulled={false}>
@@ -177,18 +183,23 @@ const PersonStar = ({ person, distance, radius, textureUrl, onClick, zoneColor, 
                     position={[0, radius + 0.5, 0]}
                     center
                     style={{
-                        pointerEvents: 'none',
-                        userSelect: 'none'
+                        pointerEvents: 'auto',
+                        userSelect: 'none',
+                        cursor: 'pointer'
                     }}
                 >
-                    <div style={{
-                        color: 'white',
-                        fontSize: '0.8rem',
-                        fontWeight: '600',
-                        textShadow: '0 0 10px rgba(0,0,0,0.8), 0 0 5px rgba(0,0,0,0.8)',
-                        whiteSpace: 'nowrap',
-                        transform: 'translateY(-50%)'
-                    }}>
+                    <div 
+                        onClick={(e) => { e.stopPropagation(); if(onClick) onClick(person.id); }}
+                        style={{
+                            color: 'white',
+                            fontSize: '0.8rem',
+                            fontWeight: '600',
+                            textShadow: '0 0 10px rgba(0,0,0,0.8), 0 0 5px rgba(0,0,0,0.8)',
+                            whiteSpace: 'nowrap',
+                            transform: 'translateY(-50%)',
+                            padding: '10px'
+                        }}
+                    >
                         {person.name}
                     </div>
                 </Html>
@@ -202,7 +213,7 @@ const OrbitZoneCircle = ({ distance, color, label }) => {
     return (
         <group>
             {/* Orbit Ring */}
-            <mesh rotation={[-Math.PI/2, 0, 0]} frustumCulled={false}>
+            <mesh rotation={[-Math.PI/2, 0, 0]} frustumCulled={false} raycast={() => null}>
                 <ringGeometry args={[distance - 0.1, distance + 0.1, 128]} />
                 <meshBasicMaterial color={color} opacity={0.1} transparent side={THREE.DoubleSide} />
             </mesh>
@@ -241,6 +252,12 @@ const EarthWrapper = forwardRef(({ targetCountry, onClick, isGlowing }, ref) => 
     
     return (
         <group ref={groupRef}>
+            {/* Invisible Hit Sphere for easier tapping on mobile */}
+            <mesh visible={false} onClick={onClick} onPointerDown={(e) => { e.stopPropagation(); if(onClick) onClick(e); }}>
+                <sphereGeometry args={[3.0, 16, 16]} />
+                <meshBasicMaterial />
+            </mesh>
+
             {/* Red outline - visible when You (Earth) is being visualized */}
             {isGlowing && (
                 <mesh ref={glowRef} frustumCulled={false}>
@@ -258,18 +275,23 @@ const EarthWrapper = forwardRef(({ targetCountry, onClick, isGlowing }, ref) => 
                 position={[0, 2.5, 0]}
                 center
                 style={{
-                    pointerEvents: 'none',
-                    userSelect: 'none'
+                    pointerEvents: 'auto',
+                    userSelect: 'none',
+                    cursor: 'pointer'
                 }}
             >
-                <div style={{
-                    color: 'white',
-                    fontSize: '1rem',
-                    fontWeight: '700',
-                    textShadow: '0 0 15px rgba(59,130,246,0.8), 0 0 10px rgba(0,0,0,0.8)',
-                    whiteSpace: 'nowrap',
-                    transform: 'translateY(-50%)'
-                }}>
+                <div 
+                    onClick={(e) => { e.stopPropagation(); if(onClick) onClick(e); }}
+                    style={{
+                        color: 'white',
+                        fontSize: '1rem',
+                        fontWeight: '700',
+                        textShadow: '0 0 15px rgba(59,130,246,0.8), 0 0 10px rgba(0,0,0,0.8)',
+                        whiteSpace: 'nowrap',
+                        transform: 'translateY(-50%)',
+                        padding: '10px' // Increase hit area
+                    }}
+                >
                     You
                 </div>
             </Html>
