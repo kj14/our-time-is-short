@@ -41,10 +41,11 @@ const calculateAge = (person) => {
 // Zone 1 (Closest - Critical): < 24 hours OR < 10 meetings
 // Zone 2 (Middle - Warning): < 100 hours OR < 50 meetings  
 // Zone 3 (Outer - Stable): >= 100 hours AND >= 50 meetings
+// Distances adjusted to fit within 2/3 of screen in overview mode
 const ORBIT_ZONES = {
-    critical: { distance: 10, color: '#ef4444' },   // Red - urgent
-    warning: { distance: 22, color: '#f59e0b' },    // Amber - attention needed
-    stable: { distance: 38, color: '#10b981' }      // Green - healthy relationship
+    critical: { distance: 6, color: '#ef4444' },    // Red - urgent
+    warning: { distance: 12, color: '#f59e0b' },    // Amber - attention needed
+    stable: { distance: 20, color: '#10b981' }      // Green - healthy relationship
 };
 
 // Calculate shared hours and meetings with a person

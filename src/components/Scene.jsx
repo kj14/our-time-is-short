@@ -75,7 +75,7 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
                 const angle = (hash % 360) * (Math.PI / 180);
                 
                 // Calculate distance based on orbit zone (same as SolarSystem.jsx)
-                // Zone distances: critical=10, warning=22, stable=38
+                // Zone distances: critical=6, warning=12, stable=20
                 const getPersonDistance = () => {
                     const personAge = selectedPerson.age || 30;
                     const effectiveUserAge = userAge || 44;
@@ -89,9 +89,9 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
                     const meetings = effectiveYears * (selectedPerson.meetingFrequency || 12);
                     const hours = meetings * (selectedPerson.hoursPerMeeting || 2);
                     
-                    if (hours < 24 || meetings < 10) return 10;      // critical
-                    if (hours < 100 || meetings < 50) return 22;     // warning
-                    return 38;                                        // stable
+                    if (hours < 24 || meetings < 10) return 6;       // critical
+                    if (hours < 100 || meetings < 50) return 12;     // warning
+                    return 20;                                        // stable
                 };
                 
                 const distance = getPersonDistance();
@@ -123,14 +123,14 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
             }
         } else if (isOverviewMode) {
             // Overview Mode: Top-down view to see the entire relationship map
-            // PersonStars can be at distance 8-65, so camera needs to be high enough
-            const overviewHeight = 80; // Height above Earth to see all stars
+            // PersonStars can be at distance 6-20, adjusted to fit 2/3 of screen
+            const overviewHeight = 45; // Height above Earth to see all stars within screen
             
             // Camera positioned directly above Earth, looking straight down
             targetCameraPos = new THREE.Vector3(
                 currentEarthCenter.x,
                 currentEarthCenter.y + overviewHeight,
-                currentEarthCenter.z + 10 // Slight Z offset for better angle
+                currentEarthCenter.z + 5 // Slight Z offset for better angle
             );
             
             // Look at Earth center from above
@@ -168,7 +168,7 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
             <ambientLight intensity={isVisualizing ? 0.7 : (isOverviewMode ? 0.8 : 0.3)} />
             {/* Point light for overview mode to illuminate person stars */}
             {isOverviewMode && !isVisualizing && (
-                <pointLight position={[0, 60, -10]} intensity={1.5} distance={200} />
+                <pointLight position={[0, 35, -10]} intensity={1.5} distance={100} />
             )}
             
             {/* Solar System - Earth-centered with person stars */}
