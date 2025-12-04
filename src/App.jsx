@@ -204,7 +204,12 @@ function App() {
       <main className="container" style={{ position: 'relative', zIndex: 2, pointerEvents: 'none' }}>
         {/* Adding new person */}
         {!isValidUser && isAddingPerson ? (
-          <div style={{ pointerEvents: 'auto' }}>
+          <div style={{ 
+            pointerEvents: 'auto', 
+            maxHeight: '100vh', 
+            overflowY: 'auto',
+            paddingBottom: '2rem'
+          }}>
             <PersonSettings
               person={null}
               onSave={(newPerson) => {
@@ -216,7 +221,12 @@ function App() {
             />
           </div>
         ) : !isValidUser && selectedPersonId ? (
-          <div style={{ pointerEvents: 'auto' }}>
+          <div style={{ 
+            pointerEvents: 'auto', 
+            maxHeight: '100vh', 
+            overflowY: 'auto',
+            paddingBottom: '2rem'
+          }}>
             <PersonSettings
               person={people.find(p => p.id === selectedPersonId)}
               onSave={(updatedPerson) => {

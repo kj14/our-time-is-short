@@ -127,11 +127,19 @@ const PersonSettings = ({
     };
 
     return (
-        <section className="input-section fade-in" style={{ animationDelay: '0.2s' }}>
+        <section 
+            className="input-section fade-in" 
+            style={{ 
+                animationDelay: '0.2s',
+                maxHeight: '100vh',
+                overflowY: 'auto',
+                paddingBottom: '2rem'
+            }}
+        >
             <p className="input-section-tagline">
                 {isJapan ? '大切な人との時間を可視化' : 'Visualize time with someone special'}
             </p>
-            <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="input-form">
+            <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="input-form" style={{ marginBottom: '2rem' }}>
                 {/* Name */}
                 <div className="input-group">
                     <label className="input-label">
