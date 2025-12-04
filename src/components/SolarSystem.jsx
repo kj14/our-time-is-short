@@ -163,10 +163,8 @@ const PersonStar = ({ person, distance, radius, textureUrl, onClick, zoneColor, 
                             <meshStandardMaterial 
                                 ref={materialRef}
                                 map={texture} 
-                                emissive={isGlowing ? '#3b82f6' : '#ffffff'} 
-                                emissiveIntensity={isGlowing ? 0.3 : 0.15} 
-                                roughness={0.4}
-                                metalness={0.2}
+                                emissive={isGlowing ? '#3b82f6' : undefined} 
+                                emissiveIntensity={isGlowing ? 0.3 : 0.1} 
                             />
                         ) : (
                             <meshStandardMaterial 
