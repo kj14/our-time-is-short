@@ -150,6 +150,8 @@ function App() {
         onParticleDrop={particleDropCallback}
         onEarthClick={handleEarthClick}
         onSunClick={handleSunClick}
+        visualizingPersonId={visualizingPersonId}
+        isEarthVisualized={isValidUser && !visualizingPersonId}
         onPersonClick={(personId) => {
           if (visualizingPersonId) {
             // From person visualization mode: switch to that star's countdown mode

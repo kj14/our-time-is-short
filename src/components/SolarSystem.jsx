@@ -90,8 +90,10 @@ const getOrbitZone = (hours, meetings) => {
 };
 
 // Person Star Component
-const PersonStar = ({ person, distance, radius, textureUrl, onClick, zoneColor }) => {
+const PersonStar = ({ person, distance, radius, textureUrl, onClick, zoneColor, isGlowing }) => {
     const meshRef = useRef();
+    const materialRef = useRef();
+    const glowRef = useRef();
     const texture = useLoader(THREE.TextureLoader, textureUrl);
     
     if (texture) {
@@ -103,6 +105,14 @@ const PersonStar = ({ person, distance, radius, textureUrl, onClick, zoneColor }
         // Slow self-rotation
         if (meshRef.current) {
             meshRef.current.rotation.y += 0.005 / radius;
+        }
+        
+        // Pulsing glow effect when visualizing this star
+        if (isGlowing && glowRef.current) {
+            // Slow pulse: 3 second cycle
+            const pulse = Math.sin(state.clock.elapsedTime * 0.7) * 0.5 + 0.5;
+            glowRef.current.material.opacity = 0.1 + pulse * 0.2;
+            glowRef.current.scale.setScalar(1 + pulse * 0.15);
         }
     });
     
@@ -138,13 +148,35 @@ const PersonStar = ({ person, distance, radius, textureUrl, onClick, zoneColor }
                        document.body.style.cursor = 'auto';
                    }}
             >
+                {/* Glow sphere - visible when this star is being visualized */}
+                {isGlowing && (
+                    <mesh ref={glowRef} frustumCulled={false}>
+                        <sphereGeometry args={[radius * 1.5, 32, 32]} />
+                        <meshBasicMaterial 
+                            color="#60a5fa" 
+                            transparent 
+                            opacity={0.2}
+                            side={THREE.BackSide}
+                        />
+                    </mesh>
+                )}
+                
                 <group ref={meshRef}>
                     <mesh rotation={[0, 0, 0]} frustumCulled={false}>
                         <sphereGeometry args={[radius, 64, 64]} />
                         {texture ? (
-                            <meshStandardMaterial map={texture} emissive={texture ? undefined : '#333'} emissiveIntensity={0.1} />
+                            <meshStandardMaterial 
+                                ref={materialRef}
+                                map={texture} 
+                                emissive={isGlowing ? '#3b82f6' : undefined} 
+                                emissiveIntensity={isGlowing ? 0.3 : 0.1} 
+                            />
                         ) : (
-                            <meshStandardMaterial color={person.color || '#818cf8'} emissive={person.color || '#818cf8'} emissiveIntensity={0.2} />
+                            <meshStandardMaterial 
+                                color={person.color || '#818cf8'} 
+                                emissive={isGlowing ? '#3b82f6' : (person.color || '#818cf8')} 
+                                emissiveIntensity={isGlowing ? 0.3 : 0.2} 
+                            />
                         )}
                     </mesh>
                 </group>
@@ -187,8 +219,9 @@ const OrbitZoneCircle = ({ distance, color, label }) => {
     );
 };
 
-const EarthWrapper = forwardRef(({ targetCountry, onClick }, ref) => {
+const EarthWrapper = forwardRef(({ targetCountry, onClick, isGlowing }, ref) => {
     const groupRef = useRef();
+    const glowRef = useRef();
     const earthPositionRef = useRef(new THREE.Vector3());
     
     // Earth is at center (position 0,0,0)
@@ -202,13 +235,34 @@ const EarthWrapper = forwardRef(({ targetCountry, onClick }, ref) => {
         }
     }
 
-    useFrame(() => {
+    useFrame((state) => {
         // Earth is at center
         earthPositionRef.current.set(0, 0, 0);
+        
+        // Pulsing glow effect when visualizing Earth (You)
+        if (isGlowing && glowRef.current) {
+            // Slow pulse: 3 second cycle
+            const pulse = Math.sin(state.clock.elapsedTime * 0.7) * 0.5 + 0.5;
+            glowRef.current.material.opacity = 0.1 + pulse * 0.15;
+            glowRef.current.scale.setScalar(1 + pulse * 0.1);
+        }
     });
     
     return (
         <group ref={groupRef}>
+            {/* Glow sphere - visible when You (Earth) is being visualized */}
+            {isGlowing && (
+                <mesh ref={glowRef} frustumCulled={false}>
+                    <sphereGeometry args={[3, 32, 32]} />
+                    <meshBasicMaterial 
+                        color="#3b82f6" 
+                        transparent 
+                        opacity={0.15}
+                        side={THREE.BackSide}
+                    />
+                </mesh>
+            )}
+            
             <Earth targetCountry={targetCountry} onClick={onClick} />
             {/* Earth Label */}
             <Html
@@ -234,7 +288,7 @@ const EarthWrapper = forwardRef(({ targetCountry, onClick }, ref) => {
     )
 });
 
-export default function SolarSystem({ onSunClick, targetCountry, earthRef, onEarthClick, onPersonClick, people, userAge, userCountry, remainingYears }) {
+export default function SolarSystem({ onSunClick, targetCountry, earthRef, onEarthClick, onPersonClick, people, userAge, userCountry, remainingYears, visualizingPersonId, isEarthVisualized }) {
     // Calculate person stars data
     const personStars = useMemo(() => {
         if (!people || people.length === 0) {
@@ -290,7 +344,7 @@ export default function SolarSystem({ onSunClick, targetCountry, earthRef, onEar
     return (
         <group>
             {/* Earth at center (You) */}
-            <EarthWrapper ref={earthRef} targetCountry={targetCountry} onClick={onEarthClick} />
+            <EarthWrapper ref={earthRef} targetCountry={targetCountry} onClick={onEarthClick} isGlowing={isEarthVisualized} />
             
             {/* 3 Orbit Zone Circles - always visible */}
             <OrbitZoneCircle 
@@ -319,6 +373,7 @@ export default function SolarSystem({ onSunClick, targetCountry, earthRef, onEar
                     textureUrl={textureUrl}
                     onClick={onPersonClick}
                     zoneColor={zoneColor}
+                    isGlowing={visualizingPersonId === person.id}
                 />
             ))}
         </group>
