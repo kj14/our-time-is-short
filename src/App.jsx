@@ -260,6 +260,11 @@ function App() {
               onBack={() => {
                 setVisualizingPersonId(null);
               }}
+              onSettingsClick={() => {
+                // Go to this star's settings mode
+                setSelectedPersonId(visualizingPersonId);
+                setVisualizingPersonId(null);
+              }}
               isJapan={currentCountry === 'Japan'}
             />
           </div>
@@ -363,6 +368,10 @@ function App() {
               stats={isValidUser ? calculateLifeStats(userData.country, userData.age, userData.lifeExpectancy) : null}
               userSettingsRef={userSettingsRef}
               onParticleDrop={(callback) => setParticleDropCallback(() => callback)}
+              onSettingsClick={() => {
+                // Go to You's settings mode (same as tapping Earth)
+                handleReset();
+              }}
             />
           </div>
         )}
