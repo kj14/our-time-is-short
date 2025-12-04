@@ -127,8 +127,8 @@ function App() {
           </h1>
           <p className="app-subtitle">
             {((isValidUser ? userData.country : currentCountry) === 'Japan') 
-              ? 'あなたの時間を可視化します。大切に使いましょう。'
-              : 'Visualize your time. Make it count.'}
+              ? 'あなたの時間を可視化します。'
+              : 'Visualize your time.'}
           </p>
           {isValidUser && (
             <button 
