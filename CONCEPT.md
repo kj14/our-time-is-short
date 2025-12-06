@@ -342,9 +342,13 @@ Knowing this simple truth gives courage in many situations.
 
 この単純な真実を知るだけで、色々なシーンで勇気が出る。
 
-This app focuses on **time**—the one treasure given equally to all humans—to enrich your life. It helps you feel the importance of ordinary things, live with awareness of precious people, and gives you the courage to take half a step forward.
+**You become a little gentler. You find the courage to take half a step forward.**
 
-このアプリは、**時間を可視化する**ことで人生を豊かにします。当たり前のことを大切に感じ、大切な人をしっかりと意識して生きるためのコンパス。そして、半歩踏み出す勇気を与えます。
+**少しやさしくなれる。半歩踏み出す勇気が出る。**
+
+This is the core of this app.
+
+これが、このアプリのコアです。
 
 ---
 
