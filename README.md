@@ -6,6 +6,15 @@
 I built this tool to help myself stop postponing my life.  
 私自身が人生を後回しにするのをやめるために、このツールを作りました。
 
+⚠️ **Alpha Version / アルファ版**  
+This project is still in active development. Expect bugs and incomplete features.  
+I'm building this for myself first, and evolving it constantly.
+
+このプロジェクトはまだ開発中です。バグや未完成の機能があります。  
+まず自分自身のために作り、どんどん進化させています。
+
+---
+
 🌐 **[Try the app / アプリを試す → letmeknow.life](https://letmeknow.life)**
 
 📖 **[Read the full concept / コンセプト全文を読む → CONCEPT.md](./CONCEPT.md)**
