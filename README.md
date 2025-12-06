@@ -6,6 +6,8 @@
 I built this tool to help myself stop postponing my life.  
 私自身が人生を後回しにするのをやめるために、このツールを作りました。
 
+🌐 **[Try the app / アプリを試す → letmeknow.life](https://letmeknow.life)**
+
 📖 **[Read the full concept / コンセプト全文を読む → CONCEPT.md](./CONCEPT.md)**
 
 ---
