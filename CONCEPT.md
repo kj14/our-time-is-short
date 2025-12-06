@@ -261,6 +261,78 @@ The foundation is a pure world. But sustainability requires business thinking.
 
 ---
 
+## 12. The Hidden Engine: Becoming Gentle / 隠れたエンジン：優しくなる
+
+**By visualizing time, what truly matters becomes visible, daily noise fades, and as a result, you become gentle.**
+
+**時間を可視化することで、本当に大事なことが見え、日々の小さなノイズが薄れ、結果として"優しくなる"。**
+
+---
+
+### The Truth Behind "Gentleness" / "優しさ"の正体
+
+#### ① Daily focus is scattered / 毎日のフォーカスが散っている
+
+- Small irritations in front of you / 目の前の細かいイライラ
+- SNS, petty conflicts at work / SNS、仕事の小競り合い
+- Meaningless comparisons / どうでもいい比較
+- Failures and anxiety / 失敗や焦り
+- Momentary emotions / 一瞬の感情
+
+These "daily noises" mistakenly sit at the center of life.
+
+こういう "日々の雑音" が人生の中心に誤って座ってしまう。
+
+---
+
+#### ② However, life is finite / しかし、人生は有限である
+
+Visualizing lifespan is not about shock or fear—it's **an act of clearing your vision**.
+
+寿命の可視化は、ショックや恐怖ではなく **"視界を整える行為"**。
+
+- What truly matters? / 本当に大切なのは何か
+- What should I care about today? / 今日、何に心を配るべきか
+- Where should I place my energy? / どこに自分のエネルギーを置くべきか
+
+You naturally remember these things.
+
+これらを自然と思い出せる。
+
+---
+
+#### ③ As a result, small irritations fade / 結果として "小さなイライラが薄れる"
+
+This is psychologically accurate. When you strongly sense the finiteness of time, there's no need for noise to occupy your mind.
+
+時間の有限性を強く意識すると、目の前の雑音に心を占領される必然性がなくなる。
+
+- "It doesn't matter anymore" / 「もうどうでもいいや」
+- "That's not worth getting angry about" / 「そこ怒るところじゃないよね」
+- "Is this really worth my time?" / 「これに時間を使う価値、本当にある？」
+
+→ Mental noise disappears / 心のノイズが消える  
+→ Daily choices become clear / 日常の選択がクリアになる  
+→ And you become gentle / そして優しくなる
+
+---
+
+#### ④ The final question: "What will I think before I die?" / 最後の問い：「死ぬ前に何を思う？」
+
+This question is the **hidden engine** of the app.
+
+この問いをアプリの **"隠れたエンジン"** にする。
+
+We don't ask the user directly. But when they look at their universe, this question naturally arises in their heart.
+
+ユーザーに直接問わない。ただ、宇宙を見ると自然に心の中で浮かんでくる。
+
+**This is the core of "gentleness" in this worldview.**
+
+**これが、この世界観の"優しさ"の核心。**
+
+---
+
 ## Summary / まとめ
 
 > **There's no time to worry. Not a second to spend on people you dislike.**  
