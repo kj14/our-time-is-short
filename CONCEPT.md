@@ -342,13 +342,9 @@ Knowing this simple truth gives courage in many situations.
 
 この単純な真実を知るだけで、色々なシーンで勇気が出る。
 
-**You become a little gentler. You find the courage to take half a step forward.**
+This app visualizes time, and in doing so, you might become a little gentler, find the courage to take half a step forward, or feel that this moment matters.
 
-**少しやさしくなれる。半歩踏み出す勇気が出る。**
-
-This is the core of this app.
-
-これが、このアプリのコアです。
+このアプリは、時間を可視化することで、少し優しくなれたり、半歩踏み出す勇気が湧いたり、今を大切に思えたりするもの。
 
 ---
 
