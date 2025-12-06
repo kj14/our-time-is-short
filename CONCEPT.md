@@ -149,6 +149,34 @@ Messages appear randomly each time you access the app, from angles you wouldn't 
 
 アクセスするたびにランダムに、思いもよらぬ角度からメッセージが現れる。
 
+### Question + Answer Structure / 問いかけ + 回答の構造
+
+Messages follow a two-part structure:
+1. **Question**: Challenge the user's current actions and choices / 今の行動や選択を問う
+2. **Answer**: Provide data-based truth / データに基づいた真実を提示
+
+メッセージは2部構成：
+1. **問いかけ**: あなたの今の行動や選択は、限られた時間の中で行うに値するか？
+2. **回答**: あと○○回だよ、という具体的なデータ
+
+Example / 例:
+```
+Q: "Is that drinking party really worth going to?"
+   「その飲み会、本当に行く価値ある？」
+A: → Weekends with your son: 520 remaining
+   → 息子と過ごせる週末：あと520回
+
+Q: "Does that work really have to be today?"
+   「その仕事、今日じゃなきゃダメ？」
+A: → New Year's with your parents: 8 remaining
+   → 親と過ごせる正月：あと8回
+
+Q: "Is it worth holding onto that anger?"
+   「その怒り、持ち続ける意味ある？」
+A: → Chances to talk to them: maybe 15 left
+   → その人と話せる機会：あと15回かもしれない
+```
+
 ---
 
 ## 9. Message Examples / メッセージ例
@@ -174,6 +202,18 @@ Messages appear randomly each time you access the app, from angles you wouldn't 
 
 "Your universe has 5 stars. Did you contact any of them today?"
 「あなたの宇宙には5人の星がいます。今日、誰かに連絡しましたか？」
+
+"How many more times can you say 'thank you' to your mother?"
+「お母さんに『ありがとう』を言える回数は、あと何回？」
+
+"The chance to say 'I'm sorry' might end today."
+「『ごめんね』を言えるチャンスは、今日が最後かもしれない」
+
+"Is that really how you want to say it?"
+「その言い方で、本当に伝わりますか？」
+
+"Will 'next time' really come?"
+「『また今度』は、本当に来ますか？」
 ```
 
 ---
