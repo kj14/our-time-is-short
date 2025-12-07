@@ -24,12 +24,23 @@ I'm building this for myself first, and evolving it constantly.
 ## Philosophy / 思想
 
 We tend to postpone things because "time" is invisible.  
-By visualizing the remaining time with our loved ones, vague anxiety turns into concrete actions.  
+By visualizing time, vague anxiety transforms into concrete actions, daily noise fades away, and what truly matters becomes clear.  
 This tool is not just a calculator; it is a compass to verify if you are living your life the way you want to.
 
 人は「見えない時間」を後回しにしがちです。  
-大切な人と過ごせる残りの時間を可視化することで、漠然とした不安を具体的な行動に変えることができます。  
+時間を可視化することで、漠然とした不安が具体的な行動に変わり、日々のノイズが薄れ、本当に大切なものが見えてきます。  
 このツールは単なる計算機ではなく、あなたが「望む人生を生きているか」を確認するためのコンパスです。
+
+### What This App Gives You / このアプリが与えるもの
+
+- **Liberation / 解放感**: Realizing there's no time to waste on worrying. / 悩んでる暇はないと気づく解放感。
+- **Courage / 勇気**: Realizing there's not a second to spend on people you dislike. / 嫌いな人に使う時間は1秒もないと気づく勇気。
+- **Courage to Let Go / 捨てる勇気**: The courage of subtraction. / 引き算の勇気。
+- **Strength for Today / 今日を頑張る力**: The courage to work hard today. / 今日を頑張る勇気。
+
+This app doesn't instill fear—it gives you liberation and courage.
+
+このアプリは恐怖を与えるものではありません。解放感と勇気を与えるものです。
 
 ---
 
@@ -37,15 +48,17 @@ This tool is not just a calculator; it is a compass to verify if you are living 
 
 ### English
 
-- **Visualize Life & Energy**: See your remaining life, healthy life expectancy, and working years as battery tanks.
-- **Precious Time with Others**: Calculate and visualize the remaining time you have with your parents, children, or partners based on meeting frequency.
+- **Time Countdown**: Visualize your remaining life, healthy life expectancy, and working years as battery tanks.
+- **Your Own Universe**: Place up to 10 precious people in your universe—calculate and visualize the remaining time you have with them based on meeting frequency.
+- **Truth Messages**: Data-based messages that appear each time you access the app. Not spiritual fortune-telling, but mathematical facts like "Christmas with your son: 12 remaining."
 - **"If Life Were..."**: Reframe your perspective by customizing the assumed life expectancy.
 - **Share Your Visualization**: Generate and share a snapshot of your current life status to social media.
 
 ### 日本語
 
-- **人生とエネルギーの可視化**: 残りの人生、健康寿命、労働年数をバッテリータンクとして表示
-- **大切な人との時間**: 親、子供、パートナーと過ごせる残り時間を、会う頻度から計算・可視化
+- **時間のカウントダウン**: 残りの人生、健康寿命、労働年数をバッテリータンクとして表示
+- **自分だけの宇宙**: 大切な人を最大10人まで配置し、会う頻度から一緒に過ごせる残り時間を計算・可視化
+- **真実のメッセージ**: アクセスするたびに表示される、データに基づいたメッセージ。スピリチュアルな占いではなく、「息子と過ごせるクリスマス：あと12回」のような数学的事実
 - **「もし人生が○年だったら」**: 想定寿命をカスタマイズして、視点を変える
 - **SNSシェア**: 今の人生の状態をスナップショットとしてシェア
 
@@ -56,28 +69,29 @@ This tool is not just a calculator; it is a compass to verify if you are living 
 ### English
 
 1. **Enter Your Details**: Input your country, age, and life expectancy assumption.
-2. **Add People**: Add important people in your life (parents, children, friends).
+2. **Build Your Universe**: Add up to 10 precious people (parents, children, friends, mentors).
 3. **Set Conditions**: Adjust how often and how long you meet them.
-4. **Visualize**: See the "batteries" representing your shared time together.
+4. **Visualize**: See your remaining time as "batteries" and receive data-based truth messages.
 
 ### 日本語
 
 1. **あなたの情報を入力**: 国、年齢、想定寿命を入力
-2. **大切な人を追加**: 親、子供、友人など、大切な人を追加
+2. **あなたの宇宙を作る**: 大切な人を最大10人まで追加（親、子供、友人、メンターなど）
 3. **条件を設定**: 会う頻度と時間を調整
-4. **可視化**: 一緒に過ごせる時間を「バッテリー」として確認
+4. **可視化**: 残り時間を「バッテリー」として確認し、データに基づいた真実のメッセージを受け取る
 
 ---
 
 ## The Universe Metaphor / 自分だけの宇宙
 
-This app uses the metaphor of "your own universe" where you place the people who matter to you.
+This app uses the metaphor of "your own universe" where you place the people who matter to you (up to 10 people). Precious people become stars with distance, orbit, and brightness.
 
-このアプリは「自分だけの宇宙」というメタファーを使っています。あなたの宇宙に、大切な人を配置してください。
+このアプリは「自分だけの宇宙」というメタファーを使っています。あなたの宇宙に、大切な人を最大10人まで配置してください。大切な人は、距離・軌道・輝きを持つ星になります。
 
-- You can be at the center (the sun), or place someone else there / 自分が中心（太陽）でも、誰かを中心に置いてもいい
-- Your universe changes as you change / 宇宙は自分の変化とともに変化する
-- Who you place is entirely your freedom / 誰を置くかは自由
+- You can be at the center (the sun), or place someone you admire, a mentor, or even someone who has passed away at the center / 自分が中心（太陽）でも、憧れの人、尊敬する師匠、故人などを中心に置いてもいい
+- Your universe changes as you change—precious people from childhood are different from now / 宇宙は自分の変化とともに変化する。子供の時の大切な人と今は違う
+- Who you place, and where, is entirely your freedom / 誰を置くか、どこに置くかは自由
+- Your universe doesn't need to be visible to others. Or you can share it. / 他人からは見えなくていい。見せてもいい
 
 **詳しくは [CONCEPT.md](./CONCEPT.md) をご覧ください。**
 
