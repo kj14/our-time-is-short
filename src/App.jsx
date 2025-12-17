@@ -252,11 +252,19 @@ function App() {
       <main className="container" style={{ position: 'relative', zIndex: 2, pointerEvents: 'none' }}>
         {/* Adding new person */}
         {!isValidUser && isAddingPerson ? (
-          <div style={{ 
-            pointerEvents: 'auto', 
-            height: '100vh',
+          <div style={{
+            pointerEvents: 'auto',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100%',
+            height: '100%',
             overflowY: 'auto',
-            WebkitOverflowScrolling: 'touch'
+            overflowX: 'hidden',
+            WebkitOverflowScrolling: 'touch',
+            zIndex: 100
           }}>
             <PersonSettings
               person={null}
@@ -281,11 +289,19 @@ function App() {
             />
           </div>
         ) : !isValidUser && selectedPersonId ? (
-          <div style={{ 
-            pointerEvents: 'auto', 
-            height: '100vh',
+          <div style={{
+            pointerEvents: 'auto',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100%',
+            height: '100%',
             overflowY: 'auto',
-            WebkitOverflowScrolling: 'touch'
+            overflowX: 'hidden',
+            WebkitOverflowScrolling: 'touch',
+            zIndex: 100
           }}>
             <PersonSettings
               person={people.find(p => p.id === selectedPersonId)}
