@@ -196,7 +196,7 @@ export const calculateLifeStats = (country, age, customExpectancy = null) => {
     breakdown["Vacations & Travel"] = remainingYears * lifeMoments["Vacations & Travel"].tripsPerYear * lifeMoments["Vacations & Travel"].daysPerTrip * 12; // 12 waking hours per day
 
     // Personal Growth
-    breakdown["Personal Growth"] = remainingYears * 52.1429 * lifeMoments["Personal Growth"].hoursPerWeek;
+    breakdown["Personal Growth"] = remainingYears * 365.25 * lifeMoments["Personal Growth"].hoursPerDay;
 
     return {
         expectancy,
