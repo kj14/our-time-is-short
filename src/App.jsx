@@ -58,6 +58,7 @@ function App() {
   const [selectedPersonId, setSelectedPersonId] = useState(null); // ID of person being edited (star zoomed)
   const [visualizingPersonId, setVisualizingPersonId] = useState(null); // ID of person whose time is being visualized
   const [personDisplayMode, setPersonDisplayMode] = useState('percentage'); // 'time' or 'percentage'
+  const [isEarthZoomed, setIsEarthZoomed] = useState(false); // Track if Earth is zoomed in
   const userSettingsRef = useRef(null);
 
   // Save to localStorage whenever people changes
