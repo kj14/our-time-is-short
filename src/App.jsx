@@ -322,16 +322,27 @@ function App() {
             />
           </div>
         ) : !isValidUser ? (
-          <div style={{ 
-            pointerEvents: 'none',
+          <div style={{
+            pointerEvents: 'auto',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100%',
+            height: '100%',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            WebkitOverflowScrolling: 'touch',
             opacity: isOverviewMode ? 0 : 1,
             transition: 'opacity 0.5s ease',
-            visibility: isOverviewMode ? 'hidden' : 'visible'
+            visibility: isOverviewMode ? 'hidden' : 'visible',
+            zIndex: 90
           }}>
-          <InputSection
-            onVisualize={handleVisualize}
-            onCountryChange={setCurrentCountry}
-          />
+            <InputSection
+              onVisualize={handleVisualize}
+              onCountryChange={setCurrentCountry}
+            />
           </div>
         ) : isDetailPageOpen ? (
           <div style={{ pointerEvents: 'auto', height: '100%' }}>
