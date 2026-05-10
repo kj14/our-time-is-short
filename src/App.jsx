@@ -5,6 +5,7 @@ import DetailPage from './components/DetailPage'
 import Scene from './components/Scene'
 import PersonSettings from './components/PersonSettings'
 import PersonVisualization from './components/PersonVisualization'
+import EmptyUniverse from './components/EmptyUniverse'
 import { lifeExpectancyData, healthyLifeExpectancyData, workingAgeLimitData, calculateLifeStats } from './utils/lifeData'
 
 function App() {
@@ -250,6 +251,11 @@ function App() {
         <div style={{ width: '100%' }}>
         </div>
       </header>
+
+      {/* Onboarding nudge when the user has no people yet */}
+      {isValidUser && !isSettingsOpen && !isDetailPageOpen && people.length === 0 && (
+        <EmptyUniverse userCountry={userData.country} />
+      )}
 
       {/* Add Person Button - shown in overview mode */}
       {!isValidUser && isOverviewMode && !isAddingPerson && !selectedPersonId && (
