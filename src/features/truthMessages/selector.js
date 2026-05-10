@@ -14,6 +14,10 @@ export function buildContext({ user, people, basis = 'life', userLifeExpectancy 
     for (const p of people) {
         const r = p.relationship || 'other';
         (peopleByRelationship[r] ||= []).push(p);
+        // A person flagged isMentor counts as 'mentor' regardless of their stored relationship.
+        if (p.isMentor) {
+            (peopleByRelationship.mentor ||= []).push(p);
+        }
     }
     const userRemainingYears = Math.max(0, userLifeExpectancy - user.age);
     const userLifePercentLived = userLifeExpectancy > 0

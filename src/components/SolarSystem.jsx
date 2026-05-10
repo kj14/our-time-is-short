@@ -52,8 +52,9 @@ const getOrbitZone = (hours, meetings) => {
     }
 };
 
-// Person Star Component
-const PersonStar = ({ person, distance, radius, textureUrl, onClick, zoneColor, isGlowing }) => {
+// Person Star Component. When `isMentor` is true, the star is rendered with
+// a golden corona to symbolise "the sun-like person" per CONCEPT.md §5.
+const PersonStar = ({ person, distance, radius, textureUrl, onClick, zoneColor, isGlowing, isMentor }) => {
     const meshRef = useRef();
     const materialRef = useRef();
     const glowRef = useRef();
@@ -115,11 +116,30 @@ const PersonStar = ({ person, distance, radius, textureUrl, onClick, zoneColor, 
                 {isGlowing && (
                     <mesh ref={glowRef} frustumCulled={false}>
                         <sphereGeometry args={[radius, 32, 32]} />
-                        <meshBasicMaterial 
-                            color="#ef4444" 
+                        <meshBasicMaterial
+                            color="#ef4444"
                             side={THREE.BackSide}
                         />
                     </mesh>
+                )}
+
+                {/* Mentor corona - golden glow + ring */}
+                {isMentor && (
+                    <group>
+                        <mesh frustumCulled={false} raycast={() => null}>
+                            <sphereGeometry args={[radius * 1.6, 32, 32]} />
+                            <meshBasicMaterial
+                                color="#fcd34d"
+                                opacity={0.18}
+                                transparent
+                                side={THREE.BackSide}
+                            />
+                        </mesh>
+                        <mesh rotation={[-Math.PI / 2, 0, 0]} frustumCulled={false} raycast={() => null}>
+                            <ringGeometry args={[radius * 1.8, radius * 2.0, 64]} />
+                            <meshBasicMaterial color="#fbbf24" opacity={0.6} transparent side={THREE.DoubleSide} />
+                        </mesh>
+                    </group>
                 )}
                 
                 <group ref={meshRef}>
@@ -150,10 +170,10 @@ const PersonStar = ({ person, distance, radius, textureUrl, onClick, zoneColor, 
                         cursor: 'pointer'
                     }}
                 >
-                    <div 
+                    <div
                         onClick={(e) => { e.stopPropagation(); if(onClick) onClick(person.id); }}
                         style={{
-                            color: 'white',
+                            color: isMentor ? '#fcd34d' : 'white',
                             fontSize: '0.8rem',
                             fontWeight: '600',
                             textShadow: '0 0 10px rgba(0,0,0,0.8), 0 0 5px rgba(0,0,0,0.8)',
@@ -162,7 +182,7 @@ const PersonStar = ({ person, distance, radius, textureUrl, onClick, zoneColor, 
                             textAlign: 'center'
                         }}
                     >
-                        {person.name}
+                        {isMentor ? '★ ' : ''}{person.name}
                     </div>
                 </Html>
             </group>
@@ -347,6 +367,7 @@ export default function SolarSystem({ onSunClick, targetCountry, earthRef, onEar
                     onClick={onPersonClick}
                     zoneColor={zoneColor}
                     isGlowing={visualizingPersonId === person.id}
+                    isMentor={!!person.isMentor}
                 />
             ))}
         </group>

@@ -246,6 +246,37 @@ export const TEMPLATES = [
         })
     },
 
+    // mentor templates (CONCEPT.md §5)
+    {
+        id: 'mentor_advice',
+        requires: ['mentor'],
+        compute: (ctx) => {
+            const mentor = ctx.peopleByRelationship.mentor[0];
+            const m = meetingsLeft(mentor, ctx);
+            return {
+                q: { ja: '今日、教えを請う相手はいますか？', en: 'Whose advice will you ask for today?' },
+                a: {
+                    ja: `${mentor.name}に話を聞ける機会：あと${m}回`,
+                    en: `Chances to learn from ${mentor.name}: ${m} left`
+                }
+            };
+        }
+    },
+    {
+        id: 'mentor_inspiration',
+        requires: ['mentor'],
+        compute: (ctx) => {
+            const mentor = ctx.peopleByRelationship.mentor[0];
+            return {
+                q: { ja: '中心にいる人を、本当に大切にしていますか？', en: 'Are you treasuring the person at the center?' },
+                a: {
+                    ja: `あなたの宇宙の中心は ${mentor.name} です`,
+                    en: `${mentor.name} is at the center of your universe`
+                }
+            };
+        }
+    },
+
     // birthday template
     {
         id: 'birthday',
