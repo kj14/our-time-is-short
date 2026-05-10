@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useReducer, useRef } from 'react'
 import InputSection from './components/InputSection'
 import Visualization, { UserSettings, PeopleSettings } from './components/Visualization'
 import DetailPage from './components/DetailPage'
@@ -7,14 +7,15 @@ import PersonSettings from './components/PersonSettings'
 import PersonVisualization from './components/PersonVisualization'
 import EmptyUniverse from './components/EmptyUniverse'
 import { lifeExpectancyData, healthyLifeExpectancyData, workingAgeLimitData, calculateLifeStats } from './utils/lifeData'
+import { useT } from './i18n'
+import { viewReducer, initialViewState } from './state/appView'
 
 function App() {
-  // Load userData from localStorage if available
+  // ─── data state ──────────────────────────────────────────────────
   const [userData, setUserData] = useState(() => {
     const saved = localStorage.getItem('lifevis_userData');
     if (saved) {
       const parsed = JSON.parse(saved);
-      // Set default values if not present
       if (!parsed.lifeExpectancy && parsed.country) {
         parsed.lifeExpectancy = lifeExpectancyData[parsed.country] || lifeExpectancyData['Global'];
       }
@@ -29,20 +30,13 @@ function App() {
     return null;
   });
   const [currentCountry, setCurrentCountry] = useState('Japan');
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isDetailPageOpen, setIsDetailPageOpen] = useState(false);
-  const [editingPersonId, setEditingPersonId] = useState(null);
   const [people, setPeopleRaw] = useState(() => {
     const saved = localStorage.getItem('lifevis_people');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         // Schema v1 → v2 migration: ensure every person has relationship + isMentor.
-        return parsed.map((p) => ({
-          relationship: 'other',
-          isMentor: false,
-          ...p
-        }));
+        return parsed.map((p) => ({ relationship: 'other', isMentor: false, ...p }));
       } catch (e) {
         return [];
       }
@@ -51,9 +45,6 @@ function App() {
   });
 
   // Wrapper enforcing the "only one mentor at a time" invariant.
-  // If a save adds a new mentor (someone whose isMentor flipped to true),
-  // demote any prior mentor. If the array still has multiple mentors after
-  // that, keep the last one (last write wins in array order).
   const setPeople = (next) => {
     const arr = typeof next === 'function' ? next(people) : next;
     const prevMentorIds = new Set(people.filter((p) => p.isMentor).map((p) => p.id));
@@ -64,7 +55,6 @@ function App() {
         p.id === newMentor.id ? p : (p.isMentor ? { ...p, isMentor: false } : p)
       );
     } else {
-      // Defensive: if more than one mentor somehow exists, keep the last.
       const mentors = arr.filter((p) => p.isMentor);
       if (mentors.length > 1) {
         const keepId = mentors[mentors.length - 1].id;
@@ -75,160 +65,101 @@ function App() {
     }
     setPeopleRaw(normalized);
   };
-  const [calculationBasis, setCalculationBasis] = useState(() => {
-    // Load from localStorage
-    const saved = localStorage.getItem('lifevis_calculationBasis');
-    return saved || 'life'; // 'life', 'healthy', 'working'
-  });
-  const [displayMode, setDisplayMode] = useState(() => {
-    const saved = localStorage.getItem('lifevis_displayMode');
-    return saved || 'percentage';
-  });
+
+  const [calculationBasis, setCalculationBasis] = useState(() =>
+    localStorage.getItem('lifevis_calculationBasis') || 'life'
+  );
+  const [displayMode, setDisplayMode] = useState(() =>
+    localStorage.getItem('lifevis_displayMode') || 'percentage'
+  );
   const [particleDropCallback, setParticleDropCallback] = useState(null);
-  const [isOverviewMode, setIsOverviewMode] = useState(false); // True = 俯瞰視点, False = 地球ズーム
-  const [isAddingPerson, setIsAddingPerson] = useState(false); // True when adding new person
-  const [selectedPersonId, setSelectedPersonId] = useState(null); // ID of person being edited (star zoomed)
-  const [visualizingPersonId, setVisualizingPersonId] = useState(null); // ID of person whose time is being visualized
-  const [personDisplayMode, setPersonDisplayMode] = useState('percentage'); // 'time' or 'percentage'
-  const [isEarthZoomed, setIsEarthZoomed] = useState(false);
+  const [personDisplayMode, setPersonDisplayMode] = useState('percentage');
+
+  // ─── view state (consolidated reducer) ───────────────────────────
+  const [view, dispatch] = useReducer(viewReducer, initialViewState);
   const userSettingsRef = useRef(null);
 
-  // Save to localStorage whenever people changes
+  // ─── derived ─────────────────────────────────────────────────────
+  const isValidUser = !!(userData && userData.country && (userData.age !== undefined && userData.age !== null));
+  const tt = useT(userData?.country || currentCountry);
+
+  // ─── persistence ─────────────────────────────────────────────────
   useEffect(() => {
     localStorage.setItem('lifevis_people', JSON.stringify(people));
   }, [people]);
-
-  // Save calculation basis to localStorage
   useEffect(() => {
     localStorage.setItem('lifevis_calculationBasis', calculationBasis);
   }, [calculationBasis]);
-
-  // Save display mode to localStorage
   useEffect(() => {
     localStorage.setItem('lifevis_displayMode', displayMode);
   }, [displayMode]);
-
-  // Validate userData
-  const isValidUser = userData && userData.country && (userData.age !== undefined && userData.age !== null);
-
-  // Save userData to localStorage whenever it changes
   useEffect(() => {
-    if (userData) {
-      localStorage.setItem('lifevis_userData', JSON.stringify(userData));
-    } else {
-      localStorage.removeItem('lifevis_userData');
-    }
+    if (userData) localStorage.setItem('lifevis_userData', JSON.stringify(userData));
+    else localStorage.removeItem('lifevis_userData');
   }, [userData]);
 
+  // ─── handlers ────────────────────────────────────────────────────
   const handleVisualize = (country, age) => {
-    // Philosophy: Stop postponing life. Start visualizing it.
-    // 思想：人生を後回しにするのをやめる。可視化から始める。
     const lifeExpectancy = lifeExpectancyData[country] || lifeExpectancyData['Global'];
     const healthyLifeExpectancy = healthyLifeExpectancyData[country] || healthyLifeExpectancyData['Global'];
     const workingAgeLimit = workingAgeLimitData[country] || workingAgeLimitData['Global'];
-    setUserData({ 
-      country, 
-      age,
-      lifeExpectancy,
-      healthyLifeExpectancy,
-      workingAgeLimit
-    });
+    setUserData({ country, age, lifeExpectancy, healthyLifeExpectancy, workingAgeLimit });
   };
 
   const handleUpdateUserSettings = (updates) => {
-    setUserData(prev => ({ ...prev, ...updates }));
+    setUserData((prev) => ({ ...prev, ...updates }));
   };
 
   const handleReset = () => {
     setUserData(null);
-    setIsDetailPageOpen(false);
-    setIsSettingsOpen(false);
-    setIsOverviewMode(false); // Always start in zoom mode (settings), not overview
+    dispatch({ type: 'RESET' });
   };
 
   const handleEarthClick = () => {
-    if (visualizingPersonId || isValidUser) {
-      // From countdown mode (You's or person's): go to You's settings mode
-      setVisualizingPersonId(null);
-      setSelectedPersonId(null);
-      handleReset();
-    } else if (selectedPersonId) {
-      // From star's settings mode: go to overview mode
-      setSelectedPersonId(null);
-      setIsOverviewMode(true);
-    } else if (isOverviewMode) {
-      // From overview mode: go to You's settings mode
-      setIsOverviewMode(false);
-    } else {
-      // From You's settings mode: go to overview mode
-      setIsOverviewMode(true);
+    // EARTH_CLICK from countdown mode also flips userData to null so the
+    // settings/input UI takes over. The reducer doesn't own userData.
+    if (view.visualizingPersonId || isValidUser) {
+      setUserData(null);
     }
+    dispatch({ type: 'EARTH_CLICK', isValidUser });
   };
 
   const handleSunClick = () => {
-    // Sun is the settings screen entry point (gear icon settings modal)
-    setIsEarthZoomed(false);
-    if (isValidUser) {
-      setEditingPersonId(null);
-      setIsSettingsOpen(true);
+    dispatch({ type: 'SUN_CLICK', isValidUser });
+  };
+
+  const handlePersonClick = (personId) => {
+    if (view.visualizingPersonId || isValidUser) {
+      setUserData(null);
     }
+    dispatch({ type: 'PERSON_CLICK', personId, isValidUser });
   };
 
   const navigateTo = (direction) => {
-    // Items: [You (null), ...people]
-    const items = [null, ...people.map(p => p.id)];
-    const currentIndex = items.indexOf(visualizingPersonId);
-    
-    let nextIndex;
-    if (direction === 'next') {
-        nextIndex = (currentIndex + 1) % items.length;
-    } else {
-        nextIndex = (currentIndex - 1 + items.length) % items.length;
-    }
-    
-    const nextId = items[nextIndex];
-    setVisualizingPersonId(nextId);
+    const items = [null, ...people.map((p) => p.id)];
+    const currentIndex = items.indexOf(view.visualizingPersonId);
+    const nextIndex = direction === 'next'
+      ? (currentIndex + 1) % items.length
+      : (currentIndex - 1 + items.length) % items.length;
+    dispatch({ type: 'VISUALIZE', personId: items[nextIndex] });
   };
 
   return (
     <div className="app-container">
-      {/* Integrated 3D Scene */}
       <Scene
-        isVisualizing={(isValidUser && !isSettingsOpen) || visualizingPersonId}
-        isSettingsOpen={isSettingsOpen}
-        isOverviewMode={isOverviewMode}
+        isVisualizing={(isValidUser && !view.isSettingsOpen) || view.visualizingPersonId}
+        isSettingsOpen={view.isSettingsOpen}
+        isOverviewMode={view.isOverviewMode}
         calculationBasis={calculationBasis}
         targetCountry={userData ? userData.country : currentCountry}
         remainingPercentage={userData ? ((userData.lifeExpectancy - userData.age) / userData.lifeExpectancy * 100) : 50}
         onParticleDrop={particleDropCallback}
         onEarthClick={handleEarthClick}
         onSunClick={handleSunClick}
-        visualizingPersonId={visualizingPersonId}
-        isEarthVisualized={isValidUser && !visualizingPersonId}
-        onPersonClick={(personId) => {
-          if (visualizingPersonId || isValidUser) {
-            // From countdown mode (You's or person's): go to that star's settings mode
-            setVisualizingPersonId(null);
-            setSelectedPersonId(personId);
-            setUserData(null); // Clear user data to show settings
-          } else if (selectedPersonId === personId) {
-            // Tapping same star in settings mode: go to overview
-            setSelectedPersonId(null);
-            setIsOverviewMode(true);
-          } else if (selectedPersonId) {
-            // From another star's settings mode: go to overview first
-            setSelectedPersonId(null);
-            setIsOverviewMode(true);
-          } else if (isOverviewMode) {
-            // From overview mode: zoom to that star's settings
-            setSelectedPersonId(personId);
-            setIsOverviewMode(false);
-          } else {
-            // From You's settings mode: go to overview
-            setIsOverviewMode(true);
-          }
-        }}
-        selectedPersonId={selectedPersonId}
+        visualizingPersonId={view.visualizingPersonId}
+        isEarthVisualized={isValidUser && !view.visualizingPersonId}
+        onPersonClick={handlePersonClick}
+        selectedPersonId={view.selectedPersonId}
         people={people}
         userAge={userData ? userData.age : 44}
         userCountry={userData ? userData.country : currentCountry}
@@ -241,27 +172,22 @@ function App() {
           return stats.remainingSeconds || 0;
         })() : 0}
         livedSeconds={userData ? (() => {
-          const lifeExpectancy = userData.lifeExpectancy || lifeExpectancyData[userData.country] || lifeExpectancyData['Global'];
-          const livedYears = userData.age;
-          return livedYears * 365.25 * 24 * 60 * 60;
+          return userData.age * 365.25 * 24 * 60 * 60;
         })() : 0}
       />
 
       <header className="container fade-in app-header">
-        <div style={{ width: '100%' }}>
-        </div>
+        <div style={{ width: '100%' }}></div>
       </header>
 
-      {/* Onboarding nudge when the user has no people yet */}
-      {isValidUser && !isSettingsOpen && !isDetailPageOpen && people.length === 0 && (
+      {isValidUser && !view.isSettingsOpen && !view.isDetailPageOpen && people.length === 0 && (
         <EmptyUniverse userCountry={userData.country} />
       )}
 
-      {/* Add Person Button - shown in overview mode */}
-      {!isValidUser && isOverviewMode && !isAddingPerson && !selectedPersonId && (
+      {!isValidUser && view.isOverviewMode && !view.isAddingPerson && !view.selectedPersonId && (
         <button
-          onClick={() => setIsAddingPerson(true)}
-          aria-label={currentCountry === 'Japan' ? '大切な人を追加' : 'Add a person'}
+          onClick={() => dispatch({ type: 'START_ADD_PERSON' })}
+          aria-label={tt('person.title.add')}
           style={{
             position: 'fixed',
             bottom: '2rem',
@@ -295,76 +221,50 @@ function App() {
       )}
 
       <main className="container" style={{ position: 'relative', zIndex: 2, pointerEvents: 'none' }}>
-        {/* Adding new person */}
-        {!isValidUser && isAddingPerson ? (
-          <div style={{
-            pointerEvents: 'auto',
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            width: '100%',
-            height: '100%',
-            overflowY: 'auto',
-            overflowX: 'hidden',
-            WebkitOverflowScrolling: 'touch',
-            zIndex: 100
-          }}>
+        {!isValidUser && view.isAddingPerson ? (
+          <div style={overlayStyle}>
             <PersonSettings
               person={null}
               onSave={(newPerson) => {
                 setPeople([...people, newPerson]);
-                setIsAddingPerson(false);
+                dispatch({ type: 'FINISH_ADD_PERSON' });
               }}
-              onCancel={() => setIsAddingPerson(false)}
+              onCancel={() => dispatch({ type: 'CANCEL_ADD_PERSON' })}
               isJapan={currentCountry === 'Japan'}
               userCountry={userData ? userData.country : currentCountry}
               userAge={userData?.age}
               calculationBasis={calculationBasis}
             />
           </div>
-        ) : visualizingPersonId ? (
-          // Person visualization mode - show time together with particles
+        ) : view.visualizingPersonId ? (
           <div style={{ pointerEvents: 'none', width: '100%', height: '100%' }}>
             <PersonVisualization
-              key={visualizingPersonId}
-              person={people.find(p => p.id === visualizingPersonId)}
+              key={view.visualizingPersonId}
+              person={people.find((p) => p.id === view.visualizingPersonId)}
               displayMode={personDisplayMode}
               onDisplayModeChange={setPersonDisplayMode}
               isJapan={currentCountry === 'Japan'}
+              userCountry={userData ? userData.country : currentCountry}
+              userAge={userData?.age ?? 44}
               onNavigate={navigateTo}
             />
           </div>
-        ) : !isValidUser && selectedPersonId ? (
-          <div style={{
-            pointerEvents: 'auto',
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            width: '100%',
-            height: '100%',
-            overflowY: 'auto',
-            overflowX: 'hidden',
-            WebkitOverflowScrolling: 'touch',
-            zIndex: 100
-          }}>
+        ) : !isValidUser && view.selectedPersonId ? (
+          <div style={overlayStyle}>
             <PersonSettings
-              person={people.find(p => p.id === selectedPersonId)}
+              person={people.find((p) => p.id === view.selectedPersonId)}
               onSave={(updatedPerson) => {
-                setPeople(people.map(p => p.id === updatedPerson.id ? updatedPerson : p));
-                setSelectedPersonId(null);
+                setPeople(people.map((p) => (p.id === updatedPerson.id ? updatedPerson : p)));
+                dispatch({ type: 'DESELECT_PERSON' });
               }}
               onDelete={(id) => {
-                setPeople(people.filter(p => p.id !== id));
-                setSelectedPersonId(null);
+                setPeople(people.filter((p) => p.id !== id));
+                dispatch({ type: 'DESELECT_PERSON' });
               }}
-              onCancel={() => setSelectedPersonId(null)}
+              onCancel={() => dispatch({ type: 'DESELECT_PERSON' })}
               onVisualize={(personId) => {
-                setVisualizingPersonId(personId);
-                setSelectedPersonId(null);
+                dispatch({ type: 'VISUALIZE', personId });
+                dispatch({ type: 'DESELECT_PERSON' });
               }}
               isJapan={currentCountry === 'Japan'}
               userCountry={userData ? userData.country : currentCountry}
@@ -374,20 +274,10 @@ function App() {
           </div>
         ) : !isValidUser ? (
           <div style={{
-            pointerEvents: 'auto',
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            width: '100%',
-            height: '100%',
-            overflowY: 'auto',
-            overflowX: 'hidden',
-            WebkitOverflowScrolling: 'touch',
-            opacity: isOverviewMode ? 0 : 1,
+            ...overlayStyle,
+            opacity: view.isOverviewMode ? 0 : 1,
             transition: 'opacity 0.5s ease',
-            visibility: isOverviewMode ? 'hidden' : 'visible',
+            visibility: view.isOverviewMode ? 'hidden' : 'visible',
             zIndex: 90
           }}>
             <InputSection
@@ -395,7 +285,7 @@ function App() {
               onCountryChange={setCurrentCountry}
             />
           </div>
-        ) : isDetailPageOpen ? (
+        ) : view.isDetailPageOpen ? (
           <div style={{ pointerEvents: 'auto', height: '100%' }}>
             <DetailPage
               country={userData.country}
@@ -406,51 +296,41 @@ function App() {
               calculationBasis={calculationBasis}
               onCalculationBasisChange={setCalculationBasis}
               onReset={() => {
-                setIsDetailPageOpen(false);
+                dispatch({ type: 'CLOSE_DETAIL' });
                 handleReset();
               }}
               onOpenSettingsWithPerson={(personId) => {
-                if (personId === 'user-settings') {
-                  setEditingPersonId(null);
-                } else {
-                  setEditingPersonId(personId);
-                }
-                setIsDetailPageOpen(false);
-                setIsSettingsOpen(true);
+                dispatch({
+                  type: 'OPEN_SETTINGS',
+                  editingPersonId: personId === 'user-settings' ? null : personId
+                });
+                dispatch({ type: 'CLOSE_DETAIL' });
               }}
               people={people}
               displayMode={displayMode}
               onDisplayModeChange={setDisplayMode}
-              onBack={() => setIsDetailPageOpen(false)}
+              onBack={() => dispatch({ type: 'CLOSE_DETAIL' })}
             />
           </div>
         ) : (
           <div style={{ pointerEvents: 'none', width: '100%', height: '100%' }}>
-             {/* Visualization wrapper is pointer-events: none to allow Earth clicks through.
-                 Interactive elements like countdown-card have pointer-events: auto set in CSS. */}
-          <Visualization
-            country={userData.country}
-            age={userData.age}
+            <Visualization
+              country={userData.country}
+              age={userData.age}
               lifeExpectancy={userData.lifeExpectancy}
               healthyLifeExpectancy={userData.healthyLifeExpectancy}
               workingAgeLimit={userData.workingAgeLimit}
               calculationBasis={calculationBasis}
               onCalculationBasisChange={setCalculationBasis}
-            onReset={handleReset}
-              isSettingsOpen={isSettingsOpen}
-              onCloseSettings={() => {
-                setIsSettingsOpen(false);
-                setIsEarthZoomed(false);
-                setEditingPersonId(null);
-              }}
-              editingPersonId={editingPersonId}
+              onReset={handleReset}
+              isSettingsOpen={view.isSettingsOpen}
+              onCloseSettings={() => dispatch({ type: 'CLOSE_SETTINGS' })}
+              editingPersonId={view.editingPersonId}
               onOpenSettingsWithPerson={(personId) => {
-                if (personId === 'user-settings') {
-                  setEditingPersonId(null);
-                } else {
-                  setEditingPersonId(personId);
-                }
-                setIsSettingsOpen(true);
+                dispatch({
+                  type: 'OPEN_SETTINGS',
+                  editingPersonId: personId === 'user-settings' ? null : personId
+                });
               }}
               onUpdateUserSettings={handleUpdateUserSettings}
               people={people}
@@ -459,31 +339,22 @@ function App() {
               userSettingsRef={userSettingsRef}
               onParticleDrop={(callback) => setParticleDropCallback(() => callback)}
               onNavigate={navigateTo}
-          />
+            />
           </div>
         )}
       </main>
 
-      {/* Settings Modal - Outside main container */}
-      {isSettingsOpen && isValidUser && (
+      {view.isSettingsOpen && isValidUser && (
         <>
-          <div className="settings-overlay" onClick={() => {
-            setIsSettingsOpen(false);
-            setIsEarthZoomed(false);
-            setEditingPersonId(null);
-          }}></div>
+          <div className="settings-overlay" onClick={() => dispatch({ type: 'CLOSE_SETTINGS' })}></div>
           <div className="settings-modal">
             <div className="settings-container">
               <div className="settings-header">
-                <h2 className="settings-title">設定</h2>
+                <h2 className="settings-title">{tt('common.settings')}</h2>
                 <button
                   className="close-btn"
-                  aria-label={userData.country === 'Japan' ? '設定を閉じる' : 'Close settings'}
-                  onClick={() => {
-                    setIsSettingsOpen(false);
-                    setIsEarthZoomed(false);
-                    setEditingPersonId(null);
-                  }}
+                  aria-label={tt('common.close')}
+                  onClick={() => dispatch({ type: 'CLOSE_SETTINGS' })}
                 >×</button>
               </div>
               <div className="settings-content">
@@ -497,8 +368,8 @@ function App() {
                     onUpdate={handleUpdateUserSettings}
                   />
                 </div>
-                <PeopleSettings 
-                  people={people} 
+                <PeopleSettings
+                  people={people}
                   setPeople={setPeople}
                   userAge={userData.age}
                   userCountry={userData.country}
@@ -506,22 +377,12 @@ function App() {
                     const stats = calculateLifeStats(userData.country, userData.age, userData.lifeExpectancy);
                     return stats.remainingYears;
                   })()}
-                  editingPersonId={editingPersonId}
-                  onEditComplete={() => {
-                    setIsSettingsOpen(false);
-                    setEditingPersonId(null);
-                  }}
+                  editingPersonId={view.editingPersonId}
+                  onEditComplete={() => dispatch({ type: 'CLOSE_SETTINGS' })}
                 />
-                <div style={{ 
-                  marginTop: '2rem', 
-                  paddingTop: '2rem', 
-                  borderTop: '1px solid rgba(255, 255, 255, 0.1)' 
-                }}>
+                <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
                   <button
-                    onClick={() => {
-                      setIsSettingsOpen(false);
-                      setIsDetailPageOpen(true);
-                    }}
+                    onClick={() => dispatch({ type: 'OPEN_DETAIL' })}
                     style={{
                       width: '100%',
                       padding: '1rem',
@@ -533,14 +394,10 @@ function App() {
                       cursor: 'pointer',
                       transition: 'all 0.3s ease'
                     }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = 'rgba(255, 255, 255, 0.15)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = 'rgba(255, 255, 255, 0.1)';
-                    }}
+                    onMouseEnter={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; }}
+                    onMouseLeave={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; }}
                   >
-                    {userData.country === 'Japan' ? '詳細ページを見る' : 'View Detail Page'}
+                    {tt('common.viewDetail')}
                   </button>
                 </div>
               </div>
@@ -551,5 +408,20 @@ function App() {
     </div>
   )
 }
+
+const overlayStyle = {
+  pointerEvents: 'auto',
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  width: '100%',
+  height: '100%',
+  overflowY: 'auto',
+  overflowX: 'hidden',
+  WebkitOverflowScrolling: 'touch',
+  zIndex: 100
+};
 
 export default App
