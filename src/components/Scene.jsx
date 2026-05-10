@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import SolarSystem from './SolarSystem';
 import DigitalHourglassScene from './DigitalHourglassScene';
 import { getLifeExpectancy } from '../utils/calculations';
+import { ORBIT_DISTANCES, HOUR_THRESHOLDS, MEETING_THRESHOLDS, CAMERA } from '../constants';
 
 // Scene component handling 3D transitions
 function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears, selectedPersonId, visualizingPersonId, isEarthVisualized, calculationBasis }) {
@@ -90,9 +91,9 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
                     const meetings = effectiveYears * (selectedPerson.meetingFrequency || 12);
                     const hours = meetings * (selectedPerson.hoursPerMeeting || 2);
                     
-                    if (hours < 24 || meetings < 10) return 6;       // critical
-                    if (hours < 100 || meetings < 50) return 12;     // warning
-                    return 20;                                        // stable
+                    if (hours < HOUR_THRESHOLDS.SOON || meetings < MEETING_THRESHOLDS.SOON) return ORBIT_DISTANCES.INNER;
+                    if (hours < HOUR_THRESHOLDS.SOME || meetings < MEETING_THRESHOLDS.SOME) return ORBIT_DISTANCES.MIDDLE;
+                    return ORBIT_DISTANCES.OUTER;
                 };
                 
                 const distance = getPersonDistance();
@@ -125,7 +126,7 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
         } else if (isOverviewMode) {
             // Overview Mode: Top-down view to see the entire relationship map
             // PersonStars can be at distance 6-20, camera high enough to see 2/3 of screen
-            const overviewHeight = 65; // Height above Earth to see all stars within screen
+            const overviewHeight = CAMERA.OVERVIEW_HEIGHT;
             
             // Camera positioned directly above Earth, looking straight down
             targetCameraPos = new THREE.Vector3(

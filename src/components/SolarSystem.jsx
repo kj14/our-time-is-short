@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import Earth from './Earth';
 import { lifeExpectancyData } from '../utils/lifeData';
 import { calculateAge, calculateTimeWithPerson } from '../utils/calculations';
+import { ORBIT_DISTANCES, HOUR_THRESHOLDS, MEETING_THRESHOLDS } from '../constants';
 
 // High quality textures for planets from local storage
 const PLANET_TEXTURES = [
@@ -17,15 +18,12 @@ const PLANET_TEXTURES = [
     '/textures/2k_neptune.jpg'
 ];
 
-// 3 orbit zones based on remaining time
-// Zone 1 (Closest - Critical): < 24 hours OR < 10 meetings
-// Zone 2 (Middle - Warning): < 100 hours OR < 50 meetings  
-// Zone 3 (Outer - Stable): >= 100 hours AND >= 50 meetings
-// Distances adjusted to fit within 2/3 of screen in overview mode
+// Distance + colour per orbit zone. Distances are sourced from constants
+// so Scene.jsx and SolarSystem.jsx cannot drift apart.
 const ORBIT_ZONES = {
-    critical: { distance: 6, color: '#ef4444' },    // Red - urgent
-    warning: { distance: 12, color: '#f59e0b' },    // Amber - attention needed
-    stable: { distance: 20, color: '#10b981' }      // Green - healthy relationship
+    critical: { distance: ORBIT_DISTANCES.INNER, color: '#ef4444' },
+    warning: { distance: ORBIT_DISTANCES.MIDDLE, color: '#f59e0b' },
+    stable: { distance: ORBIT_DISTANCES.OUTER, color: '#10b981' }
 };
 
 // Wrapper around shared calculateTimeWithPerson that supplies defaults and
@@ -43,13 +41,9 @@ const orbitTimeForPerson = (person, userAge, userCountry, remainingYears) => {
 
 // Determine which orbit zone a person belongs to
 const getOrbitZone = (hours, meetings) => {
-    if (hours < 24 || meetings < 10) {
-        return 'critical';
-    } else if (hours < 100 || meetings < 50) {
-        return 'warning';
-    } else {
-        return 'stable';
-    }
+    if (hours < HOUR_THRESHOLDS.SOON || meetings < MEETING_THRESHOLDS.SOON) return 'critical';
+    if (hours < HOUR_THRESHOLDS.SOME || meetings < MEETING_THRESHOLDS.SOME) return 'warning';
+    return 'stable';
 };
 
 // Person Star Component. When `isMentor` is true, the star is rendered with
