@@ -4,27 +4,32 @@
 // receive a t(key, vars?) function.
 
 import { strings } from './strings';
+import type { Language } from '../types';
 
-export const SUPPORTED_LANGUAGES = ['ja', 'en'];
-const DEFAULT_LANGUAGE = 'en';
+export const SUPPORTED_LANGUAGES: readonly Language[] = ['ja', 'en'] as const;
+const DEFAULT_LANGUAGE: Language = 'en';
 
-export function languageFromCountry(country) {
+export function languageFromCountry(country: string | undefined | null): Language {
     if (country === 'Japan') return 'ja';
     return DEFAULT_LANGUAGE;
 }
 
-export function getStoredLanguageOverride() {
+export function getStoredLanguageOverride(): Language | null {
     try {
         const raw = localStorage.getItem('lifevis_language');
-        return SUPPORTED_LANGUAGES.includes(raw) ? raw : null;
+        return raw && (SUPPORTED_LANGUAGES as readonly string[]).includes(raw)
+            ? (raw as Language)
+            : null;
     } catch {
         return null;
     }
 }
 
-export function resolveLanguage(country) {
+export function resolveLanguage(country: string | undefined | null): Language {
     return getStoredLanguageOverride() ?? languageFromCountry(country);
 }
+
+export type Translator = (key: string, vars?: Record<string, string | number>) => string;
 
 // Returns a translator bound to the chosen language.
 // Components that already know the language pass it directly:
@@ -32,7 +37,7 @@ export function resolveLanguage(country) {
 //   <button>{t('common.save')}</button>
 //
 // Vars can be interpolated with {name} placeholders.
-export function useT(country) {
+export function useT(country: string | undefined | null): Translator {
     const lang = resolveLanguage(country);
     const dict = strings[lang] || strings[DEFAULT_LANGUAGE];
 
@@ -40,7 +45,7 @@ export function useT(country) {
         let template = dict[key];
         if (template == null) {
             // Missing key: fall back to the other language, then to the key itself.
-            const otherLang = lang === 'ja' ? 'en' : 'ja';
+            const otherLang: Language = lang === 'ja' ? 'en' : 'ja';
             template = strings[otherLang]?.[key] ?? key;
         }
         if (!vars) return template;
@@ -53,6 +58,6 @@ export function useT(country) {
 
 // Convenience predicate for the small number of code paths that still
 // use isJapan boolean toggles. Prefer useT(country) in new code.
-export function isJapaneseLanguage(country) {
+export function isJapaneseLanguage(country: string | undefined | null): boolean {
     return resolveLanguage(country) === 'ja';
 }

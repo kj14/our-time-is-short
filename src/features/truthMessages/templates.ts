@@ -11,10 +11,11 @@
 // and returns { q: {ja, en}, a: {ja, en} }.
 
 import { calculateTimeWithPerson } from '../../utils/calculations';
+import type { Person, TruthContext, TruthTemplate } from '../../types';
 
-const round = (n) => Math.max(0, Math.round(n));
+const round = (n: number): number => Math.max(0, Math.round(n));
 
-const sharedYearsWith = (person, ctx) => {
+const sharedYearsWith = (person: Person, ctx: TruthContext): number => {
     const r = calculateTimeWithPerson({
         person: { ...person, meetingFrequency: 1, hoursPerMeeting: 1 },
         userAge: ctx.userAge,
@@ -25,9 +26,10 @@ const sharedYearsWith = (person, ctx) => {
     return r.years;
 };
 
-const annualEventsLeft = (person, ctx) => round(sharedYearsWith(person, ctx));
+const annualEventsLeft = (person: Person, ctx: TruthContext): number =>
+    round(sharedYearsWith(person, ctx));
 
-const meetingsLeft = (person, ctx) => {
+const meetingsLeft = (person: Person, ctx: TruthContext): number => {
     const r = calculateTimeWithPerson({
         person,
         userAge: ctx.userAge,
@@ -38,7 +40,7 @@ const meetingsLeft = (person, ctx) => {
     return round(r.meetings);
 };
 
-export const TEMPLATES = [
+export const TEMPLATES: TruthTemplate[] = [
     // §8 Q+A trio
     {
         id: 'drinking_party',
@@ -692,7 +694,7 @@ export const TEMPLATES = [
     }
 ];
 
-function ordinal(n) {
+function ordinal(n: number): string {
     const s = ['th', 'st', 'nd', 'rd'];
     const v = n % 100;
     return s[(v - 20) % 10] || s[v] || s[0];

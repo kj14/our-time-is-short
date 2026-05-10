@@ -1,8 +1,12 @@
 // Translation keys keyed by feature area. New strings should be added here
 // rather than inlined in component JSX. ja and en must keep matching keys —
-// see src/i18n/__test__ (added in Phase 4) for the assertion.
+// see strings.test.ts for the assertion.
 
-export const strings = {
+import type { Language } from '../types';
+
+type Strings = Record<Language, Record<string, string>>;
+
+export const strings: Strings = {
     ja: {
         // common UI
         'common.save': '保存',

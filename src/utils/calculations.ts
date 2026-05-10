@@ -1,20 +1,29 @@
 // Single source of truth for age and time-with-person calculations.
-// Previously these were duplicated across 5+ components with subtly different
-// algorithms (asymmetric vs symmetric life-expectancy clamping), which produced
-// different "hours together" numbers in different views for the same person.
+// Previously these were duplicated across 5+ components with subtly
+// different algorithms (asymmetric vs symmetric life-expectancy clamping),
+// which produced different "hours together" numbers in different views
+// for the same person.
 
 import {
     lifeExpectancyData,
     healthyLifeExpectancyData,
     workingAgeLimitData
 } from './lifeData';
+import type { CalculationBasis, Person } from '../types';
+
+type AgeInput =
+    | null
+    | undefined
+    | Date
+    | string
+    | { age?: number | string | null; birthYear?: number; birthMonth?: number; birthDay?: number };
 
 // Returns fractional years for accurate downstream math.
 // Accepts:
 //   - { age: number }                          (explicit age)
 //   - { birthYear, birthMonth, birthDay }      (1-indexed month, as used by InputSection / PersonSettings)
 //   - Date | string (ISO)                      (raw birthdate)
-export function calculateAge(input) {
+export function calculateAge(input: AgeInput): number | null {
     if (input == null) return null;
 
     if (input instanceof Date) {
@@ -36,7 +45,7 @@ export function calculateAge(input) {
     return null;
 }
 
-function ageFromDate(birthDate) {
+function ageFromDate(birthDate: Date): number {
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
@@ -50,13 +59,14 @@ function ageFromDate(birthDate) {
     }
     const lastBirthday = new Date(nextBirthday);
     lastBirthday.setFullYear(nextBirthday.getFullYear() - 1);
-    const yearProgress = (today - lastBirthday) / (nextBirthday - lastBirthday);
+    const yearProgress =
+        (today.getTime() - lastBirthday.getTime()) /
+        (nextBirthday.getTime() - lastBirthday.getTime());
     return age + yearProgress;
 }
 
 // Resolves life expectancy for a country under the given calculation basis.
-// basis: 'life' (default), 'healthy', 'working'
-export function getLifeExpectancy(country, basis = 'life') {
+export function getLifeExpectancy(country: string, basis: CalculationBasis = 'life'): number {
     const dict =
         basis === 'healthy' ? healthyLifeExpectancyData :
         basis === 'working' ? workingAgeLimitData :
@@ -64,13 +74,28 @@ export function getLifeExpectancy(country, basis = 'life') {
     return dict[country] ?? dict.Global;
 }
 
+export interface TimeWithPersonResult {
+    hours: number;
+    meetings: number;
+    days: number;
+    years: number;
+    personAge: number | null;
+}
+
 // Canonical time-with-person calculation (from Visualization.jsx).
 // The relationship is bounded by whichever life ends first:
 //   - person younger than user → bounded by user's life expectancy
 //   - person older or same age → bounded by person's life expectancy
 // (Both currently use the same country's life expectancy as a unisex average.)
-export function calculateTimeWithPerson({ person, userAge, country, basis = 'life', remainingYears }) {
-    const personAge = calculateAge(person);
+export function calculateTimeWithPerson(args: {
+    person: Person | (Partial<Person> & { name?: string });
+    userAge: number;
+    country: string;
+    basis?: CalculationBasis;
+    remainingYears?: number;
+}): TimeWithPersonResult {
+    const { person, userAge, country, basis = 'life', remainingYears } = args;
+    const personAge = calculateAge(person as AgeInput);
     if (personAge === null) {
         return { hours: 0, meetings: 0, days: 0, years: 0, personAge: null };
     }
@@ -96,7 +121,13 @@ export function calculateTimeWithPerson({ person, userAge, country, basis = 'lif
 }
 
 // Convenience: just hours (back-compat with old calculateHoursWithPerson signature).
-export function calculateHoursWithPerson(person, userAge, userCountry, remainingYears, basis = 'life') {
+export function calculateHoursWithPerson(
+    person: Person,
+    userAge: number,
+    userCountry: string,
+    remainingYears?: number,
+    basis: CalculationBasis = 'life'
+): number {
     return calculateTimeWithPerson({
         person,
         userAge,

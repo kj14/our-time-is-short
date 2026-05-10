@@ -6,17 +6,39 @@
 // Then picks pseudo-randomly excluding the most recently shown ids.
 
 import { TEMPLATES } from './templates';
+import type {
+    CalculationBasis,
+    Person,
+    Relationship,
+    TruthContext,
+    TruthMessageOutput,
+    TruthTemplate,
+    UserData
+} from '../../types';
 
 const RECENT_LIMIT = 4;
 
-export function buildContext({ user, people, basis = 'life', userLifeExpectancy }) {
-    const peopleByRelationship = {};
+export function buildContext({
+    user,
+    people,
+    basis = 'life',
+    userLifeExpectancy
+}: {
+    user: Pick<UserData, 'country' | 'age'>;
+    people: Person[];
+    basis?: CalculationBasis;
+    userLifeExpectancy: number;
+}): TruthContext {
+    const peopleByRelationship: Record<Relationship, Person[]> = {
+        parent: [], child: [], sibling: [], spouse: [],
+        partner: [], friend: [], mentor: [], other: []
+    };
     for (const p of people) {
-        const r = p.relationship || 'other';
-        (peopleByRelationship[r] ||= []).push(p);
+        const r: Relationship = (p.relationship || 'other') as Relationship;
+        peopleByRelationship[r].push(p);
         // A person flagged isMentor counts as 'mentor' regardless of their stored relationship.
         if (p.isMentor) {
-            (peopleByRelationship.mentor ||= []).push(p);
+            peopleByRelationship.mentor.push(p);
         }
     }
     const userRemainingYears = Math.max(0, userLifeExpectancy - user.age);
@@ -35,21 +57,25 @@ export function buildContext({ user, people, basis = 'life', userLifeExpectancy 
     };
 }
 
-export function isSatisfied(template, ctx) {
+export function isSatisfied(template: TruthTemplate, ctx: TruthContext): boolean {
     for (const req of template.requires) {
         if (req === 'anyPerson') {
             if (ctx.people.length === 0) return false;
         } else if (req === 'self') {
             if (ctx.userAge == null) return false;
         } else {
-            // a specific relationship
-            if (!ctx.peopleByRelationship[req] || ctx.peopleByRelationship[req].length === 0) return false;
+            // a specific relationship — selector guarantees non-empty
+            const list = ctx.peopleByRelationship[req as Relationship];
+            if (list.length === 0) return false;
         }
     }
     return true;
 }
 
-export function pickTruthMessage(ctx, seenIds = []) {
+export function pickTruthMessage(
+    ctx: TruthContext,
+    seenIds: string[] = []
+): TruthMessageOutput | null {
     const eligible = TEMPLATES.filter((t) => isSatisfied(t, ctx));
     if (eligible.length === 0) return null;
 

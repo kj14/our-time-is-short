@@ -7,7 +7,7 @@ export const ORBIT_DISTANCES = {
     INNER: 6,    // critical
     MIDDLE: 12,  // warning
     OUTER: 20    // stable
-};
+} as const;
 
 // Thresholds that decide which orbit zone a person belongs to. A person
 // is in the "critical" zone if EITHER their remaining hours OR meetings
@@ -16,20 +16,20 @@ export const HOUR_THRESHOLDS = {
     SOON: 24,
     SOME: 100,
     LOTS: 500
-};
+} as const;
 
 export const MEETING_THRESHOLDS = {
     SOON: 10,
     SOME: 50,
     LOTS: 200
-};
+} as const;
 
 // Camera defaults
 export const CAMERA = {
     DEFAULT_HEIGHT: 65,
     OVERVIEW_HEIGHT: 65,
     ZOOM_DISTANCE: 8
-};
+} as const;
 
 // Universe size
 export const MAX_PEOPLE = 10;
