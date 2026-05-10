@@ -5,6 +5,59 @@ import { calculateAge } from '../utils/calculations';
 import { TruthMessage } from '../features/truthMessages';
 import EnergyTank from './EnergyTank';
 
+// Per-person remaining-meetings list. Restored after the Phase 4 dead-code
+// pass mistakenly removed it — the original DetailPage rendered this below
+// each user's people grid.
+const LifeEvents = ({ remainingYears, people, userAge, userCountry }) => {
+    const isJapan = userCountry === 'Japan';
+
+    const events = useMemo(() => {
+        const list = [];
+        people.forEach((person) => {
+            const personAge = calculateAge(person);
+            if (personAge === null) return;
+            const personLE = lifeExpectancyData[userCountry] || lifeExpectancyData['Global'];
+            const personRemainingYears = Math.max(0, personLE - personAge);
+            const overlapYears = Math.min(remainingYears, personRemainingYears);
+            const totalMeetings = overlapYears * (person.meetingFrequency || 0);
+            if (totalMeetings > 0) {
+                list.push({
+                    name: person.name,
+                    meetings: totalMeetings,
+                    color: person.color || '#818cf8'
+                });
+            }
+        });
+        return list.sort((a, b) => b.meetings - a.meetings);
+    }, [remainingYears, people, userCountry]);
+
+    if (events.length === 0) return null;
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {events.map((e, i) => (
+                <div
+                    key={i}
+                    style={{
+                        padding: '1rem',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        borderRadius: '12px',
+                        border: `1px solid ${e.color}40`,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                    }}
+                >
+                    <span style={{ fontWeight: 600 }}>{e.name}</span>
+                    <span style={{ opacity: 0.75 }}>
+                        {isJapan ? `${Math.round(e.meetings).toLocaleString()}回` : `${Math.round(e.meetings).toLocaleString()} times`}
+                    </span>
+                </div>
+            ))}
+        </div>
+    );
+};
+
 const FREQUENCY_LABELS_JP = {
     365: '毎日',
     104: '週に2回',
@@ -469,6 +522,26 @@ const DetailPage = ({
                     })}
                 </div>
             </div>
+
+            {/* Life Events — per-person remaining-meetings list */}
+            {people.length > 0 && (
+                <div style={{ marginBottom: '4rem' }}>
+                    <h3 style={{
+                        marginBottom: '2rem',
+                        textAlign: 'center',
+                        fontSize: '1.5rem',
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                        opacity: 0.8
+                    }}>{country === 'Japan' ? '人生のイベント' : 'Life Events'}</h3>
+                    <LifeEvents
+                        remainingYears={displayStats.remainingYears}
+                        people={people}
+                        userAge={age}
+                        userCountry={country}
+                    />
+                </div>
+            )}
 
             {/* Truth Messages — Q+A messages per CONCEPT.md §8-9 */}
             <div style={{ marginBottom: '6rem' }}>
