@@ -31,18 +31,49 @@ function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDetailPageOpen, setIsDetailPageOpen] = useState(false);
   const [editingPersonId, setEditingPersonId] = useState(null);
-  const [people, setPeople] = useState(() => {
-    // Load from localStorage
+  const [people, setPeopleRaw] = useState(() => {
     const saved = localStorage.getItem('lifevis_people');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // Schema v1 → v2 migration: ensure every person has relationship + isMentor.
+        return parsed.map((p) => ({
+          relationship: 'other',
+          isMentor: false,
+          ...p
+        }));
       } catch (e) {
         return [];
       }
     }
     return [];
   });
+
+  // Wrapper enforcing the "only one mentor at a time" invariant.
+  // If a save adds a new mentor (someone whose isMentor flipped to true),
+  // demote any prior mentor. If the array still has multiple mentors after
+  // that, keep the last one (last write wins in array order).
+  const setPeople = (next) => {
+    const arr = typeof next === 'function' ? next(people) : next;
+    const prevMentorIds = new Set(people.filter((p) => p.isMentor).map((p) => p.id));
+    const newMentor = arr.find((p) => p.isMentor && !prevMentorIds.has(p.id));
+    let normalized = arr;
+    if (newMentor) {
+      normalized = arr.map((p) =>
+        p.id === newMentor.id ? p : (p.isMentor ? { ...p, isMentor: false } : p)
+      );
+    } else {
+      // Defensive: if more than one mentor somehow exists, keep the last.
+      const mentors = arr.filter((p) => p.isMentor);
+      if (mentors.length > 1) {
+        const keepId = mentors[mentors.length - 1].id;
+        normalized = arr.map((p) =>
+          p.isMentor && p.id !== keepId ? { ...p, isMentor: false } : p
+        );
+      }
+    }
+    setPeopleRaw(normalized);
+  };
   const [calculationBasis, setCalculationBasis] = useState(() => {
     // Load from localStorage
     const saved = localStorage.getItem('lifevis_calculationBasis');

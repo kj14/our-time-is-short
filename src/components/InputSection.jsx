@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { lifeExpectancyData, translations } from '../utils/lifeData';
+import { COUNTRIES, translations } from '../utils/lifeData';
+import { calculateAge } from '../utils/calculations';
+import { useT, isJapaneseLanguage } from '../i18n';
 
 const InputSection = ({ onVisualize, onCountryChange }) => {
-    // Load from localStorage or use defaults
     const [country, setCountry] = useState(() => {
         return localStorage.getItem('lifevis_country') || 'Japan';
     });
@@ -17,52 +18,21 @@ const InputSection = ({ onVisualize, onCountryChange }) => {
     });
     const [calculatedAge, setCalculatedAge] = useState(null);
 
-    const t = translations[country] || translations['default'];
+    const t = useT(country);
+    const legacy = translations[country] || translations['default'];
+    const isJapan = isJapaneseLanguage(country);
 
-    // Generate year options (current year - 120 to current year)
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: 121 }, (_, i) => currentYear - i);
-
-    // Generate month options
     const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
-    // Generate day options based on selected month and year
-    const getDaysInMonth = (year, month) => {
-        if (!year || !month) return 31;
-        return new Date(year, month, 0).getDate();
+    const getDaysInMonth = (y, m) => {
+        if (!y || !m) return 31;
+        return new Date(y, m, 0).getDate();
     };
 
     const days = Array.from({ length: getDaysInMonth(year, month) }, (_, i) => i + 1);
 
-    // Calculate age from birthdate
-    const calculateAge = (y, m, d) => {
-        if (!y || !m || !d) return null;
-        const today = new Date();
-        const birthDate = new Date(y, m - 1, d);
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const monthDiff = today.getMonth() - birthDate.getMonth();
-        const dayDiff = today.getDate() - birthDate.getDate();
-
-        // Adjust for month and day
-        if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-            age--;
-        }
-
-        // Calculate precise age with decimals
-        const nextBirthday = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate());
-        if (nextBirthday < today) {
-            nextBirthday.setFullYear(today.getFullYear() + 1);
-        }
-        const lastBirthday = new Date(nextBirthday);
-        lastBirthday.setFullYear(nextBirthday.getFullYear() - 1);
-
-        const yearProgress = (today - lastBirthday) / (nextBirthday - lastBirthday);
-        const preciseAge = age + yearProgress;
-
-        return preciseAge;
-    };
-
-    // Save to localStorage whenever values change
     useEffect(() => {
         if (country) localStorage.setItem('lifevis_country', country);
     }, [country]);
@@ -79,9 +49,8 @@ const InputSection = ({ onVisualize, onCountryChange }) => {
         if (day) localStorage.setItem('lifevis_day', day);
     }, [day]);
 
-    // Update age when any date component changes
     useEffect(() => {
-        const age = calculateAge(year, month, day);
+        const age = calculateAge({ birthYear: Number(year), birthMonth: Number(month), birthDay: Number(day) });
         setCalculatedAge(age);
     }, [year, month, day]);
 
@@ -103,63 +72,66 @@ const InputSection = ({ onVisualize, onCountryChange }) => {
     return (
         <section className="input-section fade-in" style={{ animationDelay: '0.2s' }}>
             <p className="input-section-tagline">
-                {t.tagline}
+                {legacy.tagline}
             </p>
             <form onSubmit={handleSubmit} className="input-form">
                 <div className="input-group">
                     <label className="input-label">
-                        {t.whereLive}
+                        {t('input.country')}
                     </label>
                     <div style={{ position: 'relative' }}>
                         <select
                             value={country}
                             onChange={handleCountryChange}
                             className="select-styled"
+                            aria-label={t('input.country')}
                         >
-                            {Object.keys(lifeExpectancyData).sort().map(c => (
-                                <option key={c} value={c}>{c}</option>
-                            ))}
+                            {[...COUNTRIES]
+                                .sort((a, b) => (isJapan ? a.nameJa.localeCompare(b.nameJa, 'ja') : a.nameEn.localeCompare(b.nameEn)))
+                                .map(c => (
+                                    <option key={c.key} value={c.key}>{isJapan ? c.nameJa : c.nameEn}</option>
+                                ))}
                         </select>
                     </div>
                 </div>
 
                 <div className="input-group">
                     <label className="input-label">
-                        {t.birthdate || '生年月日'}
+                        {t('input.birthDate')}
                     </label>
 
                     <div className="date-grid">
-                        {/* Year */}
                         <select
                             value={year}
                             onChange={(e) => setYear(e.target.value)}
                             className="select-styled"
+                            aria-label={t('input.year')}
                         >
-                            <option value="">年</option>
+                            <option value="">{t('input.year')}</option>
                             {years.map(y => (
                                 <option key={y} value={y}>{y}</option>
                             ))}
                         </select>
 
-                        {/* Month */}
                         <select
                             value={month}
                             onChange={(e) => setMonth(e.target.value)}
                             className="select-styled"
+                            aria-label={t('input.month')}
                         >
-                            <option value="">月</option>
+                            <option value="">{t('input.month')}</option>
                             {months.map(m => (
                                 <option key={m} value={m}>{m}</option>
                             ))}
                         </select>
 
-                        {/* Day */}
                         <select
                             value={day}
                             onChange={(e) => setDay(e.target.value)}
                             className="select-styled"
+                            aria-label={t('input.day')}
                         >
-                            <option value="">日</option>
+                            <option value="">{t('input.day')}</option>
                             {days.map(d => (
                                 <option key={d} value={d}>{d}</option>
                             ))}
@@ -168,13 +140,13 @@ const InputSection = ({ onVisualize, onCountryChange }) => {
 
                     {calculatedAge !== null && (
                         <div className="age-display">
-                            {calculatedAge.toFixed(1)} 歳
+                            {calculatedAge.toFixed(1)} {t('input.ageUnit')}
                         </div>
                     )}
                 </div>
 
                 <button type="submit" className="visualize-btn">
-                    {t.visualize}
+                    {legacy.visualize}
                 </button>
             </form>
         </section>

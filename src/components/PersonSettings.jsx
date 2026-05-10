@@ -1,49 +1,63 @@
 import React, { useState, useEffect } from 'react';
-import { getLifeExpectancy } from '../utils/calculations';
+import { getLifeExpectancy, calculateAge as canonicalAge } from '../utils/calculations';
+import { useT, isJapaneseLanguage } from '../i18n';
 
-// Planet textures with names for selection
 const PLANET_OPTIONS = [
-    { url: '/textures/2k_mercury.jpg', name: '水星', nameEn: 'Mercury' },
-    { url: '/textures/2k_venus_surface.jpg', name: '金星', nameEn: 'Venus' },
-    { url: '/textures/2k_mars.jpg', name: '火星', nameEn: 'Mars' },
-    { url: '/textures/2k_jupiter.jpg', name: '木星', nameEn: 'Jupiter' },
-    { url: '/textures/2k_saturn.jpg', name: '土星', nameEn: 'Saturn' },
-    { url: '/textures/2k_uranus.jpg', name: '天王星', nameEn: 'Uranus' },
-    { url: '/textures/2k_neptune.jpg', name: '海王星', nameEn: 'Neptune' }
+    { url: '/textures/2k_mercury.jpg',       i18nKey: 'planet.mercury' },
+    { url: '/textures/2k_venus_surface.jpg', i18nKey: 'planet.venus'   },
+    { url: '/textures/2k_mars.jpg',          i18nKey: 'planet.mars'    },
+    { url: '/textures/2k_jupiter.jpg',       i18nKey: 'planet.jupiter' },
+    { url: '/textures/2k_saturn.jpg',        i18nKey: 'planet.saturn'  },
+    { url: '/textures/2k_uranus.jpg',        i18nKey: 'planet.uranus'  },
+    { url: '/textures/2k_neptune.jpg',       i18nKey: 'planet.neptune' }
 ];
 
 const FREQUENCY_OPTIONS = [
-    { value: 365, label: '毎日', labelEn: 'Daily' },
-    { value: 104, label: '週に2回', labelEn: 'Twice a week' },
-    { value: 52, label: '週に1回', labelEn: 'Weekly' },
-    { value: 24, label: '月に2回', labelEn: 'Twice a month' },
-    { value: 12, label: '月に1回', labelEn: 'Monthly' },
-    { value: 4, label: '3ヶ月に1回', labelEn: 'Once a quarter' },
-    { value: 1, label: '年に1回', labelEn: 'Once a year' }
+    { value: 365, i18nKey: 'freq.daily'       },
+    { value: 104, i18nKey: 'freq.twiceWeek'   },
+    { value:  52, i18nKey: 'freq.weekly'      },
+    { value:  24, i18nKey: 'freq.twiceMonth'  },
+    { value:  12, i18nKey: 'freq.monthly'     },
+    { value:   4, i18nKey: 'freq.quarterly'   },
+    { value:   1, i18nKey: 'freq.yearly'      }
 ];
 
 const HOURS_OPTIONS = [
-    { value: 0.5, label: '30分', labelEn: '30 min' },
-    { value: 1, label: '1時間', labelEn: '1 hour' },
-    { value: 2, label: '2時間', labelEn: '2 hours' },
-    { value: 3, label: '3時間', labelEn: '3 hours' },
-    { value: 6, label: '半日', labelEn: 'Half day' },
-    { value: 24, label: '1日', labelEn: '1 day' }
+    { value: 0.5, i18nKey: 'hours.30min'   },
+    { value: 1,   i18nKey: 'hours.1h'      },
+    { value: 2,   i18nKey: 'hours.2h'      },
+    { value: 3,   i18nKey: 'hours.3h'      },
+    { value: 6,   i18nKey: 'hours.halfDay' },
+    { value: 24,  i18nKey: 'hours.fullDay' }
+];
+
+const RELATIONSHIP_OPTIONS = [
+    { value: 'parent',  i18nKey: 'person.relationship.parent'   },
+    { value: 'child',   i18nKey: 'person.relationship.child'    },
+    { value: 'sibling', i18nKey: 'person.relationship.sibling'  },
+    { value: 'spouse',  i18nKey: 'person.relationship.spouse'   },
+    { value: 'partner', i18nKey: 'person.relationship.partner'  },
+    { value: 'friend',  i18nKey: 'person.relationship.friend'   },
+    { value: 'mentor',  i18nKey: 'person.relationship.mentor'   },
+    { value: 'other',   i18nKey: 'person.relationship.other'    }
 ];
 
 const generateId = () => `person_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
 const PersonSettings = ({
-    person, // null for new person, object for editing
+    person,
     onSave,
     onDelete,
     onCancel,
-    onVisualize, // Callback to visualize time with this person
-    isJapan = true,
+    onVisualize,
+    isJapan, // legacy prop, ignored if userCountry is set
     userCountry = 'Japan',
     userAge,
     calculationBasis = 'life'
 }) => {
+    const t = useT(userCountry);
+    const localeIsJapan = isJapaneseLanguage(userCountry);
+
     const [formData, setFormData] = useState({
         name: '',
         birthYear: '',
@@ -52,11 +66,12 @@ const PersonSettings = ({
         age: '',
         meetingFrequency: 12,
         hoursPerMeeting: 2,
-        textureUrl: PLANET_OPTIONS[0].url
+        textureUrl: PLANET_OPTIONS[0].url,
+        relationship: 'other',
+        isMentor: false
     });
     const [useAgeInput, setUseAgeInput] = useState(false);
 
-    // Initialize form with person data if editing
     useEffect(() => {
         if (person) {
             const hasAge = person.age !== undefined && person.age !== null;
@@ -69,12 +84,13 @@ const PersonSettings = ({
                 age: person.age !== undefined && person.age !== null ? person.age.toString() : '',
                 meetingFrequency: person.meetingFrequency || 12,
                 hoursPerMeeting: person.hoursPerMeeting || 2,
-                textureUrl: person.textureUrl || PLANET_OPTIONS[0].url
+                textureUrl: person.textureUrl || PLANET_OPTIONS[0].url,
+                relationship: person.relationship || 'other',
+                isMentor: !!person.isMentor
             });
         }
     }, [person]);
 
-    // Generate year options
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: 121 }, (_, i) => currentYear - i);
     const months = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -84,25 +100,17 @@ const PersonSettings = ({
     };
     const days = Array.from({ length: getDaysInMonth(formData.birthYear, formData.birthMonth) }, (_, i) => i + 1);
 
-    // Calculate age from birthdate
-    const calculateAge = () => {
-        if (!formData.birthYear || !formData.birthMonth || !formData.birthDay) return null;
-        const today = new Date();
-        const birthDate = new Date(formData.birthYear, formData.birthMonth - 1, formData.birthDay);
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const monthDiff = today.getMonth() - birthDate.getMonth();
-        const dayDiff = today.getDate() - birthDate.getDate();
-        if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-            age--;
-        }
-        return age;
-    };
-
-    const calculatedAge = useAgeInput ? (formData.age ? Number(formData.age) : null) : calculateAge();
+    const calculatedAge = useAgeInput
+        ? (formData.age ? Number(formData.age) : null)
+        : canonicalAge({
+            birthYear: Number(formData.birthYear),
+            birthMonth: Number(formData.birthMonth),
+            birthDay: Number(formData.birthDay)
+        });
 
     const handleSave = () => {
         if (!formData.name) {
-            alert(isJapan ? '名前を入力してください' : 'Please enter a name');
+            alert(t('person.errorName'));
             return;
         }
 
@@ -110,7 +118,7 @@ const PersonSettings = ({
         const hasAge = formData.age && formData.age !== '';
 
         if (!hasBirthdate && !hasAge) {
-            alert(isJapan ? '生年月日または年齢を入力してください' : 'Please enter birthdate or age');
+            alert(t('person.errorBirthOrAge'));
             return;
         }
 
@@ -125,13 +133,14 @@ const PersonSettings = ({
             ...(hasAge || useAgeInput ? { age: Number(formData.age) || calculatedAge } : {}),
             meetingFrequency: Number(formData.meetingFrequency),
             hoursPerMeeting: Number(formData.hoursPerMeeting),
-            textureUrl: formData.textureUrl
+            textureUrl: formData.textureUrl,
+            relationship: formData.relationship,
+            isMentor: !!formData.isMentor
         };
 
         onSave(savedPerson);
     };
 
-    // Calculate shared time preview
     const calculateSharedTime = () => {
         if (calculatedAge === null) return null;
 
@@ -141,10 +150,10 @@ const PersonSettings = ({
 
         const personRemainingYears = Math.max(0, lifeExpectancy - calculatedAge);
         const effectiveYears = Math.min(personRemainingYears, remainingYears);
-        
+
         const totalMeetings = effectiveYears * formData.meetingFrequency;
         const totalHours = totalMeetings * formData.hoursPerMeeting;
-        
+
         return {
             totalMeetings: Math.round(totalMeetings),
             totalHours: Math.round(totalHours),
@@ -155,39 +164,29 @@ const PersonSettings = ({
     const sharedTime = calculateSharedTime();
 
     return (
-        <section 
-            className="input-section fade-in" 
-            style={{ 
-                animationDelay: '0.2s',
-                padding: '1rem',
-                boxSizing: 'border-box'
-            }}
+        <section
+            className="input-section fade-in"
+            style={{ animationDelay: '0.2s', padding: '1rem', boxSizing: 'border-box' }}
         >
             <p className="input-section-tagline" style={{ marginBottom: '1.5rem', fontSize: '1rem' }}>
-                {isJapan ? '大切な人との時間を可視化' : 'Visualize time with someone special'}
+                {t('person.tagline')}
             </p>
-            <form 
-                onSubmit={(e) => { e.preventDefault(); handleSave(); }} 
+            <form
+                onSubmit={(e) => { e.preventDefault(); handleSave(); }}
                 className="input-form"
-                style={{
-                    padding: '1.5rem',
-                    gap: '1.25rem',
-                    maxWidth: '100%',
-                    boxSizing: 'border-box'
-                }}
+                style={{ padding: '1.5rem', gap: '1.25rem', maxWidth: '100%', boxSizing: 'border-box' }}
             >
                 {/* Name */}
                 <div className="input-group">
-                    <label className="input-label">
-                        {isJapan ? '名前' : 'Name'}
-                    </label>
+                    <label className="input-label">{t('person.name')}</label>
                     <input
                         type="text"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         className="select-styled"
-                        placeholder={isJapan ? '名前を入力' : 'Enter name'}
-                        style={{ 
+                        placeholder={t('person.namePlaceholder')}
+                        aria-label={t('person.name')}
+                        style={{
                             background: 'rgba(255, 255, 255, 0.05)',
                             border: '1px solid rgba(255, 255, 255, 0.1)',
                             color: 'white',
@@ -198,49 +197,48 @@ const PersonSettings = ({
                     />
                 </div>
 
-                {/* Age Input Toggle */}
+                {/* Relationship */}
                 <div className="input-group">
-                    <div style={{ 
-                        display: 'flex', 
-                        gap: '0.5rem', 
-                        marginBottom: '0.5rem',
-                        background: 'rgba(255, 255, 255, 0.05)',
-                        borderRadius: '8px',
-                        padding: '4px'
+                    <label className="input-label">{t('person.relationship')}</label>
+                    <select
+                        value={formData.relationship}
+                        onChange={(e) => setFormData({ ...formData, relationship: e.target.value })}
+                        className="select-styled"
+                        aria-label={t('person.relationship')}
+                    >
+                        {RELATIONSHIP_OPTIONS.map(opt => (
+                            <option key={opt.value} value={opt.value}>{t(opt.i18nKey)}</option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* Age input toggle */}
+                <div className="input-group">
+                    <div style={{
+                        display: 'flex', gap: '0.5rem', marginBottom: '0.5rem',
+                        background: 'rgba(255, 255, 255, 0.05)', borderRadius: '8px', padding: '4px'
                     }}>
                         <button
                             type="button"
                             onClick={() => setUseAgeInput(false)}
                             style={{
-                                flex: 1,
-                                padding: '0.5rem',
-                                border: 'none',
-                                borderRadius: '6px',
+                                flex: 1, padding: '0.5rem', border: 'none', borderRadius: '6px',
                                 background: !useAgeInput ? 'rgba(59, 130, 246, 0.5)' : 'transparent',
-                                color: 'white',
-                                cursor: 'pointer',
-                                fontSize: '0.85rem',
-                                transition: 'background 0.2s'
+                                color: 'white', cursor: 'pointer', fontSize: '0.85rem', transition: 'background 0.2s'
                             }}
                         >
-                            {isJapan ? '生年月日' : 'Birthdate'}
+                            {t('input.birthDate')}
                         </button>
                         <button
                             type="button"
                             onClick={() => setUseAgeInput(true)}
                             style={{
-                                flex: 1,
-                                padding: '0.5rem',
-                                border: 'none',
-                                borderRadius: '6px',
+                                flex: 1, padding: '0.5rem', border: 'none', borderRadius: '6px',
                                 background: useAgeInput ? 'rgba(59, 130, 246, 0.5)' : 'transparent',
-                                color: 'white',
-                                cursor: 'pointer',
-                                fontSize: '0.85rem',
-                                transition: 'background 0.2s'
+                                color: 'white', cursor: 'pointer', fontSize: '0.85rem', transition: 'background 0.2s'
                             }}
                         >
-                            {isJapan ? '年齢' : 'Age'}
+                            {t('person.age')}
                         </button>
                     </div>
 
@@ -250,16 +248,14 @@ const PersonSettings = ({
                             value={formData.age}
                             onChange={(e) => setFormData({ ...formData, age: e.target.value })}
                             className="select-styled"
-                            placeholder={isJapan ? '年齢を入力' : 'Enter age'}
+                            placeholder={t('person.agePlaceholder')}
+                            aria-label={t('person.age')}
                             min="0"
                             max="120"
-                            style={{ 
+                            style={{
                                 background: 'rgba(255, 255, 255, 0.05)',
                                 border: '1px solid rgba(255, 255, 255, 0.1)',
-                                color: 'white',
-                                padding: '1rem',
-                                borderRadius: '12px',
-                                fontSize: '1rem'
+                                color: 'white', padding: '1rem', borderRadius: '12px', fontSize: '1rem'
                             }}
                         />
                     ) : (
@@ -268,79 +264,94 @@ const PersonSettings = ({
                                 value={formData.birthYear}
                                 onChange={(e) => setFormData({ ...formData, birthYear: e.target.value })}
                                 className="select-styled"
+                                aria-label={t('input.year')}
                             >
-                                <option value="">{isJapan ? '年' : 'Year'}</option>
-                                {years.map(y => (
-                                    <option key={y} value={y}>{y}</option>
-                                ))}
+                                <option value="">{t('input.year')}</option>
+                                {years.map(y => (<option key={y} value={y}>{y}</option>))}
                             </select>
                             <select
                                 value={formData.birthMonth}
                                 onChange={(e) => setFormData({ ...formData, birthMonth: e.target.value })}
                                 className="select-styled"
+                                aria-label={t('input.month')}
                             >
-                                <option value="">{isJapan ? '月' : 'Month'}</option>
-                                {months.map(m => (
-                                    <option key={m} value={m}>{m}</option>
-                                ))}
+                                <option value="">{t('input.month')}</option>
+                                {months.map(m => (<option key={m} value={m}>{m}</option>))}
                             </select>
                             <select
                                 value={formData.birthDay}
                                 onChange={(e) => setFormData({ ...formData, birthDay: e.target.value })}
                                 className="select-styled"
+                                aria-label={t('input.day')}
                             >
-                                <option value="">{isJapan ? '日' : 'Day'}</option>
-                                {days.map(d => (
-                                    <option key={d} value={d}>{d}</option>
-                                ))}
+                                <option value="">{t('input.day')}</option>
+                                {days.map(d => (<option key={d} value={d}>{d}</option>))}
                             </select>
                         </div>
                     )}
 
                     {calculatedAge !== null && (
                         <div className="age-display">
-                            {calculatedAge} {isJapan ? '歳' : 'years old'}
+                            {Math.floor(calculatedAge)} {t('input.ageUnit')}
                         </div>
                     )}
                 </div>
 
                 {/* Meeting Frequency */}
                 <div className="input-group">
-                    <label className="input-label">
-                        {isJapan ? '会う頻度' : 'Meeting Frequency'}
-                    </label>
+                    <label className="input-label">{t('person.frequency')}</label>
                     <select
                         value={formData.meetingFrequency}
                         onChange={(e) => setFormData({ ...formData, meetingFrequency: Number(e.target.value) })}
                         className="select-styled"
+                        aria-label={t('person.frequency')}
                     >
                         {FREQUENCY_OPTIONS.map(opt => (
-                            <option key={opt.value} value={opt.value}>
-                                {isJapan ? opt.label : opt.labelEn}
-                            </option>
+                            <option key={opt.value} value={opt.value}>{t(opt.i18nKey)}</option>
                         ))}
                     </select>
                 </div>
 
-                {/* Hours Per Meeting */}
+                {/* Hours per meeting */}
                 <div className="input-group">
-                    <label className="input-label">
-                        {isJapan ? '1回あたりの時間' : 'Hours Per Meeting'}
-                    </label>
+                    <label className="input-label">{t('person.hoursPerMeeting')}</label>
                     <select
                         value={formData.hoursPerMeeting}
                         onChange={(e) => setFormData({ ...formData, hoursPerMeeting: Number(e.target.value) })}
                         className="select-styled"
+                        aria-label={t('person.hoursPerMeeting')}
                     >
                         {HOURS_OPTIONS.map(opt => (
-                            <option key={opt.value} value={opt.value}>
-                                {isJapan ? opt.label : opt.labelEn}
-                            </option>
+                            <option key={opt.value} value={opt.value}>{t(opt.i18nKey)}</option>
                         ))}
                     </select>
                 </div>
 
-                {/* Shared Time Preview - Same design as PersonVisualization time mode */}
+                {/* Mentor toggle */}
+                <div className="input-group" style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '0.75rem 1rem', background: 'rgba(255, 255, 255, 0.04)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px'
+                }}>
+                    <div>
+                        <label htmlFor="mentor-toggle" className="input-label" style={{ marginBottom: '0.2rem' }}>
+                            ★ {t('person.mentor')}
+                        </label>
+                        <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.55)' }}>
+                            {t('person.mentorHint')}
+                        </div>
+                    </div>
+                    <input
+                        id="mentor-toggle"
+                        type="checkbox"
+                        checked={!!formData.isMentor}
+                        onChange={(e) => setFormData({ ...formData, isMentor: e.target.checked })}
+                        style={{ width: '20px', height: '20px', cursor: 'pointer' }}
+                        aria-label={t('person.mentor')}
+                    />
+                </div>
+
+                {/* Shared time preview */}
                 {sharedTime && (
                     <div style={{
                         padding: '1.5rem',
@@ -350,191 +361,126 @@ const PersonSettings = ({
                         border: '1px solid rgba(255, 255, 255, 0.1)',
                         textAlign: 'center'
                     }}>
-                        <div style={{ 
-                            fontSize: '0.85rem', 
-                            color: 'rgba(255, 255, 255, 0.6)',
-                            marginBottom: '1rem'
-                        }}>
-                            {isJapan ? '残りの共有時間' : 'Time Remaining Together'}
+                        <div style={{ fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.6)', marginBottom: '1rem' }}>
+                            {t('person.sharedTime')}
                         </div>
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'center',
-                            gap: '2rem',
-                            flexWrap: 'wrap'
-                        }}>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap' }}>
                             <div>
-                                <div style={{ 
-                                    fontSize: '2rem', 
-                                    fontWeight: '700',
-                                    color: '#3b82f6',
-                                    fontFamily: 'var(--font-mono)'
-                                }}>
+                                <div style={{ fontSize: '2rem', fontWeight: '700', color: '#3b82f6', fontFamily: 'var(--font-mono)' }}>
                                     {sharedTime.totalHours.toLocaleString()}
                                 </div>
-                                <div style={{ 
-                                    fontSize: '0.8rem', 
-                                    color: 'rgba(255, 255, 255, 0.5)' 
-                                }}>
-                                    {isJapan ? '時間' : 'hours'}
+                                <div style={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.5)' }}>
+                                    {localeIsJapan ? '時間' : 'hours'}
                                 </div>
                             </div>
                             <div>
-                                <div style={{ 
-                                    fontSize: '2rem', 
-                                    fontWeight: '700',
-                                    color: '#8b5cf6',
-                                    fontFamily: 'var(--font-mono)'
-                                }}>
+                                <div style={{ fontSize: '2rem', fontWeight: '700', color: '#8b5cf6', fontFamily: 'var(--font-mono)' }}>
                                     {sharedTime.totalMeetings.toLocaleString()}
                                 </div>
-                                <div style={{ 
-                                    fontSize: '0.8rem', 
-                                    color: 'rgba(255, 255, 255, 0.5)' 
-                                }}>
-                                    {isJapan ? '回' : 'times'}
+                                <div style={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.5)' }}>
+                                    {localeIsJapan ? '回' : 'times'}
                                 </div>
                             </div>
                             <div>
-                                <div style={{ 
-                                    fontSize: '2rem', 
-                                    fontWeight: '700',
-                                    color: '#10b981',
-                                    fontFamily: 'var(--font-mono)'
-                                }}>
+                                <div style={{ fontSize: '2rem', fontWeight: '700', color: '#10b981', fontFamily: 'var(--font-mono)' }}>
                                     {sharedTime.totalDays}
                                 </div>
-                                <div style={{ 
-                                    fontSize: '0.8rem', 
-                                    color: 'rgba(255, 255, 255, 0.5)' 
-                                }}>
-                                    {isJapan ? '日' : 'days'}
+                                <div style={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.5)' }}>
+                                    {localeIsJapan ? '日' : 'days'}
                                 </div>
                             </div>
                         </div>
                     </div>
                 )}
 
-                {/* Planet (Texture) Selection */}
+                {/* Planet selection */}
                 <div className="input-group">
-                    <label className="input-label">
-                        {isJapan ? '星を選択' : 'Select Planet'}
-                    </label>
+                    <label className="input-label">{t('person.planet')}</label>
                     <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(60px, 1fr))',
-                        gap: '0.5rem',
-                        padding: '0.75rem',
-                        background: 'rgba(255, 255, 255, 0.03)',
-                        borderRadius: '12px'
+                        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(60px, 1fr))',
+                        gap: '0.5rem', padding: '0.75rem',
+                        background: 'rgba(255, 255, 255, 0.03)', borderRadius: '12px'
                     }}>
                         {PLANET_OPTIONS.map((planet) => (
                             <button
                                 key={planet.url}
                                 type="button"
                                 onClick={() => setFormData({ ...formData, textureUrl: planet.url })}
+                                aria-label={t(planet.i18nKey)}
+                                aria-pressed={formData.textureUrl === planet.url}
                                 style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    gap: '0.25rem',
-                                    padding: '0.5rem 0.25rem',
-                                    border: formData.textureUrl === planet.url 
-                                        ? '2px solid #3b82f6' 
-                                        : '2px solid transparent',
+                                    display: 'flex', flexDirection: 'column', alignItems: 'center',
+                                    gap: '0.25rem', padding: '0.5rem 0.25rem',
+                                    border: formData.textureUrl === planet.url ? '2px solid #3b82f6' : '2px solid transparent',
                                     borderRadius: '10px',
-                                    background: formData.textureUrl === planet.url 
-                                        ? 'rgba(59, 130, 246, 0.2)' 
-                                        : 'rgba(255, 255, 255, 0.05)',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s'
+                                    background: formData.textureUrl === planet.url ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                                    cursor: 'pointer', transition: 'all 0.2s'
                                 }}
                             >
                                 <div style={{
-                                    width: '32px',
-                                    height: '32px',
-                                    borderRadius: '50%',
-                                    backgroundImage: `url(${planet.url})`,
-                                    backgroundSize: 'cover',
-                                    backgroundPosition: 'center',
-                                    boxShadow: formData.textureUrl === planet.url 
-                                        ? '0 0 8px rgba(59, 130, 246, 0.5)' 
-                                        : 'none'
+                                    width: '32px', height: '32px', borderRadius: '50%',
+                                    backgroundImage: `url(${planet.url})`, backgroundSize: 'cover', backgroundPosition: 'center',
+                                    boxShadow: formData.textureUrl === planet.url ? '0 0 8px rgba(59, 130, 246, 0.5)' : 'none'
                                 }} />
-                                <span style={{
-                                    fontSize: '0.6rem',
-                                    color: 'rgba(255, 255, 255, 0.8)',
-                                    textAlign: 'center'
-                                }}>
-                                    {isJapan ? planet.name : planet.nameEn}
+                                <span style={{ fontSize: '0.6rem', color: 'rgba(255, 255, 255, 0.8)', textAlign: 'center' }}>
+                                    {t(planet.i18nKey)}
                                 </span>
                             </button>
                         ))}
                     </div>
                 </div>
 
-                {/* Action Buttons */}
+                {/* Action buttons */}
                 <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem' }}>
-                    <button 
-                        type="button" 
+                    <button
+                        type="button"
                         onClick={onCancel}
                         style={{
-                            flex: 1,
-                            padding: '0.75rem',
+                            flex: 1, padding: '0.75rem',
                             border: '1px solid rgba(255, 255, 255, 0.2)',
-                            borderRadius: '10px',
-                            background: 'transparent',
-                            color: 'white',
-                            cursor: 'pointer',
-                            fontSize: '0.9rem'
+                            borderRadius: '10px', background: 'transparent',
+                            color: 'white', cursor: 'pointer', fontSize: '0.9rem'
                         }}
                     >
-                        {isJapan ? 'キャンセル' : 'Cancel'}
+                        {t('common.cancel')}
                     </button>
-                    <button 
-                        type="submit" 
+                    <button
+                        type="submit"
                         className="visualize-btn"
                         style={{ flex: 2, padding: '0.75rem', fontSize: '0.9rem' }}
                     >
-                        {person ? (isJapan ? '更新する' : 'Update') : (isJapan ? '追加する' : 'Add')}
+                        {person ? t('common.update') : t('common.add')}
                     </button>
                 </div>
 
-                {/* Visualize Button (only for editing existing person) */}
+                {/* Visualize this person */}
                 {person && onVisualize && (
-                    <button 
+                    <button
                         type="button"
                         onClick={() => onVisualize(person.id)}
                         className="visualize-btn"
-                        style={{
-                            width: '100%',
-                            padding: '0.75rem',
-                            fontSize: '0.9rem',
-                            marginTop: '0.75rem'
-                        }}
+                        style={{ width: '100%', padding: '0.75rem', fontSize: '0.9rem', marginTop: '0.75rem' }}
                     >
-                        {isJapan ? 'この人との時間を可視化' : 'Visualize time together'}
+                        {t('person.visualize')}
                     </button>
                 )}
 
-                {/* Delete Button (only for editing) */}
+                {/* Delete */}
                 {person && onDelete && (
-                    <button 
+                    <button
                         type="button"
-                        onClick={() => onDelete(person.id)}
+                        onClick={() => {
+                            if (confirm(t('person.deleteConfirm'))) {
+                                onDelete(person.id);
+                            }
+                        }}
                         style={{
-                            width: '100%',
-                            padding: '0.6rem',
-                            border: 'none',
-                            borderRadius: '10px',
-                            background: 'rgba(244, 63, 94, 0.2)',
-                            color: '#f43f5e',
-                            cursor: 'pointer',
-                            fontSize: '0.8rem',
-                            marginTop: '0.5rem'
+                            width: '100%', padding: '0.6rem', border: 'none', borderRadius: '10px',
+                            background: 'rgba(244, 63, 94, 0.2)', color: '#f43f5e',
+                            cursor: 'pointer', fontSize: '0.8rem', marginTop: '0.5rem'
                         }}
                     >
-                        {isJapan ? 'この人を削除' : 'Delete this person'}
+                        {t('person.delete')}
                     </button>
                 )}
             </form>
@@ -544,4 +490,3 @@ const PersonSettings = ({
 
 export default PersonSettings;
 export { PLANET_OPTIONS };
-
