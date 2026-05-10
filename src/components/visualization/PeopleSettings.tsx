@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { calculateAge } from '../../utils/calculations';
+import { lifeExpectancyData } from '../../utils/lifeData';
 import { generateId } from './helpers';
 
-const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYears, editingPersonId, onEditComplete }) => {
+const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYears, editingPersonId, onEditComplete }: any) => {
     const [editingId, setEditingId] = useState(editingPersonId || null);
     const [useAgeInput, setUseAgeInput] = useState(false);
     

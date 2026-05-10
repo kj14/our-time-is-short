@@ -54,7 +54,7 @@ const PersonSettings = ({
     userCountry = 'Japan',
     userAge,
     calculationBasis = 'life'
-}) => {
+}: any) => {
     const t = useT(userCountry);
     const localeIsJapan = isJapaneseLanguage(userCountry);
 

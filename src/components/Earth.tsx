@@ -1,11 +1,12 @@
+// @ts-nocheck — Three.js refs / r3f forwardRefs need a proper type pass; defer.
 import React, { useRef, useEffect } from 'react';
 import { useFrame, useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
 import { countryCoordinates } from '../utils/lifeData';
 
 export default function Earth({ targetCountry, onClick, onPointerOver, onPointerOut, ...props }) {
-    const earthRef = useRef();
-    const cloudsRef = useRef();
+    const earthRef = useRef<any>(null);
+    const cloudsRef = useRef<any>(null);
     const targetRotation = useRef(new THREE.Quaternion());
 
     // Load textures

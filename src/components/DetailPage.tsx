@@ -145,8 +145,8 @@ const DetailPage = ({
     const [isCapturing, setIsCapturing] = useState(false);
     const [shareMessage, setShareMessage] = useState(null);
     
-    const detailPageRef = useRef(null);
-    const shareCardRef = useRef(null);
+    const detailPageRef = useRef<any>(null);
+    const shareCardRef = useRef<any>(null);
     
     const t = translations[country] || translations['default'];
     

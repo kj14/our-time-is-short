@@ -9,8 +9,8 @@ import { ORBIT_DISTANCES, HOUR_THRESHOLDS, MEETING_THRESHOLDS, CAMERA } from '..
 
 // Scene component handling 3D transitions
 function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears, selectedPersonId, visualizingPersonId, isEarthVisualized, calculationBasis }) {
-    const solarSystemRef = useRef();
-    const earthRef = useRef();
+    const solarSystemRef = useRef<any>(null);
+    const earthRef = useRef<any>(null);
     const { camera } = useThree();
     
     // Constants - Earth is at center now

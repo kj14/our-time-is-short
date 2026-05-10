@@ -1,7 +1,7 @@
 import React from 'react';
 import { useT } from '../i18n';
 
-const EnergyTank = ({ activity, hours, maxHours, color, label, t, country = 'Global', isMainBattery = false, isSubBattery = false, isSelected = false, subtitle, conditionText, onClick, displayMode = 'percentage' }) => {
+const EnergyTank = ({ activity, hours, maxHours, color, label, t, country = 'Global', isMainBattery = false, isSubBattery = false, isSelected = false, subtitle, conditionText, onClick, displayMode = 'percentage' }: any) => {
     const tt = useT(country);
     // Calculate percentage: remaining time / total time
     // This represents "how much % is remaining until the end date"

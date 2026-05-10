@@ -77,7 +77,7 @@ function App() {
 
   // ─── view state (consolidated reducer) ───────────────────────────
   const [view, dispatch] = useReducer(viewReducer, initialViewState);
-  const userSettingsRef = useRef(null);
+  const userSettingsRef = useRef<any>(null);
 
   // ─── derived ─────────────────────────────────────────────────────
   const isValidUser = !!(userData && userData.country && (userData.age !== undefined && userData.age !== null));
@@ -207,11 +207,11 @@ function App() {
             justifyContent: 'center',
             transition: 'transform 0.2s, box-shadow 0.2s'
           }}
-          onMouseEnter={(e) => {
+          onMouseEnter={(e: any) => {
             e.target.style.transform = 'scale(1.1)';
             e.target.style.boxShadow = '0 6px 25px rgba(59, 130, 246, 0.5)';
           }}
-          onMouseLeave={(e) => {
+          onMouseLeave={(e: any) => {
             e.target.style.transform = 'scale(1)';
             e.target.style.boxShadow = '0 4px 20px rgba(59, 130, 246, 0.4)';
           }}
@@ -394,8 +394,8 @@ function App() {
                       cursor: 'pointer',
                       transition: 'all 0.3s ease'
                     }}
-                    onMouseEnter={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; }}
-                    onMouseLeave={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; }}
+                    onMouseEnter={(e: any) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; }}
+                    onMouseLeave={(e: any) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; }}
                   >
                     {tt('common.viewDetail')}
                   </button>
@@ -409,7 +409,7 @@ function App() {
   )
 }
 
-const overlayStyle = {
+const overlayStyle: React.CSSProperties = {
   pointerEvents: 'auto',
   position: 'fixed',
   top: 0,

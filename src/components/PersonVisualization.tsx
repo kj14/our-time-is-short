@@ -12,7 +12,7 @@ const PersonVisualization = ({
     isJapan, // legacy; ignored when userCountry is provided
     userAge = 44,
     userCountry = 'Japan'
-}) => {
+}: any) => {
     const t = useT(userCountry);
     const localeIsJapan = isJapaneseLanguage(userCountry);
     const [visible, setVisible] = useState(false);
@@ -249,7 +249,7 @@ const PVStat = ({ value, label, color }) => (
     </div>
 );
 
-const navBtn = (side) => ({
+const navBtn = (side: 'left' | 'right'): React.CSSProperties => ({
     position: 'absolute',
     [side]: '10px',
     top: '50%',

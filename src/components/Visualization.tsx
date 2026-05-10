@@ -7,12 +7,12 @@ import TimeUnit from './visualization/TimeUnit';
 import UserSettings from './visualization/UserSettings';
 import PeopleSettings from './visualization/PeopleSettings';
 
-const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, healthyLifeExpectancy: customHealthyLifeExpectancy, workingAgeLimit: customWorkingAgeLimit, calculationBasis, onCalculationBasisChange, onReset, isSettingsOpen, onCloseSettings, editingPersonId, onOpenSettingsWithPerson, onUpdateUserSettings, people, setPeople, stats, userSettingsRef, onParticleDrop, onSettingsClick, onNavigate }) => {
+const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, healthyLifeExpectancy: customHealthyLifeExpectancy, workingAgeLimit: customWorkingAgeLimit, calculationBasis, onCalculationBasisChange, onReset, isSettingsOpen, onCloseSettings, editingPersonId, onOpenSettingsWithPerson, onUpdateUserSettings, people, setPeople, stats, userSettingsRef, onParticleDrop, onSettingsClick, onNavigate }: any) => {
     const [visible, setVisible] = useState(false);
     const [calculatedStats, setCalculatedStats] = useState(null);
 
-    const visualizationRef = useRef(null);
-    const particleDropHandlerRef = useRef(null);
+    const visualizationRef = useRef<any>(null);
+    const particleDropHandlerRef = useRef<any>(null);
 
     const t = translations[country] || translations['default'];
     const tt = useT(country);
@@ -86,7 +86,7 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
         
         const timer = setInterval(() => {
             const current = new Date();
-            const diff = endDate - current;
+            const diff = endDate.getTime() - current.getTime();
             if (diff <= 0) {
                 setTimeLeft(0);
                 clearInterval(timer);
