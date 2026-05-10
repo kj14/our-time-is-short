@@ -90,6 +90,44 @@ export const strings: Strings = {
         // person visualization
         'pv.timeRemainingSuffix': 'との残り時間',
         'pv.percentOfRemaining': 'あなたの残り人生のうち',
+        'pv.timeMode': '時間',
+        'pv.percentMode': '%',
+        'pv.prev': '前へ',
+        'pv.next': '次へ',
+        'pv.freqMonthly': '月{n}回',
+        'pv.freqYearly': '年{n}回',
+        'pv.condition': '{freq} × {hours}時間',
+        'pv.conditionEn': '{freq} × {hours}h',
+
+        // unit labels (shared)
+        'unit.hours': '時間',
+        'unit.times': '回',
+        'unit.days': '日',
+        'unit.years': '年',
+
+        // energy tank
+        'tank.remaining': '残り',
+        'tank.max': '最大',
+
+        // detail page
+        'detail.lifeIfTitle': '人生 {years} 年だとしたら',
+        'detail.lifeEventsTitle': '人生のイベント',
+        'detail.truthMessagesTitle': '真実のメッセージ',
+        'detail.backToMain': 'メイン画面に戻る',
+        'detail.preparing': '準備中...',
+        'detail.shareOnX': 'Xでシェア',
+        'detail.shareSuccess': 'シェアしました',
+        'detail.shareFail': 'シェアに失敗しました',
+        'detail.emptyPeople': '大切な人を追加して時間を可視化しましょう',
+        'detail.remainingTab': '残量',
+        'detail.hoursTab': '時間比較',
+        'detail.shareText': '残り{years}年。あなたの時間は短い。',
+
+        // frequency text helpers (for getFrequencyLabel)
+        'freq.everyNDays': '{n}日に1回',
+        'freq.weekly1': '週{n}回',
+        'freq.monthly1': '月{n}回',
+        'freq.yearlyN': '年{n}回',
 
         // visualization / overview
         'viz.lifeRemaining': '残りの人生',
@@ -195,6 +233,40 @@ export const strings: Strings = {
 
         'pv.timeRemainingSuffix': ' - Time Remaining',
         'pv.percentOfRemaining': 'of your remaining life',
+        'pv.timeMode': 'Time',
+        'pv.percentMode': '%',
+        'pv.prev': 'Previous',
+        'pv.next': 'Next',
+        'pv.freqMonthly': '{n}/month',
+        'pv.freqYearly': '{n}/year',
+        'pv.condition': '{freq} × {hours} hours',
+        'pv.conditionEn': '{freq} × {hours}h',
+
+        'unit.hours': 'hours',
+        'unit.times': 'times',
+        'unit.days': 'days',
+        'unit.years': 'years',
+
+        'tank.remaining': 'Remaining',
+        'tank.max': 'Max',
+
+        'detail.lifeIfTitle': 'If life were {years} years',
+        'detail.lifeEventsTitle': 'Life Events',
+        'detail.truthMessagesTitle': 'Truth Messages',
+        'detail.backToMain': 'Back to Main',
+        'detail.preparing': 'Preparing...',
+        'detail.shareOnX': 'Share on X',
+        'detail.shareSuccess': 'Shared!',
+        'detail.shareFail': 'Share failed',
+        'detail.emptyPeople': 'Add people to visualize shared time',
+        'detail.remainingTab': 'Remaining',
+        'detail.hoursTab': 'Hours',
+        'detail.shareText': '{years} years left. Your time is short.',
+
+        'freq.everyNDays': 'Every {n} days',
+        'freq.weekly1': '{n}x/week',
+        'freq.monthly1': '{n}x/month',
+        'freq.yearlyN': '{n}x/year',
 
         'viz.lifeRemaining': 'Remaining Life',
         'viz.lived': 'Time Lived',

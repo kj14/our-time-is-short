@@ -4,12 +4,13 @@ import { calculateLifeStats, translations, lifeExpectancyData, healthyLifeExpect
 import { calculateAge } from '../utils/calculations';
 import { TruthMessage } from '../features/truthMessages';
 import EnergyTank from './EnergyTank';
+import { useT } from '../i18n';
 
 // Per-person remaining-meetings list. Restored after the Phase 4 dead-code
 // pass mistakenly removed it — the original DetailPage rendered this below
 // each user's people grid.
 const LifeEvents = ({ remainingYears, people, userAge, userCountry }) => {
-    const isJapan = userCountry === 'Japan';
+    const tt = useT(userCountry);
 
     const events = useMemo(() => {
         const list = [];
@@ -50,7 +51,7 @@ const LifeEvents = ({ remainingYears, people, userAge, userCountry }) => {
                 >
                     <span style={{ fontWeight: 600 }}>{e.name}</span>
                     <span style={{ opacity: 0.75 }}>
-                        {isJapan ? `${Math.round(e.meetings).toLocaleString()}回` : `${Math.round(e.meetings).toLocaleString()} times`}
+                        {Math.round(e.meetings).toLocaleString()} {tt('unit.times')}
                     </span>
                 </div>
             ))}
@@ -136,6 +137,7 @@ const DetailPage = ({
     onDisplayModeChange,
     onBack
 }) => {
+    const tt = useT(country);
     const [displayMode, setDisplayMode] = useState(() => {
         const saved = localStorage.getItem('lifevis_displayMode');
         return saved || 'percentage';
@@ -209,9 +211,7 @@ const DetailPage = ({
                 const file = new File([blob], 'life-visualization.png', { type: 'image/png' });
                 const shareData = {
                     files: [file],
-                    text: country === 'Japan' 
-                        ? `残り${displayStats.remainingYears.toFixed(1)}年。時間を可視化しました。 #OurTimeIsShort`
-                        : `${displayStats.remainingYears.toFixed(1)} years remaining. I visualized my time. #OurTimeIsShort`
+                    text: `${tt('detail.shareText', { years: displayStats.remainingYears.toFixed(1) })} #OurTimeIsShort`
                 };
                 
                 if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
@@ -227,14 +227,12 @@ const DetailPage = ({
         } catch (error) {
             console.error('Error capturing share card:', error);
             setIsCapturing(false);
-            setShareMessage(country === 'Japan' ? 'シェアに失敗しました' : 'Share failed');
+            setShareMessage(tt('detail.shareFail'));
         }
     };
     
     const openXWeb = () => {
-        const text = country === 'Japan' 
-            ? `残り${displayStats.remainingYears.toFixed(1)}年。時間を可視化しました。 #OurTimeIsShort`
-            : `${displayStats.remainingYears.toFixed(1)} years remaining. I visualized my time. #OurTimeIsShort`;
+        const text = `${tt('detail.shareText', { years: displayStats.remainingYears.toFixed(1) })} #OurTimeIsShort`;
         const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
         
         // Try to open X app first on mobile
@@ -271,9 +269,7 @@ const DetailPage = ({
         }
     };
     
-    const shareButtonLabel = isCapturing
-        ? (country === 'Japan' ? '準備中...' : 'Preparing...')
-        : (country === 'Japan' ? 'Xでシェア' : 'Share on X');
+    const shareButtonLabel = isCapturing ? tt('detail.preparing') : tt('detail.shareOnX');
     
     return (
         <div ref={detailPageRef} className="detail-page-wrapper" style={{
@@ -343,14 +339,14 @@ const DetailPage = ({
                                         <div style={{ width: `${pct}%`, height: '100%', background: person.color || '#818cf8' }}></div>
                                     </div>
                                     <div style={{ width: '80px', textAlign: 'right', fontSize: '0.9rem', opacity: 0.8 }}>
-                                        {meetings.toFixed(0)} {country === 'Japan' ? '回' : 'times'}
+                                        {meetings.toFixed(0)} {tt('unit.times')}
                                     </div>
                                 </div>
                             );
                         })}
                         {people.length === 0 && (
                             <div style={{ opacity: 0.4, fontStyle: 'italic' }}>
-                                {country === 'Japan' ? '大切な人を追加して時間を可視化しましょう' : 'Add people to visualize shared time'}
+                                {tt('detail.emptyPeople')}
                             </div>
                         )}
                     </div>
@@ -386,13 +382,13 @@ const DetailPage = ({
                             className={`segment-btn ${currentDisplayMode === 'percentage' ? 'active' : ''}`}
                             onClick={() => handleDisplayModeChange('percentage')}
                         >
-                            {country === 'Japan' ? '残量' : 'Remaining'}
+                            {tt('detail.remainingTab')}
                         </button>
                         <button
                             className={`segment-btn ${currentDisplayMode === 'hours' ? 'active' : ''}`}
                             onClick={() => handleDisplayModeChange('hours')}
                         >
-                            {country === 'Japan' ? '時間比較' : 'Hours'}
+                            {tt('detail.hoursTab')}
                         </button>
                     </div>
                 </div>
@@ -496,11 +492,11 @@ const DetailPage = ({
                         const totalMeetings = futureOverlapYears * person.meetingFrequency;
                         const hours = futureOverlapYears * person.meetingFrequency * person.hoursPerMeeting;
                         const totalLifeHours = totalOverlapYears * person.meetingFrequency * person.hoursPerMeeting || 1;
-                        const isJapan = country === 'Japan';
-                        const conditionText = getConditionText(person, isJapan);
-                        const meetingsLabel = isJapan
-                            ? `残り${Math.max(0, totalMeetings).toFixed(0)}回`
-                            : `${Math.max(0, totalMeetings).toFixed(0)} times left`;
+                        const localeIsJapan = country === 'Japan';
+                        const conditionText = getConditionText(person, localeIsJapan);
+                        const meetingsLabel = localeIsJapan
+                            ? `残り${Math.max(0, totalMeetings).toFixed(0)}${tt('unit.times')}`
+                            : `${Math.max(0, totalMeetings).toFixed(0)} ${tt('unit.times')} left`;
 
                         const personMaxHours = currentDisplayMode === 'hours' ? maxLifeHours : totalLifeHours;
 
@@ -533,7 +529,7 @@ const DetailPage = ({
                         letterSpacing: '0.1em',
                         textTransform: 'uppercase',
                         opacity: 0.8
-                    }}>{country === 'Japan' ? '人生のイベント' : 'Life Events'}</h3>
+                    }}>{tt('detail.lifeEventsTitle')}</h3>
                     <LifeEvents
                         remainingYears={displayStats.remainingYears}
                         people={people}
@@ -552,7 +548,7 @@ const DetailPage = ({
                     letterSpacing: '0.1em',
                     textTransform: 'uppercase',
                     opacity: 0.8
-                }}>{country === 'Japan' ? '真実のメッセージ' : 'Truth Messages'}</h3>
+                }}>{tt('detail.truthMessagesTitle')}</h3>
                 <TruthMessage
                     user={{ country, age }}
                     people={people}
@@ -573,7 +569,7 @@ const DetailPage = ({
                         width: '100%',
                         maxWidth: '300px'
                     }}>
-                        {country === 'Japan' ? 'メイン画面に戻る' : 'Back to Main'}
+                        {tt('detail.backToMain')}
                     </button>
                 )}
                 <button className="share-button share-x" onClick={handleShareToX} disabled={isCapturing} style={{

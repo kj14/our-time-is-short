@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { calculateLifeStats, translations, lifeExpectancyData, healthyLifeExpectancyData, workingAgeLimitData } from '../utils/lifeData';
 import { calculateAge, calculateHoursWithPerson } from '../utils/calculations';
+import { useT } from '../i18n';
 
 const FREQUENCY_LABELS_JP = {
     365: '毎日',
@@ -78,6 +79,7 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
     const particleDropHandlerRef = useRef(null);
 
     const t = translations[country] || translations['default'];
+    const tt = useT(country);
     
     // Register particle drop handler with parent
     useEffect(() => {
@@ -232,9 +234,7 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
                 marginBottom: '1.5rem',
                 textAlign: 'center'
             }}>
-                {t.lifeTitle ? t.lifeTitle(lifeExpectancy.toFixed(1)) : (country === 'Japan' 
-                    ? `人生 ${lifeExpectancy.toFixed(1)} 年だとしたら`
-                    : `If life were ${lifeExpectancy.toFixed(1)} years`)}
+                {tt('detail.lifeIfTitle', { years: lifeExpectancy.toFixed(1) })}
             </h1>
             
             {/* Countdown Timer */}
@@ -322,7 +322,7 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
                                 opacity: 0.8,
                                 marginRight: '0.5rem'
                             }}>
-                                {t.remainingSeconds || (country === 'Japan' ? '残り' : 'Remaining')}
+                                {tt('tank.remaining')}
                             </span>
                             <TimeUnit value={timeComponents.days} label={t.days} isWide isSmall />
                             <TimeUnit value={pad(timeComponents.hours)} label={t.hours} isSmall />
