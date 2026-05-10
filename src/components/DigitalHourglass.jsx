@@ -145,6 +145,18 @@ function Moon({ country }) {
         });
     }, []);
 
+    // Dispose of canvas-derived textures and the material when the moon
+    // unmounts, so HMR / route changes don't leak GPU resources.
+    useEffect(() => {
+        return () => {
+            if (moonMaterial) {
+                if (moonMaterial.map) moonMaterial.map.dispose();
+                if (moonMaterial.normalMap) moonMaterial.normalMap.dispose();
+                moonMaterial.dispose();
+            }
+        };
+    }, [moonMaterial]);
+
     return (
         <group ref={moonGroupRef} position={position}>
             <mesh ref={meshRef}>
