@@ -71,6 +71,11 @@ function App() {
     localStorage.setItem('lifevis_calculationBasis', calculationBasis);
   }, [calculationBasis]);
 
+  // Save display mode to localStorage
+  useEffect(() => {
+    localStorage.setItem('lifevis_displayMode', displayMode);
+  }, [displayMode]);
+
   // Validate userData
   const isValidUser = userData && userData.country && (userData.age !== undefined && userData.age !== null);
 
