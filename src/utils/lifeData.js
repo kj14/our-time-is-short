@@ -100,8 +100,6 @@ export const lifeMoments = {
 export const calculateLifeStats = (country, age, customExpectancy = null) => {
     const expectancy = customExpectancy || lifeExpectancyData[country] || lifeExpectancyData["Global"];
     const remainingYears = Math.max(0, expectancy - age);
-    const totalWeeks = expectancy * 52.1429;
-    const livedWeeks = age * 52.1429;
     const remainingWeeks = remainingYears * 52.1429;
     const remainingSeconds = remainingYears * 365.25 * 24 * 60 * 60;
 

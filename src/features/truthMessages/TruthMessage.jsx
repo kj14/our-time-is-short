@@ -72,7 +72,7 @@ export default function TruthMessage({ user, people, basis = 'life' }) {
             } else {
                 window.prompt(isJa ? 'コピーしてシェア' : 'Copy and share', text);
             }
-        } catch (err) {
+        } catch {
             // User cancelled or browser denied — silently ignore.
         }
     };
