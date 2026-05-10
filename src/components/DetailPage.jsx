@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { calculateLifeStats, translations, lifeExpectancyData, healthyLifeExpectancyData, workingAgeLimitData } from '../utils/lifeData';
 import { calculateAge } from '../utils/calculations';
+import { TruthMessage } from '../features/truthMessages';
 import EnergyTank from './EnergyTank';
 
 const FREQUENCY_LABELS_JP = {
@@ -66,60 +67,6 @@ const getConditionText = (person, isJapan) => {
     return `${freqLabel} × ${hoursLabel}`;
 };
 
-
-// LifeEvents component (simplified version)
-const LifeEvents = ({ remainingYears, people, userAge, userCountry }) => {
-    const isJapan = userCountry === 'Japan';
-    
-    const events = useMemo(() => {
-        const eventList = [];
-        const currentYear = new Date().getFullYear();
-        
-        people.forEach(person => {
-            const personAge = calculateAge(person);
-            if (personAge === null) return;
-            
-            const personLifeExpectancy = lifeExpectancyData[userCountry] || lifeExpectancyData['Global'];
-            const personRemainingYears = Math.max(0, personLifeExpectancy - personAge);
-            
-            const overlapYears = Math.min(remainingYears, personRemainingYears);
-            const totalMeetings = overlapYears * person.meetingFrequency;
-            
-            if (totalMeetings > 0) {
-                eventList.push({
-                    name: person.name,
-                    meetings: totalMeetings,
-                    years: overlapYears,
-                    color: person.color || '#818cf8'
-                });
-            }
-        });
-        
-        return eventList.sort((a, b) => b.meetings - a.meetings);
-    }, [remainingYears, people, userCountry]);
-    
-    if (events.length === 0) return null;
-    
-    return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {events.map((event, index) => (
-                <div key={index} style={{
-                    padding: '1rem',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    borderRadius: '12px',
-                    border: `1px solid ${event.color}40`
-                }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontWeight: 600 }}>{event.name}</span>
-                        <span style={{ opacity: 0.7 }}>
-                            {isJapan ? `${event.meetings.toFixed(0)}回` : `${event.meetings.toFixed(0)} times`}
-                        </span>
-                    </div>
-                </div>
-            ))}
-        </div>
-    );
-};
 
 const DetailPage = ({ 
     country, 
@@ -523,25 +470,22 @@ const DetailPage = ({
                 </div>
             </div>
 
-            {/* Life Events */}
-            {people.length > 0 && (
-                <div style={{ marginBottom: '6rem' }}>
-                    <h3 style={{
-                        marginBottom: '2rem',
-                        textAlign: 'center',
-                        fontSize: '1.5rem',
-                        letterSpacing: '0.1em',
-                        textTransform: 'uppercase',
-                        opacity: 0.8
-                    }}>{country === 'Japan' ? '人生のイベント' : 'Life Events'}</h3>
-                    <LifeEvents 
-                        remainingYears={displayStats.remainingYears} 
-                        people={people}
-                        userAge={age}
-                        userCountry={country}
-                    />
-                </div>
-            )}
+            {/* Truth Messages — Q+A messages per CONCEPT.md §8-9 */}
+            <div style={{ marginBottom: '6rem' }}>
+                <h3 style={{
+                    marginBottom: '1rem',
+                    textAlign: 'center',
+                    fontSize: '1.5rem',
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    opacity: 0.8
+                }}>{country === 'Japan' ? '真実のメッセージ' : 'Truth Messages'}</h3>
+                <TruthMessage
+                    user={{ country, age }}
+                    people={people}
+                    basis={calculationBasis}
+                />
+            </div>
 
             <div className="primary-actions" style={{
                 display: 'flex',
