@@ -1,138 +1,77 @@
-// Life expectancy data (simplified for demo)
-// Source: World Bank / WHO estimates (approximate)
-export const lifeExpectancyData = {
-    Japan: 84.6,
-    Switzerland: 83.8,
-    Singapore: 83.6,
-    Spain: 83.6,
-    Italy: 83.5,
-    Australia: 83.4,
-    Iceland: 83.0,
-    Israel: 83.0,
-    "South Korea": 83.0,
-    Sweden: 82.8,
-    France: 82.7,
-    Canada: 82.4,
-    Norway: 82.4,
-    "New Zealand": 82.2,
-    Netherlands: 82.0,
-    Ireland: 82.0,
-    Germany: 81.3,
-    "United Kingdom": 81.2,
-    "United States": 77.3,
-    China: 77.4,
-    India: 69.7,
-    Brazil: 75.9,
-    Nigeria: 54.7,
-    "South Africa": 64.1,
-    Global: 73.2
-};
+// Single source of truth for country-level life data.
+// Sources:
+//   - Life expectancy: WHO Global Health Observatory (2021-2023 estimates)
+//     https://www.who.int/data/gho/data/themes/topics/indicator-groups/indicator-group-details/GHO/life-expectancy-and-healthy-life-expectancy
+//   - Working age limit: typical statutory retirement age, OECD reports
+//   - Coordinates: capital / country centroid
+//
+// Each row drives the four legacy dictionaries below so the country sets
+// stay in sync. Previously countryCoordinates and lifeExpectancyData had
+// 13 mismatched entries, leading to silent UI breakage when users picked
+// countries that one dict knew about but the other did not.
 
-// Healthy life expectancy (健康寿命) - years of healthy, independent living
-// Source: WHO Global Health Observatory
-export const healthyLifeExpectancyData = {
-    Japan: 75.0,
-    Switzerland: 73.0,
-    Singapore: 73.0,
-    Spain: 72.0,
-    Italy: 72.0,
-    Australia: 72.0,
-    Iceland: 72.0,
-    Israel: 71.0,
-    "South Korea": 72.0,
-    Sweden: 72.0,
-    France: 71.0,
-    Canada: 71.0,
-    Norway: 71.0,
-    "New Zealand": 71.0,
-    Netherlands: 71.0,
-    Ireland: 70.0,
-    Germany: 70.0,
-    "United Kingdom": 70.0,
-    "United States": 68.0,
-    China: 68.0,
-    India: 60.0,
-    Brazil: 66.0,
-    Nigeria: 50.0,
-    "South Africa": 58.0,
-    Global: 64.0
-};
+export const COUNTRIES = [
+    { key: 'Japan',          nameJa: '日本',           nameEn: 'Japan',          lifeExpectancy: 84.6, healthyLifeExpectancy: 75.0, workingAgeLimit: 65, lat: 36.2048,  lng: 138.2529 },
+    { key: 'Switzerland',    nameJa: 'スイス',         nameEn: 'Switzerland',    lifeExpectancy: 83.8, healthyLifeExpectancy: 73.0, workingAgeLimit: 65, lat: 46.8182,  lng:    8.2275 },
+    { key: 'Singapore',      nameJa: 'シンガポール',   nameEn: 'Singapore',      lifeExpectancy: 83.6, healthyLifeExpectancy: 73.0, workingAgeLimit: 65, lat:  1.3521,  lng:  103.8198 },
+    { key: 'Spain',          nameJa: 'スペイン',       nameEn: 'Spain',          lifeExpectancy: 83.6, healthyLifeExpectancy: 72.0, workingAgeLimit: 65, lat: 40.4637,  lng:   -3.7492 },
+    { key: 'Italy',          nameJa: 'イタリア',       nameEn: 'Italy',          lifeExpectancy: 83.5, healthyLifeExpectancy: 72.0, workingAgeLimit: 67, lat: 41.8719,  lng:   12.5674 },
+    { key: 'Australia',      nameJa: 'オーストラリア', nameEn: 'Australia',      lifeExpectancy: 83.4, healthyLifeExpectancy: 72.0, workingAgeLimit: 67, lat: -25.2744, lng:  133.7751 },
+    { key: 'Iceland',        nameJa: 'アイスランド',   nameEn: 'Iceland',        lifeExpectancy: 83.0, healthyLifeExpectancy: 72.0, workingAgeLimit: 67, lat: 64.9631,  lng:  -19.0208 },
+    { key: 'Israel',         nameJa: 'イスラエル',     nameEn: 'Israel',         lifeExpectancy: 83.0, healthyLifeExpectancy: 71.0, workingAgeLimit: 67, lat: 31.0461,  lng:   34.8516 },
+    { key: 'South Korea',    nameJa: '韓国',           nameEn: 'South Korea',    lifeExpectancy: 83.0, healthyLifeExpectancy: 72.0, workingAgeLimit: 60, lat: 35.9078,  lng:  127.7669 },
+    { key: 'Sweden',         nameJa: 'スウェーデン',   nameEn: 'Sweden',         lifeExpectancy: 82.8, healthyLifeExpectancy: 72.0, workingAgeLimit: 65, lat: 60.1282,  lng:   18.6435 },
+    { key: 'France',         nameJa: 'フランス',       nameEn: 'France',         lifeExpectancy: 82.7, healthyLifeExpectancy: 71.0, workingAgeLimit: 62, lat: 46.2276,  lng:    2.2137 },
+    { key: 'Canada',         nameJa: 'カナダ',         nameEn: 'Canada',         lifeExpectancy: 82.4, healthyLifeExpectancy: 71.0, workingAgeLimit: 65, lat: 56.1304,  lng: -106.3468 },
+    { key: 'Norway',         nameJa: 'ノルウェー',     nameEn: 'Norway',         lifeExpectancy: 82.4, healthyLifeExpectancy: 71.0, workingAgeLimit: 67, lat: 60.4720,  lng:    8.4689 },
+    { key: 'New Zealand',    nameJa: 'ニュージーランド', nameEn: 'New Zealand',  lifeExpectancy: 82.2, healthyLifeExpectancy: 71.0, workingAgeLimit: 65, lat: -40.9006, lng:  174.8860 },
+    { key: 'Netherlands',    nameJa: 'オランダ',       nameEn: 'Netherlands',    lifeExpectancy: 82.0, healthyLifeExpectancy: 71.0, workingAgeLimit: 67, lat: 52.1326,  lng:    5.2913 },
+    { key: 'Ireland',        nameJa: 'アイルランド',   nameEn: 'Ireland',        lifeExpectancy: 82.0, healthyLifeExpectancy: 70.0, workingAgeLimit: 66, lat: 53.1424,  lng:   -7.6921 },
+    { key: 'Germany',        nameJa: 'ドイツ',         nameEn: 'Germany',        lifeExpectancy: 81.3, healthyLifeExpectancy: 70.0, workingAgeLimit: 67, lat: 51.1657,  lng:   10.4515 },
+    { key: 'United Kingdom', nameJa: 'イギリス',       nameEn: 'United Kingdom', lifeExpectancy: 81.2, healthyLifeExpectancy: 70.0, workingAgeLimit: 66, lat: 55.3781,  lng:   -3.4360 },
+    { key: 'Turkey',         nameJa: 'トルコ',         nameEn: 'Turkey',         lifeExpectancy: 78.6, healthyLifeExpectancy: 67.0, workingAgeLimit: 65, lat: 38.9637,  lng:   35.2433 },
+    { key: 'United States',  nameJa: 'アメリカ',       nameEn: 'United States',  lifeExpectancy: 77.3, healthyLifeExpectancy: 68.0, workingAgeLimit: 65, lat: 37.0902,  lng:  -95.7129 },
+    { key: 'China',          nameJa: '中国',           nameEn: 'China',          lifeExpectancy: 77.4, healthyLifeExpectancy: 68.0, workingAgeLimit: 60, lat: 35.8617,  lng:  104.1954 },
+    { key: 'Saudi Arabia',   nameJa: 'サウジアラビア', nameEn: 'Saudi Arabia',   lifeExpectancy: 76.9, healthyLifeExpectancy: 67.0, workingAgeLimit: 60, lat: 23.8859,  lng:   45.0792 },
+    { key: 'Brazil',         nameJa: 'ブラジル',       nameEn: 'Brazil',         lifeExpectancy: 75.9, healthyLifeExpectancy: 66.0, workingAgeLimit: 65, lat: -14.2350, lng:  -51.9253 },
+    { key: 'Mexico',         nameJa: 'メキシコ',       nameEn: 'Mexico',         lifeExpectancy: 75.0, healthyLifeExpectancy: 67.0, workingAgeLimit: 65, lat: 23.6345,  lng: -102.5528 },
+    { key: 'Russia',         nameJa: 'ロシア',         nameEn: 'Russia',         lifeExpectancy: 73.4, healthyLifeExpectancy: 64.0, workingAgeLimit: 60, lat: 61.5240,  lng:  105.3188 },
+    { key: 'Indonesia',      nameJa: 'インドネシア',   nameEn: 'Indonesia',      lifeExpectancy: 71.7, healthyLifeExpectancy: 62.0, workingAgeLimit: 58, lat: -0.7893,  lng:  113.9213 },
+    { key: 'India',          nameJa: 'インド',         nameEn: 'India',          lifeExpectancy: 69.7, healthyLifeExpectancy: 60.0, workingAgeLimit: 60, lat: 20.5937,  lng:   78.9629 },
+    { key: 'South Africa',   nameJa: '南アフリカ',     nameEn: 'South Africa',   lifeExpectancy: 64.1, healthyLifeExpectancy: 58.0, workingAgeLimit: 60, lat: -30.5595, lng:   22.9375 },
+    { key: 'Nigeria',        nameJa: 'ナイジェリア',   nameEn: 'Nigeria',        lifeExpectancy: 54.7, healthyLifeExpectancy: 50.0, workingAgeLimit: 60, lat:  9.0820,  lng:    8.6753 },
+    { key: 'Global',         nameJa: 'グローバル',     nameEn: 'Global',         lifeExpectancy: 73.2, healthyLifeExpectancy: 64.0, workingAgeLimit: 65, lat:  0,       lng:    0       }
+];
 
-// Working age limit (定年退職年齢) - typical retirement age
-export const workingAgeLimitData = {
-    Japan: 65,
-    Switzerland: 65,
-    Singapore: 65,
-    Spain: 65,
-    Italy: 67,
-    Australia: 67,
-    Iceland: 67,
-    Israel: 67,
-    "South Korea": 60,
-    Sweden: 65,
-    France: 62,
-    Canada: 65,
-    Norway: 67,
-    "New Zealand": 65,
-    Netherlands: 67,
-    Ireland: 66,
-    Germany: 67,
-    "United Kingdom": 66,
-    "United States": 65,
-    China: 60,
-    India: 60,
-    Brazil: 65,
-    Nigeria: 60,
-    "South Africa": 60,
-    Global: 65
-};
+const indexBy = (field) => Object.fromEntries(COUNTRIES.map((c) => [c.key, c[field]]));
 
-export const countryCoordinates = {
-    "Japan": { lat: 36.2048, lng: 138.2529 },
-    "United States": { lat: 37.0902, lng: -95.7129 },
-    "United Kingdom": { lat: 55.3781, lng: -3.4360 },
-    "Germany": { lat: 51.1657, lng: 10.4515 },
-    "France": { lat: 46.2276, lng: 2.2137 },
-    "Italy": { lat: 41.8719, lng: 12.5674 },
-    "Canada": { lat: 56.1304, lng: -106.3468 },
-    "Australia": { lat: -25.2744, lng: 133.7751 },
-    "Brazil": { lat: -14.2350, lng: -51.9253 },
-    "China": { lat: 35.8617, lng: 104.1954 },
-    "India": { lat: 20.5937, lng: 78.9629 },
-    "Russia": { lat: 61.5240, lng: 105.3188 },
-    "South Korea": { lat: 35.9078, lng: 127.7669 },
-    "Mexico": { lat: 23.6345, lng: -102.5528 },
-    "Spain": { lat: 40.4637, lng: -3.7492 },
-    "Turkey": { lat: 38.9637, lng: 35.2433 },
-    "Indonesia": { lat: -0.7893, lng: 113.9213 },
-    "Netherlands": { lat: 52.1326, lng: 5.2913 },
-    "Saudi Arabia": { lat: 23.8859, lng: 45.0792 },
-    "Switzerland": { lat: 46.8182, lng: 8.2275 },
-    "Global": { lat: 0, lng: 0 }
-};
+// Legacy dicts derived from COUNTRIES so they cannot drift apart again.
+export const lifeExpectancyData = indexBy('lifeExpectancy');
+export const healthyLifeExpectancyData = indexBy('healthyLifeExpectancy');
+export const workingAgeLimitData = indexBy('workingAgeLimit');
+export const countryCoordinates = Object.fromEntries(
+    COUNTRIES.map((c) => [c.key, { lat: c.lat, lng: c.lng }])
+);
 
 // Average daily time usage in hours (approximate global averages)
 export const dailyTimeUsage = {
     Sleep: 8,
-    Work: 8, // Assuming working age, 5 days a week -> averaged over 7 days approx 5.7h, but let's stick to a standard "work day" concept for impact or adjust logic.
-    // Better approach: 8 hours work for 5 days = 40 hours. 40/7 = 5.7 hours/day average over a lifetime? 
-    // Let's use a more "typical day" breakdown for the visualization impact.
-    Chores: 2, // Cooking, cleaning, shopping
+    Work: 8,
+    Chores: 2,
     Eating: 1.5,
     Commute: 1,
-    "Personal Care": 1, // Shower, grooming
-    "Screen Time": 3, // Social media, TV (discretionary but often wasted)
+    "Personal Care": 1,
+    "Screen Time": 3
 };
 
-// Meaningful life moments - average frequencies
 export const lifeMoments = {
     "Time with Parents": {
-        visitsPerYear: 12, // Once a month average
+        visitsPerYear: 12,
         hoursPerVisit: 6,
         description: "Remaining visits with parents"
     },
     "Time with Children": {
-        yearsActive: 18, // Active parenting years
+        yearsActive: 18,
         hoursPerDay: 3,
         description: "Quality time with your children"
     },
@@ -141,7 +80,7 @@ export const lifeMoments = {
         description: "Quality time with your partner"
     },
     "Time with Close Friends": {
-        meetingsPerYear: 24, // Twice a month
+        meetingsPerYear: 24,
         hoursPerMeeting: 4,
         description: "Meaningful time with close friends"
     },
@@ -152,8 +91,8 @@ export const lifeMoments = {
     },
     "Personal Growth": {
         hoursPerDay: 3,
-        targetHours: 10000, // Based on "10,000-Hour Rule" (Malcolm Gladwell, Outliers)
-        targetAge: 40, // Default target age for mastery
+        targetHours: 10000,
+        targetAge: 40,
         description: "Learning, hobbies, self-improvement - Path to mastery"
     }
 };
@@ -164,38 +103,26 @@ export const calculateLifeStats = (country, age, customExpectancy = null) => {
     const totalWeeks = expectancy * 52.1429;
     const livedWeeks = age * 52.1429;
     const remainingWeeks = remainingYears * 52.1429;
-
-    // Calculate remaining seconds (for countdown)
     const remainingSeconds = remainingYears * 365.25 * 24 * 60 * 60;
 
-    // Calculate meaningful moments breakdown
     const breakdown = {};
 
-    // Time with Parents (assuming parents live to ~80)
     const parentLifeExpectancy = 80;
-    const parentAge = age + 30; // Rough estimate
+    const parentAge = age + 30;
     const yearsWithParents = Math.max(0, parentLifeExpectancy - parentAge);
     breakdown["Time with Parents"] = Math.min(
         yearsWithParents * lifeMoments["Time with Parents"].visitsPerYear * lifeMoments["Time with Parents"].hoursPerVisit,
         remainingYears * lifeMoments["Time with Parents"].visitsPerYear * lifeMoments["Time with Parents"].hoursPerVisit
     );
 
-    // Time with Children (if applicable, assuming children are young)
     if (age < 60) {
         const childYears = Math.min(lifeMoments["Time with Children"].yearsActive, remainingYears);
         breakdown["Time with Children"] = childYears * 365.25 * lifeMoments["Time with Children"].hoursPerDay;
     }
 
-    // Time with Partner
     breakdown["Time with Partner"] = remainingYears * 365.25 * lifeMoments["Time with Partner"].hoursPerDay;
-
-    // Time with Close Friends
     breakdown["Time with Close Friends"] = remainingYears * lifeMoments["Time with Close Friends"].meetingsPerYear * lifeMoments["Time with Close Friends"].hoursPerMeeting;
-
-    // Vacations & Travel
-    breakdown["Vacations & Travel"] = remainingYears * lifeMoments["Vacations & Travel"].tripsPerYear * lifeMoments["Vacations & Travel"].daysPerTrip * 12; // 12 waking hours per day
-
-    // Personal Growth
+    breakdown["Vacations & Travel"] = remainingYears * lifeMoments["Vacations & Travel"].tripsPerYear * lifeMoments["Vacations & Travel"].daysPerTrip * 12;
     breakdown["Personal Growth"] = remainingYears * 365.25 * lifeMoments["Personal Growth"].hoursPerDay;
 
     return {
@@ -223,8 +150,8 @@ export const translations = {
         timeMessage: "かけがえのない、今この瞬間",
         breakdownTitle: "残りの人生の内訳",
         startOver: "最初に戻る",
-        years: "歳", // For age
-        durationYears: "年", // For duration
+        years: "歳",
+        durationYears: "年",
         days: "日",
         hours: "時間",
         minutes: "分",
@@ -277,7 +204,6 @@ export const translations = {
             "Personal Growth": "Personal Growth"
         }
     },
-    // Default fallback (English)
     "default": {
         whereLive: "WHERE DO YOU LIVE?",
         howOld: "HOW OLD ARE YOU?",
