@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { calculateLifeStats, translations, lifeExpectancyData, healthyLifeExpectancyData, workingAgeLimitData } from '../utils/lifeData';
+import { calculateAge, calculateHoursWithPerson } from '../utils/calculations';
 
 const FREQUENCY_LABELS_JP = {
     365: '毎日',
@@ -68,69 +69,6 @@ const generateId = () => {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
 };
 
-// Calculate age from birthdate or use direct age
-const calculateAge = (person) => {
-    // If age is directly specified, use it
-    if (person.age !== undefined && person.age !== null) {
-        return Number(person.age);
-    }
-    
-    // Otherwise calculate from birthdate
-    if (!person.birthYear || !person.birthMonth || !person.birthDay) return null;
-    
-    const today = new Date();
-    const birthDate = new Date(person.birthYear, person.birthMonth - 1, person.birthDay);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    const dayDiff = today.getDate() - birthDate.getDate();
-    
-    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-        age--;
-    }
-    
-    const nextBirthday = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate());
-    if (nextBirthday < today) {
-        nextBirthday.setFullYear(today.getFullYear() + 1);
-    }
-    const lastBirthday = new Date(nextBirthday);
-    lastBirthday.setFullYear(nextBirthday.getFullYear() - 1);
-    
-    const yearProgress = (today - lastBirthday) / (nextBirthday - lastBirthday);
-    return age + yearProgress;
-};
-
-    // Calculate hours with a person
-    // Thought: Relationships are defined by shared time, not just shared blood or titles.
-    // 思考：関係性とは、血縁や肩書きではなく、共有された「時間」によって定義される。
-const calculateHoursWithPerson = (person, userAge, userCountry, remainingYears) => {
-    const personAge = calculateAge(person);
-    if (personAge === null) return 0;
-    
-    // 対象が自分より若い場合 → 自分の平均寿命をリミットとして使用
-    // 対象が自分より年上の場合 → 対象の平均寿命をリミットとして使用
-    const userLifeExpectancy = lifeExpectancyData[userCountry] || lifeExpectancyData['Global'];
-    const personLifeExpectancy = userLifeExpectancy; // 同じ国の平均寿命を使用（男女の平均）
-    
-    let limitLifeExpectancy;
-    if (personAge < userAge) {
-        // 対象が自分より若い場合（例：息子）→ 自分の平均寿命をリミット
-        limitLifeExpectancy = userLifeExpectancy;
-    } else {
-        // 対象が自分より年上の場合（例：親）→ 対象の平均寿命をリミット
-        limitLifeExpectancy = personLifeExpectancy;
-    }
-    
-    const yearsWithPerson = Math.max(0, limitLifeExpectancy - personAge);
-    const effectiveYears = Math.min(yearsWithPerson, remainingYears);
-    
-    // 会える回数 = 残りの年数 × 年間の会う回数
-    const totalMeetings = effectiveYears * person.meetingFrequency;
-    
-    // 共有できる時間 = 会える回数 × 1回あたりの時間
-    const totalHours = totalMeetings * person.hoursPerMeeting;
-    
-    return Math.max(0, totalHours);
-};
 
 const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, healthyLifeExpectancy: customHealthyLifeExpectancy, workingAgeLimit: customWorkingAgeLimit, calculationBasis, onCalculationBasisChange, onReset, isSettingsOpen, onCloseSettings, editingPersonId, onOpenSettingsWithPerson, onUpdateUserSettings, people, setPeople, stats, userSettingsRef, onParticleDrop, onSettingsClick, onNavigate }) => {
     const [visible, setVisible] = useState(false);

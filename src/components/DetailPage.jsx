@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { calculateLifeStats, translations, lifeExpectancyData, healthyLifeExpectancyData, workingAgeLimitData } from '../utils/lifeData';
+import { calculateAge } from '../utils/calculations';
 import EnergyTank from './EnergyTank';
 
 const FREQUENCY_LABELS_JP = {
@@ -65,26 +66,6 @@ const getConditionText = (person, isJapan) => {
     return `${freqLabel} × ${hoursLabel}`;
 };
 
-// Calculate age from birthdate or use direct age
-const calculateAge = (person) => {
-    if (person.age !== undefined && person.age !== null) {
-        return Number(person.age);
-    }
-    
-    if (!person.birthYear || !person.birthMonth || !person.birthDay) return null;
-    
-    const today = new Date();
-    const birthDate = new Date(person.birthYear, person.birthMonth - 1, person.birthDay);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    const dayDiff = today.getDate() - birthDate.getDate();
-    
-    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-        age--;
-    }
-    
-    return age;
-};
 
 // LifeEvents component (simplified version)
 const LifeEvents = ({ remainingYears, people, userAge, userCountry }) => {

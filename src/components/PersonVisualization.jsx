@@ -1,26 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { lifeExpectancyData } from '../utils/lifeData';
-
-// Calculate age from birthdate or use direct age
-const calculateAge = (person) => {
-    if (person.age !== undefined && person.age !== null) {
-        return Number(person.age);
-    }
-    
-    if (!person.birthYear || !person.birthMonth || !person.birthDay) return null;
-    
-    const today = new Date();
-    const birthDate = new Date(person.birthYear, person.birthMonth - 1, person.birthDay);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    const dayDiff = today.getDate() - birthDate.getDate();
-    
-    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-        age--;
-    }
-    
-    return age;
-};
+import { calculateAge, calculateTimeWithPerson } from '../utils/calculations';
 
 const PersonVisualization = ({ 
     person, 
@@ -49,18 +29,21 @@ const PersonVisualization = ({
         return null;
     }
 
-    const personAge = calculateAge(person) || 30;
     const lifeExpectancy = lifeExpectancyData[userCountry] || lifeExpectancyData['Global'];
-    
-    // Calculate remaining time together
     const userRemainingYears = Math.max(0, lifeExpectancy - userAge);
-    const personRemainingYears = Math.max(0, lifeExpectancy - personAge);
-    const effectiveYears = Math.min(userRemainingYears, personRemainingYears);
-    
-    const totalMeetings = effectiveYears * (person.meetingFrequency || 12);
-    const totalHours = totalMeetings * (person.hoursPerMeeting || 2);
-    const totalDays = totalHours / 24;
-    
+
+    const personForCalc = { ...person, meetingFrequency: person.meetingFrequency || 12, hoursPerMeeting: person.hoursPerMeeting || 2 };
+    const result = calculateTimeWithPerson({
+        person: personForCalc,
+        userAge,
+        country: userCountry,
+        remainingYears: userRemainingYears
+    });
+    const personAge = result.personAge ?? 30;
+    const totalHours = result.hours;
+    const totalMeetings = result.meetings;
+    const totalDays = result.days;
+
     // Calculate percentage (of user's remaining life spent with this person)
     const userRemainingHours = userRemainingYears * 365.25 * 24;
     const percentage = userRemainingHours > 0 ? (totalHours / userRemainingHours) * 100 : 0;

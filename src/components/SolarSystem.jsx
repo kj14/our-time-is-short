@@ -4,6 +4,7 @@ import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import Earth from './Earth';
 import { lifeExpectancyData } from '../utils/lifeData';
+import { calculateAge, calculateTimeWithPerson } from '../utils/calculations';
 
 // High quality textures for planets from local storage
 const PLANET_TEXTURES = [
@@ -16,27 +17,6 @@ const PLANET_TEXTURES = [
     '/textures/2k_neptune.jpg'
 ];
 
-// Calculate age from birthdate or use direct age
-const calculateAge = (person) => {
-    if (person.age !== undefined && person.age !== null) {
-        return Number(person.age);
-    }
-    
-    if (!person.birthYear || !person.birthMonth || !person.birthDay) return null;
-    
-    const today = new Date();
-    const birthDate = new Date(person.birthYear, person.birthMonth - 1, person.birthDay);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    const dayDiff = today.getDate() - birthDate.getDate();
-    
-    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-        age--;
-    }
-    
-    return age;
-};
-
 // 3 orbit zones based on remaining time
 // Zone 1 (Closest - Critical): < 24 hours OR < 10 meetings
 // Zone 2 (Middle - Warning): < 100 hours OR < 50 meetings  
@@ -48,35 +28,17 @@ const ORBIT_ZONES = {
     stable: { distance: 20, color: '#10b981' }      // Green - healthy relationship
 };
 
-// Calculate shared hours and meetings with a person
-const calculateTimeWithPerson = (person, userAge, userCountry, remainingYears) => {
-    const personAge = calculateAge(person);
-    if (personAge === null) return { hours: 100, meetings: 50 }; // Default values
-    
-    // Use defaults if values are null/undefined
-    const effectiveUserAge = userAge || 44;
-    const effectiveRemainingYears = remainingYears || 40;
-    
-    const userLifeExpectancy = lifeExpectancyData[userCountry] || lifeExpectancyData['Global'];
-    const personLifeExpectancy = userLifeExpectancy;
-    
-    let limitLifeExpectancy;
-    if (personAge < effectiveUserAge) {
-        limitLifeExpectancy = userLifeExpectancy;
-    } else {
-        limitLifeExpectancy = personLifeExpectancy;
-    }
-    
-    const yearsWithPerson = Math.max(0, limitLifeExpectancy - personAge);
-    const effectiveYears = Math.min(yearsWithPerson, effectiveRemainingYears);
-    
-    const totalMeetings = effectiveYears * (person.meetingFrequency || 12);
-    const totalHours = totalMeetings * (person.hoursPerMeeting || 2);
-    
-    return {
-        hours: Math.max(0, totalHours),
-        meetings: Math.max(0, totalMeetings)
-    };
+// Wrapper around shared calculateTimeWithPerson that supplies defaults and
+// returns the legacy { hours, meetings } shape used by getOrbitZone below.
+const orbitTimeForPerson = (person, userAge, userCountry, remainingYears) => {
+    if (calculateAge(person) === null) return { hours: 100, meetings: 50 };
+    const result = calculateTimeWithPerson({
+        person: { ...person, meetingFrequency: person.meetingFrequency || 12, hoursPerMeeting: person.hoursPerMeeting || 2 },
+        userAge: userAge || 44,
+        country: userCountry,
+        remainingYears: remainingYears || 40
+    });
+    return { hours: result.hours, meetings: result.meetings };
 };
 
 // Determine which orbit zone a person belongs to
@@ -311,7 +273,7 @@ export default function SolarSystem({ onSunClick, targetCountry, earthRef, onEar
         const minRadius = 0.5; // Minimum star radius for youngest
         
         return people.map(person => {
-            const timeData = calculateTimeWithPerson(person, userAge, userCountry, remainingYears);
+            const timeData = orbitTimeForPerson(person, userAge, userCountry, remainingYears);
             const personAge = calculateAge(person) || 30;
             
             // Determine orbit zone based on remaining time/meetings
