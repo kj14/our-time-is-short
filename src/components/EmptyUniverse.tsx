@@ -1,9 +1,13 @@
 import React from 'react';
 import { useT, isJapaneseLanguage } from '../i18n';
 
+interface Props {
+    userCountry: string;
+}
+
 // Welcome nudge shown to users who have set up their own data but
 // haven't added any people yet. Sits below the main visualization.
-export default function EmptyUniverse({ userCountry }) {
+export default function EmptyUniverse({ userCountry }: Props) {
     const t = useT(userCountry);
     const isJa = isJapaneseLanguage(userCountry);
 

@@ -1,9 +1,20 @@
-import React, { Component } from 'react';
+import React, { Component, type ErrorInfo, type ReactNode } from 'react';
 import { strings } from '../i18n/strings';
+import type { Language } from '../types';
 
 const REPO_URL = 'https://github.com/kj14/our-time-is-short';
 
-function detectLanguage() {
+interface Props {
+    children: ReactNode;
+}
+
+interface State {
+    hasError: boolean;
+    error: Error | null;
+    errorInfo: ErrorInfo | null;
+}
+
+function detectLanguage(): Language {
     try {
         const stored = localStorage.getItem('lifevis_language');
         if (stored === 'ja' || stored === 'en') return stored;
@@ -15,17 +26,17 @@ function detectLanguage() {
     return 'en';
 }
 
-export default class ErrorBoundary extends Component {
-    constructor(props) {
+export default class ErrorBoundary extends Component<Props, State> {
+    constructor(props: Props) {
         super(props);
         this.state = { hasError: false, error: null, errorInfo: null };
     }
 
-    static getDerivedStateFromError(error) {
+    static getDerivedStateFromError(error: Error): Partial<State> {
         return { hasError: true, error };
     }
 
-    componentDidCatch(error, errorInfo) {
+    componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
         this.setState({ errorInfo });
         // eslint-disable-next-line no-console
         console.error('Uncaught error:', error, errorInfo);
@@ -129,7 +140,7 @@ export default class ErrorBoundary extends Component {
     }
 }
 
-const primaryBtn = {
+const primaryBtn: React.CSSProperties = {
     padding: '0.85rem 1rem',
     border: 'none',
     borderRadius: '12px',
@@ -140,7 +151,7 @@ const primaryBtn = {
     cursor: 'pointer'
 };
 
-const secondaryBtn = {
+const secondaryBtn: React.CSSProperties = {
     padding: '0.75rem 1rem',
     border: '1px solid rgba(255,255,255,0.2)',
     borderRadius: '12px',

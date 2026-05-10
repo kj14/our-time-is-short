@@ -2,16 +2,23 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { pickTruthMessage, buildContext } from './selector';
 import { useT, isJapaneseLanguage } from '../../i18n';
 import { getLifeExpectancy } from '../../utils/calculations';
+import type { CalculationBasis, Person, TruthMessageOutput } from '../../types';
 
 const SHARE_HASHTAG = '#OurTimeIsShort';
 
 const MAX_HISTORY = 8;
 
-export default function TruthMessage({ user, people, basis = 'life' }) {
+interface Props {
+    user: { country: string; age: number } | null | undefined;
+    people: Person[];
+    basis?: CalculationBasis;
+}
+
+export default function TruthMessage({ user, people, basis = 'life' }: Props) {
     const t = useT(user?.country);
     const isJa = isJapaneseLanguage(user?.country);
-    const [message, setMessage] = useState(null);
-    const [history, setHistory] = useState([]);
+    const [message, setMessage] = useState<TruthMessageOutput | null>(null);
+    const [history, setHistory] = useState<string[]>([]);
 
     const reroll = useCallback(() => {
         if (!user || !user.country || user.age == null) {
@@ -60,7 +67,7 @@ export default function TruthMessage({ user, people, basis = 'life' }) {
     const q = isJa ? message.question.ja : message.question.en;
     const a = isJa ? message.answer.ja : message.answer.en;
 
-    const handleShare = async (e) => {
+    const handleShare = async (e: React.MouseEvent) => {
         e.stopPropagation();
         const text = `Q: ${q}\nA: ${a}\n${SHARE_HASHTAG}`;
         try {
