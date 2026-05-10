@@ -156,10 +156,11 @@ function App() {
   return (
     <div className="app-container">
       {/* Integrated 3D Scene */}
-      <Scene 
+      <Scene
         isVisualizing={(isValidUser && !isSettingsOpen) || visualizingPersonId}
         isSettingsOpen={isSettingsOpen}
         isOverviewMode={isOverviewMode}
+        calculationBasis={calculationBasis}
         targetCountry={userData ? userData.country : currentCountry}
         remainingPercentage={userData ? ((userData.lifeExpectancy - userData.age) / userData.lifeExpectancy * 100) : 50}
         onParticleDrop={particleDropCallback}
@@ -275,6 +276,9 @@ function App() {
               }}
               onCancel={() => setIsAddingPerson(false)}
               isJapan={currentCountry === 'Japan'}
+              userCountry={userData ? userData.country : currentCountry}
+              userAge={userData?.age}
+              calculationBasis={calculationBasis}
             />
           </div>
         ) : visualizingPersonId ? (
@@ -320,6 +324,9 @@ function App() {
                 setSelectedPersonId(null);
               }}
               isJapan={currentCountry === 'Japan'}
+              userCountry={userData ? userData.country : currentCountry}
+              userAge={userData?.age}
+              calculationBasis={calculationBasis}
             />
           </div>
         ) : !isValidUser ? (

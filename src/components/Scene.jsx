@@ -4,9 +4,10 @@ import { Stars } from '@react-three/drei';
 import * as THREE from 'three';
 import SolarSystem from './SolarSystem';
 import DigitalHourglassScene from './DigitalHourglassScene';
+import { getLifeExpectancy } from '../utils/calculations';
 
 // Scene component handling 3D transitions
-function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears, selectedPersonId, visualizingPersonId, isEarthVisualized }) {
+function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears, selectedPersonId, visualizingPersonId, isEarthVisualized, calculationBasis }) {
     const solarSystemRef = useRef();
     const earthRef = useRef();
     const { camera } = useThree();
@@ -81,7 +82,7 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
                     const effectiveUserAge = userAge || 44;
                     const effectiveRemainingYears = remainingYears || 40;
                     
-                    const userLifeExpectancy = 84.6; // Default
+                    const userLifeExpectancy = getLifeExpectancy(userCountry, calculationBasis);
                     let limitLifeExpectancy = personAge < effectiveUserAge ? userLifeExpectancy : userLifeExpectancy;
                     const yearsWithPerson = Math.max(0, limitLifeExpectancy - personAge);
                     const effectiveYears = Math.min(yearsWithPerson, effectiveRemainingYears);
@@ -203,7 +204,7 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
     );
 }
 
-export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears, remainingSeconds, livedSeconds, selectedPersonId, visualizingPersonId, isEarthVisualized }) {
+export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears, remainingSeconds, livedSeconds, selectedPersonId, visualizingPersonId, isEarthVisualized, calculationBasis }) {
     const [topPulse, setTopPulse] = useState(1);
     const [currentRemainingSeconds, setCurrentRemainingSeconds] = useState(remainingSeconds || 0);
     const [currentLivedSeconds, setCurrentLivedSeconds] = useState(livedSeconds || 0);
@@ -292,6 +293,7 @@ export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, t
                         selectedPersonId={selectedPersonId}
                         visualizingPersonId={visualizingPersonId}
                         isEarthVisualized={isEarthVisualized}
+                        calculationBasis={calculationBasis}
                     />
                 </Suspense>
             </Canvas>

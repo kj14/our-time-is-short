@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getLifeExpectancy } from '../utils/calculations';
 
 // Planet textures with names for selection
 const PLANET_OPTIONS = [
@@ -32,13 +33,16 @@ const HOURS_OPTIONS = [
 
 const generateId = () => `person_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-const PersonSettings = ({ 
+const PersonSettings = ({
     person, // null for new person, object for editing
-    onSave, 
-    onDelete, 
+    onSave,
+    onDelete,
     onCancel,
     onVisualize, // Callback to visualize time with this person
-    isJapan = true 
+    isJapan = true,
+    userCountry = 'Japan',
+    userAge,
+    calculationBasis = 'life'
 }) => {
     const [formData, setFormData] = useState({
         name: '',
@@ -130,11 +134,11 @@ const PersonSettings = ({
     // Calculate shared time preview
     const calculateSharedTime = () => {
         if (calculatedAge === null) return null;
-        
-        const userAge = 44; // Default user age for preview
-        const lifeExpectancy = 84.6; // Default life expectancy
-        const remainingYears = lifeExpectancy - userAge;
-        
+
+        const effectiveUserAge = userAge ?? 44;
+        const lifeExpectancy = getLifeExpectancy(userCountry, calculationBasis);
+        const remainingYears = Math.max(0, lifeExpectancy - effectiveUserAge);
+
         const personRemainingYears = Math.max(0, lifeExpectancy - calculatedAge);
         const effectiveYears = Math.min(personRemainingYears, remainingYears);
         
