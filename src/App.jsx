@@ -261,6 +261,7 @@ function App() {
       {!isValidUser && isOverviewMode && !isAddingPerson && !selectedPersonId && (
         <button
           onClick={() => setIsAddingPerson(true)}
+          aria-label={currentCountry === 'Japan' ? '大切な人を追加' : 'Add a person'}
           style={{
             position: 'fixed',
             bottom: '2rem',
@@ -475,11 +476,15 @@ function App() {
             <div className="settings-container">
               <div className="settings-header">
                 <h2 className="settings-title">設定</h2>
-                <button className="close-btn" onClick={() => {
-                  setIsSettingsOpen(false);
-                  setIsEarthZoomed(false);
-                  setEditingPersonId(null);
-                }}>×</button>
+                <button
+                  className="close-btn"
+                  aria-label={userData.country === 'Japan' ? '設定を閉じる' : 'Close settings'}
+                  onClick={() => {
+                    setIsSettingsOpen(false);
+                    setIsEarthZoomed(false);
+                    setEditingPersonId(null);
+                  }}
+                >×</button>
               </div>
               <div className="settings-content">
                 <div ref={userSettingsRef}>

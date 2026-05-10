@@ -3,6 +3,8 @@ import { pickTruthMessage, buildContext } from './selector';
 import { useT, isJapaneseLanguage } from '../../i18n';
 import { getLifeExpectancy } from '../../utils/calculations';
 
+const SHARE_HASHTAG = '#OurTimeIsShort';
+
 const MAX_HISTORY = 8;
 
 export default function TruthMessage({ user, people, basis = 'life' }) {
@@ -57,6 +59,23 @@ export default function TruthMessage({ user, people, basis = 'life' }) {
 
     const q = isJa ? message.question.ja : message.question.en;
     const a = isJa ? message.answer.ja : message.answer.en;
+
+    const handleShare = async (e) => {
+        e.stopPropagation();
+        const text = `Q: ${q}\nA: ${a}\n${SHARE_HASHTAG}`;
+        try {
+            if (navigator.share) {
+                await navigator.share({ text });
+            } else if (navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(text);
+                alert(isJa ? 'メッセージをコピーしました' : 'Message copied to clipboard');
+            } else {
+                window.prompt(isJa ? 'コピーしてシェア' : 'Copy and share', text);
+            }
+        } catch (err) {
+            // User cancelled or browser denied — silently ignore.
+        }
+    };
 
     return (
         <div style={{
@@ -133,11 +152,26 @@ export default function TruthMessage({ user, people, basis = 'life' }) {
                     </div>
                 </div>
             </button>
-            <div style={{
-                fontSize: '0.75rem',
-                color: 'rgba(255, 255, 255, 0.4)'
-            }}>
-                {isJa ? 'タップで別のメッセージ' : 'Tap for another message'}
+            <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+                <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.4)' }}>
+                    {isJa ? 'タップで別のメッセージ' : 'Tap for another message'}
+                </div>
+                <button
+                    type="button"
+                    onClick={handleShare}
+                    aria-label={t('common.share')}
+                    style={{
+                        fontSize: '0.8rem',
+                        padding: '0.4rem 1rem',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        color: '#f5f5f5',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        borderRadius: '999px',
+                        cursor: 'pointer'
+                    }}
+                >
+                    ↗ {t('common.share')}
+                </button>
             </div>
         </div>
     );
