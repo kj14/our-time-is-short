@@ -30,6 +30,7 @@ export interface Person {
     meetingFrequency: number; // events per year
     hoursPerMeeting: number;
     textureUrl?: string;
+    color?: string; // legacy accent colour used by PeopleSettings list / DetailPage
 }
 
 export interface UserData {

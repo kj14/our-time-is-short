@@ -16,7 +16,7 @@ const InputSection = ({ onVisualize, onCountryChange }) => {
     const [day, setDay] = useState(() => {
         return localStorage.getItem('lifevis_day') || '14';
     });
-    const [calculatedAge, setCalculatedAge] = useState(null);
+    const [calculatedAge, setCalculatedAge] = useState<number | null>(null);
 
     const t = useT(country);
     const legacy = translations[country] || translations['default'];

@@ -14,7 +14,7 @@ const LifeEvents = ({ remainingYears, people, userAge, userCountry }) => {
     const tt = useT(userCountry);
 
     const events = useMemo(() => {
-        const list = [];
+        const list: { name: string; meetings: number; color: string }[] = [];
         people.forEach((person) => {
             const personAge = calculateAge(person);
             if (personAge === null) return;
@@ -144,7 +144,7 @@ const DetailPage = ({
         return saved || 'percentage';
     });
     const [isCapturing, setIsCapturing] = useState(false);
-    const [shareMessage, setShareMessage] = useState(null);
+    const [shareMessage, setShareMessage] = useState<string | null>(null);
     
     const detailPageRef = useRef<any>(null);
     const shareCardRef = useRef<any>(null);

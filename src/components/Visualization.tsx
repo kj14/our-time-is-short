@@ -10,7 +10,7 @@ import PeopleSettings from './visualization/PeopleSettings';
 
 const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, healthyLifeExpectancy: customHealthyLifeExpectancy, workingAgeLimit: customWorkingAgeLimit, calculationBasis, onCalculationBasisChange, onReset, isSettingsOpen, onCloseSettings, editingPersonId, onOpenSettingsWithPerson, onUpdateUserSettings, people, setPeople, stats, userSettingsRef, onParticleDrop, onSettingsClick, onNavigate }: any) => {
     const [visible, setVisible] = useState(false);
-    const [calculatedStats, setCalculatedStats] = useState(null);
+    const [calculatedStats, setCalculatedStats] = useState<any>(null);
 
     const visualizationRef = useRef<any>(null);
     const particleDropHandlerRef = useRef<any>(null);
@@ -69,7 +69,7 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
     };
     const themeColor = getThemeColor();
 
-    const [timeLeft, setTimeLeft] = useState(null);
+    const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
     useEffect(() => {
         if (!displayStats || displayStats.remainingSeconds === undefined || displayStats.remainingSeconds === null) {

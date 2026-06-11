@@ -1,7 +1,11 @@
-// @ts-nocheck — Three.js refs / r3f forwardRefs need a proper type pass; defer.
-import React, { useRef, useMemo, useState, useEffect } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+
+interface SnowParticlesProps {
+    remainingPercentage?: number;
+    onDrop?: () => void;
+}
 
 // Delicate snowflake-like particle shader
 const particleVertexShader = `
@@ -41,8 +45,8 @@ const particleFragmentShader = `
   }
 `;
 
-function DelicateSnowParticles({ remainingPercentage = 50, onDrop }) {
-  const pointsRef = useRef<any>(null);
+function DelicateSnowParticles({ remainingPercentage = 50, onDrop }: SnowParticlesProps) {
+  const pointsRef = useRef<THREE.Points>(null);
   const lastDropTime = useRef(0);
   
   // Detect mobile device for particle optimization
@@ -147,9 +151,10 @@ function DelicateSnowParticles({ remainingPercentage = 50, onDrop }) {
     if (!pointsRef.current) return;
     
     const time = state.clock.getElapsedTime();
-    const positionAttribute = pointsRef.current.geometry.attributes.position;
-    const colorAttribute = pointsRef.current.geometry.attributes.color;
-    const alphaAttribute = pointsRef.current.geometry.attributes.alpha;
+    const geometry = pointsRef.current.geometry as THREE.BufferGeometry;
+    const positionAttribute = geometry.attributes.position;
+    const colorAttribute = geometry.attributes.color;
+    const alphaAttribute = geometry.attributes.alpha;
     
     // Drop logic: 1 per second
     // Check if 1 second has passed since last drop
@@ -244,30 +249,11 @@ function DelicateSnowParticles({ remainingPercentage = 50, onDrop }) {
   return (
     <points ref={pointsRef} frustumCulled={false}>
       <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={positions.length / 3}
-          array={positions}
-          itemSize={3}
-        />
-        <bufferAttribute
-          attach="attributes-color"
-          count={colors.length / 3}
-          array={colors}
-          itemSize={3}
-        />
-        <bufferAttribute
-          attach="attributes-size"
-          count={sizes.length}
-          array={sizes}
-          itemSize={1}
-        />
-        <bufferAttribute
-          attach="attributes-alpha"
-          count={alphas.length}
-          array={alphas}
-          itemSize={1}
-        />
+        {/* args form per r3f v9 typing: new THREE.BufferAttribute(array, itemSize) */}
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+        <bufferAttribute attach="attributes-color" args={[colors, 3]} />
+        <bufferAttribute attach="attributes-size" args={[sizes, 1]} />
+        <bufferAttribute attach="attributes-alpha" args={[alphas, 1]} />
       </bufferGeometry>
       <shaderMaterial
         uniforms={{
@@ -297,7 +283,13 @@ function MaxCapacityGuide() {
     );
 }
 
-export default function DigitalHourglassScene({ remainingPercentage = 50, onParticleDrop, country = 'Japan' }) {
+interface DigitalHourglassSceneProps {
+    remainingPercentage?: number;
+    onParticleDrop?: () => void;
+    country?: string;
+}
+
+export default function DigitalHourglassScene({ remainingPercentage = 50, onParticleDrop, country = 'Japan' }: DigitalHourglassSceneProps) {
   return (
     <group>
        <DelicateSnowParticles remainingPercentage={remainingPercentage} onDrop={onParticleDrop} />

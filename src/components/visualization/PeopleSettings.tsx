@@ -339,7 +339,7 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
                         {/* Real-time calculation preview */}
                         {(() => {
                             // Calculate age from form data
-                            let personAge = null;
+                            let personAge: number | null = null;
                             if (formData.age && formData.age !== '') {
                                 personAge = Number(formData.age);
                             } else if (formData.birthYear && formData.birthMonth && formData.birthDay) {

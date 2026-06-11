@@ -1,12 +1,19 @@
-// @ts-nocheck — Three.js refs / r3f forwardRefs need a proper type pass; defer.
 import React, { useRef, useEffect } from 'react';
-import { useFrame, useLoader } from '@react-three/fiber';
+import { useFrame, useLoader, type ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import { countryCoordinates } from '../utils/lifeData';
 
-export default function Earth({ targetCountry, onClick, onPointerOver, onPointerOut, ...props }) {
-    const earthRef = useRef<any>(null);
-    const cloudsRef = useRef<any>(null);
+interface EarthProps {
+    targetCountry?: string;
+    onClick?: (e: ThreeEvent<PointerEvent>) => void;
+    onPointerOver?: () => void;
+    onPointerOut?: () => void;
+    position?: [number, number, number];
+}
+
+export default function Earth({ targetCountry, onClick, onPointerOver, onPointerOut, ...props }: EarthProps) {
+    const earthRef = useRef<THREE.Mesh>(null);
+    const cloudsRef = useRef<THREE.Mesh>(null);
     const targetRotation = useRef(new THREE.Quaternion());
 
     // Load textures
@@ -41,7 +48,7 @@ export default function Earth({ targetCountry, onClick, onPointerOver, onPointer
         if (earthRef.current) {
             // Smoothly interpolate current rotation to target rotation (~1 second)
             earthRef.current.quaternion.slerp(targetRotation.current, delta * 4);
-            
+
             // Rotate clouds slightly for visual effect
             if (cloudsRef.current) {
                 cloudsRef.current.rotation.y += 0.0005;
@@ -49,7 +56,7 @@ export default function Earth({ targetCountry, onClick, onPointerOver, onPointer
         }
     });
 
-    const handlePointerDown = (e) => {
+    const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
         e.stopPropagation();
         if (onClick) {
             onClick(e);
@@ -57,13 +64,13 @@ export default function Earth({ targetCountry, onClick, onPointerOver, onPointer
     };
 
     return (
-        <group 
+        <group
             {...props}
             onPointerDown={handlePointerDown}
             onPointerOver={() => {
                 document.body.style.cursor = 'pointer';
                 if (onPointerOver) onPointerOver();
-            }} 
+            }}
             onPointerOut={() => {
                 document.body.style.cursor = 'auto';
                 if (onPointerOut) onPointerOut();
@@ -71,7 +78,7 @@ export default function Earth({ targetCountry, onClick, onPointerOver, onPointer
         >
             <mesh ref={earthRef}>
                 <sphereGeometry args={[2, 64, 64]} />
-                <meshPhongMaterial 
+                <meshPhongMaterial
                     map={colorMap}
                     specularMap={specularMap}
                     specular={new THREE.Color('grey')}
@@ -80,7 +87,7 @@ export default function Earth({ targetCountry, onClick, onPointerOver, onPointer
             </mesh>
             <mesh ref={cloudsRef}>
                 <sphereGeometry args={[2.02, 64, 64]} />
-                <meshPhongMaterial 
+                <meshPhongMaterial
                     map={cloudsMap}
                     transparent={true}
                     opacity={0.8}
