@@ -51,16 +51,20 @@ This app doesn't instill fear—it gives you liberation and courage.
 - **Time Countdown**: Visualize your remaining life, healthy life expectancy, and working years as battery tanks.
 - **Your Own Universe**: Place up to 10 precious people in your universe—calculate and visualize the remaining time you have with them based on meeting frequency.
 - **Truth Messages**: Data-based messages that appear each time you access the app. Not spiritual fortune-telling, but mathematical facts like "Christmas with your son: 12 remaining."
-- **"If Life Were..."**: Reframe your perspective by customizing the assumed life expectancy.
-- **Share Your Visualization**: Generate and share a snapshot of your current life status to social media.
+- **"If Life Were..."**: Reframe your perspective by customizing the assumed life expectancy — tap the title on the main screen.
+- **Share Your Visualization**: Generate and share a snapshot of your current life status to social media, right from the countdown card.
+- **Mentor at the Center**: Place someone you admire at the center of your universe — you become a planet orbiting them.
+- **Universe Changes**: Compare your universe to one year ago — who appeared, who faded, and how your time together changed.
 
 ### 日本語
 
 - **時間のカウントダウン**: 残りの人生、健康寿命、労働年数をバッテリータンクとして表示
 - **自分だけの宇宙**: 大切な人を最大10人まで配置し、会う頻度から一緒に過ごせる残り時間を計算・可視化
 - **真実のメッセージ**: アクセスするたびに表示される、データに基づいたメッセージ。スピリチュアルな占いではなく、「息子と過ごせるクリスマス：あと12回」のような数学的事実
-- **「もし人生が○年だったら」**: 想定寿命をカスタマイズして、視点を変える
-- **SNSシェア**: 今の人生の状態をスナップショットとしてシェア
+- **「もし人生が○年だったら」**: 想定寿命をカスタマイズして、視点を変える（メイン画面のタイトルをタップ）
+- **SNSシェア**: 今の人生の状態をカウントダウンカードからそのままスナップショットとしてシェア
+- **メンターを中心に**: 憧れの人を宇宙の中心に据えると、自分がその周りを回る惑星になる
+- **宇宙の変化**: 1年前の宇宙と比較——誰が現れ、誰が離れ、共有時間がどう変わったか
 
 ---
 
