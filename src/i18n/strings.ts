@@ -138,6 +138,15 @@ export const strings: Strings = {
         'viz.with': '{name}さんと過ごす',
         'viz.inRemaining': '残りの人生で',
 
+        // universe history (CONCEPT §11 Visualizing Change)
+        'history.title': '宇宙の変化',
+        'history.subtitle': '約{months}ヶ月前のあなたの宇宙と比べて',
+        'history.appeared': '新しい星',
+        'history.faded': '離れた星',
+        'history.hoursPerYear': '年{before}時間 → 年{after}時間',
+        'history.mentorChanged': '中心の星が変わりました',
+        'history.footer': '宇宙は、あなたの変化とともに変わっていきます',
+
         // empty state
         'empty.title': 'あなたの宇宙は空です',
         'empty.subtitle': '最初の人を置いてみましょう',
@@ -276,6 +285,14 @@ export const strings: Strings = {
         'viz.shuffle': 'Pick another',
         'viz.with': 'With {name}',
         'viz.inRemaining': 'in your remaining life',
+
+        'history.title': 'Universe Changes',
+        'history.subtitle': 'Compared to your universe ~{months} months ago',
+        'history.appeared': 'New star',
+        'history.faded': 'Drifted away',
+        'history.hoursPerYear': '{before} h/yr → {after} h/yr',
+        'history.mentorChanged': 'Your center changed',
+        'history.footer': 'Your universe changes as you change',
 
         'empty.title': 'Your universe is empty',
         'empty.subtitle': 'Place your first person',

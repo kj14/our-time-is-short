@@ -3,6 +3,7 @@ import html2canvas from 'html2canvas';
 import { calculateLifeStats, translations, lifeExpectancyData, healthyLifeExpectancyData, workingAgeLimitData } from '../utils/lifeData';
 import { calculateAge } from '../utils/calculations';
 import { TruthMessage } from '../features/truthMessages';
+import UniverseChanges from '../features/universeHistory/UniverseChanges';
 import EnergyTank from './EnergyTank';
 import { useT } from '../i18n';
 
@@ -538,6 +539,10 @@ const DetailPage = ({
                     />
                 </div>
             )}
+
+            {/* Universe Changes — CONCEPT §11 Visualizing Change.
+                Self-hides until ~a month of snapshot history exists. */}
+            <UniverseChanges people={people} userCountry={country} />
 
             {/* Truth Messages — Q+A messages per CONCEPT.md §8-9 */}
             <div style={{ marginBottom: '6rem' }}>

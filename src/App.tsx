@@ -9,6 +9,7 @@ import EmptyUniverse from './components/EmptyUniverse'
 import { lifeExpectancyData, healthyLifeExpectancyData, workingAgeLimitData, calculateLifeStats } from './utils/lifeData'
 import { useT } from './i18n'
 import { viewReducer, initialViewState } from './state/appView'
+import { maybeTakeSnapshot } from './features/universeHistory/snapshots'
 
 function App() {
   // ─── data state ──────────────────────────────────────────────────
@@ -86,6 +87,8 @@ function App() {
   // ─── persistence ─────────────────────────────────────────────────
   useEffect(() => {
     localStorage.setItem('lifevis_people', JSON.stringify(people));
+    // Universe history (CONCEPT §11): self-throttled to one snapshot/month.
+    maybeTakeSnapshot(people);
   }, [people]);
   useEffect(() => {
     localStorage.setItem('lifevis_calculationBasis', calculationBasis);
