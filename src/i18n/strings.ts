@@ -130,6 +130,7 @@ export const strings: Strings = {
         'freq.yearlyN': '年{n}回',
 
         // visualization / overview
+        'viz.changeLifeYears': '想定寿命を変更する',
         'viz.lifeRemaining': '残りの人生',
         'viz.lived': '過ごした時間',
         'viz.empty': '対象を登録すると、メッセージが表示されます',
@@ -268,6 +269,7 @@ export const strings: Strings = {
         'freq.monthly1': '{n}x/month',
         'freq.yearlyN': '{n}x/year',
 
+        'viz.changeLifeYears': 'Change assumed life expectancy',
         'viz.lifeRemaining': 'Remaining Life',
         'viz.lived': 'Time Lived',
         'viz.empty': 'Add a person to see Truth Messages',

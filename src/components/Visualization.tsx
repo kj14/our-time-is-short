@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { calculateLifeStats, translations, lifeExpectancyData, healthyLifeExpectancyData, workingAgeLimitData } from '../utils/lifeData';
 import { calculateAge, calculateHoursWithPerson } from '../utils/calculations';
 import { useT } from '../i18n';
+import { buildShareText, shareElementSnapshot } from '../utils/share';
 import { getConditionText } from './visualization/helpers';
 import TimeUnit from './visualization/TimeUnit';
 import UserSettings from './visualization/UserSettings';
@@ -121,6 +122,21 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
     const timeComponents = getTimeComponents(timeLeft);
     const pad = (n) => n.toString().padStart(2, '0');
 
+    const [isSharing, setIsSharing] = useState(false);
+    const handleShare = async () => {
+        if (!displayStats || isSharing) return;
+        setIsSharing(true);
+        try {
+            const text = buildShareText(tt, displayStats.remainingYears);
+            // Snapshot the countdown card area for a visual share.
+            if (visualizationRef.current) {
+                await shareElementSnapshot(visualizationRef.current, text);
+            }
+        } finally {
+            setIsSharing(false);
+        }
+    };
+
 
     if (!displayStats) return (
         <div style={{ color: 'white', textAlign: 'center', paddingTop: '20vh', position: 'relative', zIndex: 10 }}>
@@ -164,14 +180,33 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
             zIndex: 10,
             transition: 'opacity 0.8s ease-out, transform 0.8s ease-out'
         }}>
-            {/* Title above counter */}
-            <h1 className="app-title" style={{
-                fontSize: 'clamp(1.2rem, 3vw, 1.8rem)',
-                marginBottom: '1.5rem',
-                textAlign: 'center'
-            }}>
-                {tt('detail.lifeIfTitle', { years: lifeExpectancy.toFixed(1) })}
-            </h1>
+            {/* Title above counter — tappable: "If life were N years" opens the
+                life-expectancy sliders so users can reframe the assumption
+                (README: "If Life Were..."). */}
+            <button
+                onClick={handleOpenUserSettings}
+                aria-label={tt('viz.changeLifeYears')}
+                title={tt('viz.changeLifeYears')}
+                style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer',
+                    pointerEvents: 'auto',
+                    marginBottom: '1.5rem'
+                }}
+            >
+                <h1 className="app-title" style={{
+                    fontSize: 'clamp(1.2rem, 3vw, 1.8rem)',
+                    textAlign: 'center',
+                    margin: 0,
+                    borderBottom: '1px dashed rgba(255, 255, 255, 0.25)',
+                    paddingBottom: '0.2rem'
+                }}>
+                    {tt('detail.lifeIfTitle', { years: lifeExpectancy.toFixed(1) })}
+                    <span style={{ fontSize: '0.7em', opacity: 0.5, marginLeft: '0.4rem' }} aria-hidden="true">✎</span>
+                </h1>
+            </button>
             
             {/* Countdown Timer */}
             <div className="countdown-card" style={{
@@ -314,6 +349,32 @@ const Visualization = ({ country, age, lifeExpectancy: customLifeExpectancy, hea
                     <div style={{ fontSize: '3rem', fontWeight: 900 }}>...</div>
                 )}
             </div>
+
+            {/* Share button — one tap to share your countdown (README: Share Your Visualization) */}
+            <button
+                onClick={handleShare}
+                disabled={isSharing}
+                aria-label={tt('detail.shareOnX')}
+                style={{
+                    marginTop: '1rem',
+                    padding: '0.6rem 1.5rem',
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '24px',
+                    color: 'rgba(255, 255, 255, 0.75)',
+                    fontSize: '0.85rem',
+                    cursor: isSharing ? 'wait' : 'pointer',
+                    pointerEvents: 'auto',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    backdropFilter: 'blur(8px)',
+                    transition: 'background 0.2s'
+                }}
+            >
+                <span aria-hidden="true">📤</span>
+                {isSharing ? tt('detail.preparing') : tt('common.share')}
+            </button>
 
             {/* Navigation Buttons */}
             {onNavigate && (
