@@ -2,13 +2,13 @@ import React, { Suspense, useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Stars } from '@react-three/drei';
 import * as THREE from 'three';
-import SolarSystem from './SolarSystem';
+import SolarSystem, { getUniverseLayout } from './SolarSystem';
 import DigitalHourglassScene from './DigitalHourglassScene';
 import { getLifeExpectancy } from '../utils/calculations';
 import { ORBIT_DISTANCES, HOUR_THRESHOLDS, MEETING_THRESHOLDS, CAMERA } from '../constants';
 
 // Scene component handling 3D transitions
-function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears, selectedPersonId, visualizingPersonId, isEarthVisualized, calculationBasis }) {
+function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears, selectedPersonId, visualizingPersonId, isEarthVisualized, calculationBasis, centerMode }) {
     const solarSystemRef = useRef<any>(null);
     const earthRef = useRef<any>(null);
     const { camera } = useThree();
@@ -23,7 +23,11 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
     // Earth position animation
     const currentEarthPos = useRef(EARTH_POS.clone());
     const isInitialized = useRef(false);
-    
+
+    // Mentor-center layout: Earth may sit on an orbit instead of the origin.
+    // Camera zooms that target "You" must follow this offset.
+    const layout = getUniverseLayout({ people, userAge, userCountry, remainingYears, centerMode });
+
     useFrame((state, delta) => {
         // Slower when entering overview mode, faster when returning to zoom
         const lerpSpeed = isOverviewMode ? delta * 2 : delta * 4;
@@ -55,9 +59,15 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
         }
         
         let targetCameraPos, targetLookAt;
-        
-        // Use current Earth position (animated)
+
+        // Group origin (= the center of the universe: You, or your mentor)
         const currentEarthCenter = currentEarthPos.current;
+        // Earth's actual world position (offset from origin in mentor mode)
+        const earthWorld = new THREE.Vector3(
+            currentEarthCenter.x + layout.earthOffset.x,
+            currentEarthCenter.y,
+            currentEarthCenter.z + layout.earthOffset.z
+        );
         
         // Earth dimensions
         const earthRadius = 2; // Earth radius from Earth.jsx
@@ -96,13 +106,14 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
                     return ORBIT_DISTANCES.OUTER;
                 };
                 
-                const distance = getPersonDistance();
-                
-                // Star position relative to Earth (Y-axis rotation then X translation)
+                // In mentor-center mode the mentor's star sits at the origin.
+                const isCenteredMentor = layout.mentor && layout.mentor.id === selectedPersonId;
+                const distance = isCenteredMentor ? 0 : getPersonDistance();
+
+                // Star position relative to the group origin (Y-rotation then X translation)
                 const starX = distance * Math.cos(angle);
                 const starZ = -distance * Math.sin(angle);
-                
-                // Star world position (relative to Earth center)
+
                 const starWorldPos = new THREE.Vector3(
                     currentEarthCenter.x + starX,
                     currentEarthCenter.y,
@@ -120,8 +131,8 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
                 targetLookAt = starWorldPos;
             } else {
                 // Fallback to Earth zoom
-                targetCameraPos = currentEarthCenter.clone().add(new THREE.Vector3(0, 0, zoomDistance));
-                targetLookAt = currentEarthCenter;
+                targetCameraPos = earthWorld.clone().add(new THREE.Vector3(0, 0, zoomDistance));
+                targetLookAt = earthWorld;
             }
         } else if (isOverviewMode) {
             // Overview Mode: Top-down view to see the entire relationship map
@@ -139,15 +150,13 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
             targetLookAt = currentEarthCenter;
         } else {
             // TOP Country Selection: Camera moves straight to Earth (zoomed in)
-            // Earth rotates to show the selected country (handled in Earth.jsx)
-            
-            // Camera position: directly in front of Earth, along Z axis
-            targetCameraPos = currentEarthCenter.clone().add(
+            // Earth rotates to show the selected country (handled in Earth.jsx).
+            // Uses earthWorld so the zoom still finds Earth when a mentor
+            // occupies the center of the universe.
+            targetCameraPos = earthWorld.clone().add(
                 new THREE.Vector3(0, 0, zoomDistance)
             );
-            
-            // Look at Earth center
-            targetLookAt = currentEarthCenter;
+            targetLookAt = earthWorld;
         }
         
         // Initialize if first frame
@@ -188,6 +197,7 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
                     remainingYears={remainingYears}
                     visualizingPersonId={visualizingPersonId}
                     isEarthVisualized={isEarthVisualized}
+                    centerMode={centerMode}
                 />
             </group>
             
@@ -205,7 +215,7 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
     );
 }
 
-export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears, remainingSeconds, livedSeconds, selectedPersonId, visualizingPersonId, isEarthVisualized, calculationBasis }) {
+export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears, remainingSeconds, livedSeconds, selectedPersonId, visualizingPersonId, isEarthVisualized, calculationBasis, centerMode = 'self' }) {
     const [topPulse, setTopPulse] = useState(1);
     const [currentRemainingSeconds, setCurrentRemainingSeconds] = useState(remainingSeconds || 0);
     const [currentLivedSeconds, setCurrentLivedSeconds] = useState(livedSeconds || 0);
@@ -295,6 +305,7 @@ export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, t
                         visualizingPersonId={visualizingPersonId}
                         isEarthVisualized={isEarthVisualized}
                         calculationBasis={calculationBasis}
+                        centerMode={centerMode}
                     />
                 </Suspense>
             </Canvas>

@@ -138,6 +138,12 @@ export const strings: Strings = {
         'viz.with': '{name}さんと過ごす',
         'viz.inRemaining': '残りの人生で',
 
+        // center-of-universe (CONCEPT §5)
+        'center.title': '宇宙の中心',
+        'center.hint': '自分が中心でも、憧れの人を中心に置いてもいい',
+        'center.self': '自分',
+        'center.mentor': 'メンター',
+
         // universe history (CONCEPT §11 Visualizing Change)
         'history.title': '宇宙の変化',
         'history.subtitle': '約{months}ヶ月前のあなたの宇宙と比べて',
@@ -285,6 +291,11 @@ export const strings: Strings = {
         'viz.shuffle': 'Pick another',
         'viz.with': 'With {name}',
         'viz.inRemaining': 'in your remaining life',
+
+        'center.title': 'Center of your universe',
+        'center.hint': 'You can be the center — or place someone you admire there',
+        'center.self': 'You',
+        'center.mentor': 'Mentor',
 
         'history.title': 'Universe Changes',
         'history.subtitle': 'Compared to your universe ~{months} months ago',

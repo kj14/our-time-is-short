@@ -47,6 +47,34 @@ const getOrbitZone = (hours, meetings) => {
     return 'stable';
 };
 
+// Mentor-center layout (CONCEPT §5: "place someone you admire at the center").
+// When centerMode === 'mentor' and a mentor exists, the mentor sits at the
+// origin and Earth (You) takes an orbital slot whose distance reflects your
+// remaining time with the mentor. Shared by SolarSystem (render) and
+// Scene (camera targeting) so they can't drift apart.
+export function getUniverseLayout({ people, userAge, userCountry, remainingYears, centerMode }) {
+    const mentor = centerMode === 'mentor' && people
+        ? people.find((p) => p.isMentor)
+        : null;
+    if (!mentor) {
+        return { mentor: null, earthDistance: 0, earthAngle: 0, earthOffset: { x: 0, z: 0 } };
+    }
+    const timeData = orbitTimeForPerson(mentor, userAge, userCountry, remainingYears);
+    const zone = getOrbitZone(timeData.hours, timeData.meetings);
+    const distance = ORBIT_ZONES[zone].distance;
+    // Stable angle derived from the mentor's id, shifted so Earth doesn't
+    // land on the slot the mentor's star used to occupy.
+    const hash = mentor.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const angle = ((hash + 180) % 360) * (Math.PI / 180);
+    return {
+        mentor,
+        earthDistance: distance,
+        earthAngle: angle,
+        // Same rotation→translation math as PersonStar / Scene camera.
+        earthOffset: { x: distance * Math.cos(angle), z: -distance * Math.sin(angle) }
+    };
+}
+
 // Person Star Component. When `isMentor` is true, the star is rendered with
 // a golden corona to symbolise "the sun-like person" per CONCEPT.md §5.
 const PersonStar = ({ person, distance, radius, textureUrl, onClick, zoneColor, isGlowing, isMentor }) => {
@@ -276,7 +304,12 @@ const EarthWrapper = forwardRef(({ targetCountry, onClick, isGlowing }, ref) => 
     )
 });
 
-export default function SolarSystem({ onSunClick, targetCountry, earthRef, onEarthClick, onPersonClick, people, userAge, userCountry, remainingYears, visualizingPersonId, isEarthVisualized }) {
+export default function SolarSystem({ onSunClick, targetCountry, earthRef, onEarthClick, onPersonClick, people, userAge, userCountry, remainingYears, visualizingPersonId, isEarthVisualized, centerMode = 'self' }) {
+    // Mentor-center layout (no-op object when centerMode is 'self' or no mentor)
+    const layout = useMemo(
+        () => getUniverseLayout({ people, userAge, userCountry, remainingYears, centerMode }),
+        [people, userAge, userCountry, remainingYears, centerMode]
+    );
     // Calculate person stars data
     const personStars = useMemo(() => {
         if (!people || people.length === 0) {
@@ -331,8 +364,16 @@ export default function SolarSystem({ onSunClick, targetCountry, earthRef, onEar
     
     return (
         <group>
-            {/* Earth at center (You) */}
-            <EarthWrapper ref={earthRef} targetCountry={targetCountry} onClick={onEarthClick} isGlowing={isEarthVisualized} />
+            {/* Earth: at the center in self mode, on an orbit in mentor mode */}
+            {layout.mentor ? (
+                <group rotation={[0, layout.earthAngle, 0]}>
+                    <group position={[layout.earthDistance, 0, 0]}>
+                        <EarthWrapper ref={earthRef} targetCountry={targetCountry} onClick={onEarthClick} isGlowing={isEarthVisualized} />
+                    </group>
+                </group>
+            ) : (
+                <EarthWrapper ref={earthRef} targetCountry={targetCountry} onClick={onEarthClick} isGlowing={isEarthVisualized} />
+            )}
             
             {/* 3 Orbit Zone Circles - always visible */}
             <OrbitZoneCircle 
@@ -351,12 +392,13 @@ export default function SolarSystem({ onSunClick, targetCountry, earthRef, onEar
                 label="Stable"
             />
             
-            {/* Person Stars */}
+            {/* Person Stars. In mentor-center mode the mentor's star moves
+                to the origin (distance 0) — the center of the universe. */}
             {personStars.map(({ person, distance, radius, textureUrl, zoneColor }) => (
                 <PersonStar
                     key={person.id}
                     person={person}
-                    distance={distance}
+                    distance={layout.mentor && person.id === layout.mentor.id ? 0 : distance}
                     radius={radius}
                     textureUrl={textureUrl}
                     onClick={onPersonClick}

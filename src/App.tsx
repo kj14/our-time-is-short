@@ -73,6 +73,10 @@ function App() {
   const [displayMode, setDisplayMode] = useState(() =>
     localStorage.getItem('lifevis_displayMode') || 'percentage'
   );
+  // CONCEPT §5: the center of your universe can be you, or your mentor.
+  const [centerMode, setCenterMode] = useState(() =>
+    localStorage.getItem('lifevis_centerMode') || 'self'
+  );
   const [particleDropCallback, setParticleDropCallback] = useState(null);
   const [personDisplayMode, setPersonDisplayMode] = useState('percentage');
 
@@ -96,6 +100,9 @@ function App() {
   useEffect(() => {
     localStorage.setItem('lifevis_displayMode', displayMode);
   }, [displayMode]);
+  useEffect(() => {
+    localStorage.setItem('lifevis_centerMode', centerMode);
+  }, [centerMode]);
   useEffect(() => {
     if (userData) localStorage.setItem('lifevis_userData', JSON.stringify(userData));
     else localStorage.removeItem('lifevis_userData');
@@ -161,6 +168,7 @@ function App() {
         onSunClick={handleSunClick}
         visualizingPersonId={view.visualizingPersonId}
         isEarthVisualized={isValidUser && !view.visualizingPersonId}
+        centerMode={centerMode}
         onPersonClick={handlePersonClick}
         selectedPersonId={view.selectedPersonId}
         people={people}
@@ -371,6 +379,53 @@ function App() {
                     onUpdate={handleUpdateUserSettings}
                   />
                 </div>
+                {/* Center-of-universe toggle (CONCEPT §5) — only when a mentor exists */}
+                {people.some((p) => p.isMentor) && (
+                  <div style={{
+                    marginBottom: '2rem',
+                    padding: '1rem',
+                    background: 'rgba(252, 211, 77, 0.06)',
+                    border: '1px solid rgba(252, 211, 77, 0.25)',
+                    borderRadius: '12px'
+                  }}>
+                    <div style={{ fontWeight: 600, marginBottom: '0.35rem' }}>
+                      ★ {tt('center.title')}
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.55)', marginBottom: '0.75rem' }}>
+                      {tt('center.hint')}
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button
+                        onClick={() => setCenterMode('self')}
+                        style={{
+                          flex: 1,
+                          padding: '0.6rem',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(255,255,255,0.2)',
+                          background: centerMode === 'self' ? 'rgba(96, 165, 250, 0.25)' : 'transparent',
+                          color: 'white',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        🌏 {tt('center.self')}
+                      </button>
+                      <button
+                        onClick={() => setCenterMode('mentor')}
+                        style={{
+                          flex: 1,
+                          padding: '0.6rem',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(252, 211, 77, 0.4)',
+                          background: centerMode === 'mentor' ? 'rgba(252, 211, 77, 0.25)' : 'transparent',
+                          color: 'white',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        ★ {tt('center.mentor')}
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <PeopleSettings
                   people={people}
                   setPeople={setPeople}
