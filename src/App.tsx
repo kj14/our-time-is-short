@@ -377,6 +377,7 @@ function App() {
                     calculationBasis={calculationBasis}
                     onCalculationBasisChange={setCalculationBasis}
                     onUpdate={handleUpdateUserSettings}
+                    userCountry={userData.country}
                   />
                 </div>
                 {/* Center-of-universe toggle (CONCEPT §5) — only when a mentor exists */}

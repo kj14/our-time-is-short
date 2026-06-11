@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { calculateAge } from '../../utils/calculations';
 import { lifeExpectancyData } from '../../utils/lifeData';
+import { useT } from '../../i18n';
 import { generateId } from './helpers';
 
 const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYears, editingPersonId, onEditComplete }: any) => {
+    const t = useT(userCountry);
     const [editingId, setEditingId] = useState(editingPersonId || null);
     const [useAgeInput, setUseAgeInput] = useState(false);
     
@@ -45,7 +47,7 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
 
     const handleAdd = () => {
         if (!formData.name) {
-            alert('名前を入力してください');
+            alert(t('person.errorName'));
             return;
         }
         
@@ -53,7 +55,7 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
         const hasAge = formData.age && formData.age !== '';
         
         if (!hasBirthdate && !hasAge) {
-            alert('生年月日または年齢を入力してください');
+            alert(t('person.errorBirthOrAge'));
             return;
         }
         
@@ -103,7 +105,7 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
 
     const handleUpdate = () => {
         if (!formData.name) {
-            alert('名前を入力してください');
+            alert(t('person.errorName'));
             return;
         }
         
@@ -111,7 +113,7 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
         const hasAge = formData.age && formData.age !== '';
         
         if (!hasBirthdate && !hasAge) {
-            alert('生年月日または年齢を入力してください');
+            alert(t('person.errorBirthOrAge'));
             return;
         }
         
@@ -154,7 +156,7 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
     };
 
     const handleDelete = (id) => {
-        if (window.confirm('この対象を削除しますか？')) {
+        if (window.confirm(t('people.deleteConfirmTarget'))) {
             setPeople(people.filter(p => p.id !== id));
         }
     };
@@ -172,56 +174,56 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
 
     return (
         <div className="people-settings">
-            <h3 style={{ fontSize: '1.3rem', marginBottom: '1.5rem', fontWeight: 600 }}>大切な人との時間</h3>
+            <h3 style={{ fontSize: '1.3rem', marginBottom: '1.5rem', fontWeight: 600 }}>{t('people.title')}</h3>
             
             {/* Add New Person Form */}
             <div className="person-form-card">
                 <h4 style={{ fontSize: '1rem', marginBottom: '1rem', fontWeight: 600 }}>
-                    {editingId ? '編集' : '新しい対象を追加'}
+                    {editingId ? t('people.edit') : t('people.addNew')}
                 </h4>
                 
                 <div className="form-grid">
                     <div className="form-group">
-                        <label>名前</label>
+                        <label>{t('person.name')}</label>
                         <input
                             type="text"
                             value={formData.name}
                             onChange={(e) => setFormData({...formData, name: e.target.value})}
-                            placeholder="例: お母さん"
+                            placeholder={t('person.namePlaceholder')}
                             className="form-input"
                         />
                     </div>
                     
                     <div className="form-group">
-                        <label>年齢の入力方法</label>
+                        <label>{t('people.ageInputMethod')}</label>
                         <div className="age-input-toggle">
                             <button
                                 type="button"
                                 className={`toggle-btn ${!useAgeInput ? 'active' : ''}`}
                                 onClick={() => setUseAgeInput(false)}
                             >
-                                生年月日
+                                {t('input.birthDate')}
                             </button>
                             <button
                                 type="button"
                                 className={`toggle-btn ${useAgeInput ? 'active' : ''}`}
                                 onClick={() => setUseAgeInput(true)}
                             >
-                                年齢
+                                {t('person.age')}
                             </button>
                         </div>
                     </div>
                     
                     {!useAgeInput ? (
                         <div className="form-group">
-                            <label>生年月日</label>
+                            <label>{t('input.birthDate')}</label>
                             <div className="date-inputs">
                                 <select
                                     value={formData.birthYear}
                                     onChange={(e) => setFormData({...formData, birthYear: e.target.value, age: ''})}
                                     className="form-select"
                                 >
-                                    <option value="">年</option>
+                                    <option value="">{t('input.year')}</option>
                                     {years.map(y => <option key={y} value={y}>{y}</option>)}
                                 </select>
                                 <select
@@ -229,7 +231,7 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
                                     onChange={(e) => setFormData({...formData, birthMonth: e.target.value})}
                                     className="form-select"
                                 >
-                                    <option value="">月</option>
+                                    <option value="">{t('input.month')}</option>
                                     {months.map(m => <option key={m} value={m}>{m}</option>)}
                                 </select>
                                 <select
@@ -237,14 +239,14 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
                                     onChange={(e) => setFormData({...formData, birthDay: e.target.value})}
                                     className="form-select"
                                 >
-                                    <option value="">日</option>
+                                    <option value="">{t('input.day')}</option>
                                     {days.map(d => <option key={d} value={d}>{d}</option>)}
                                 </select>
                             </div>
                         </div>
                     ) : (
                         <div className="form-group">
-                            <label>年齢</label>
+                            <label>{t('person.age')}</label>
                             <input
                                 type="number"
                                 value={formData.age}
@@ -252,23 +254,23 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
                                 min="0"
                                 max="150"
                                 step="0.1"
-                                placeholder="例: 30"
+                                placeholder={t('person.agePlaceholder')}
                                 className="form-input"
                             />
-                            <span className="form-hint">歳</span>
+                            <span className="form-hint">{t('input.ageUnit')}</span>
                         </div>
                     )}
                     
                     <div className="form-group">
-                        <label>会う頻度</label>
+                        <label>{t('person.frequency')}</label>
                         <div className="frequency-presets">
                             {[
-                                { label: '毎日', value: 365 },
-                                { label: '週1回', value: 52 },
-                                { label: '週2回', value: 104 },
-                                { label: '月1回', value: 12 },
-                                { label: '月2回', value: 24 },
-                                { label: '年1回', value: 1 }
+                                { key: 'freq.daily', value: 365 },
+                                { key: 'freq.weekly', value: 52 },
+                                { key: 'freq.twiceWeek', value: 104 },
+                                { key: 'freq.monthly', value: 12 },
+                                { key: 'freq.twiceMonth', value: 24 },
+                                { key: 'freq.yearly', value: 1 }
                             ].map(preset => (
                                 <button
                                     key={preset.value}
@@ -276,7 +278,7 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
                                     className={`preset-btn ${formData.meetingFrequency == preset.value ? 'active' : ''}`}
                                     onClick={() => setFormData({...formData, meetingFrequency: preset.value})}
                                 >
-                                    {preset.label}
+                                    {t(preset.key)}
                                 </button>
                             ))}
                         </div>
@@ -290,23 +292,23 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
                                 className="slider"
                             />
                             <div className="slider-labels">
-                                <span>1回/年</span>
-                                <span className="slider-value">{formData.meetingFrequency}回/年</span>
-                                <span>365回/年</span>
+                                <span>{t('people.timesPerYearShort', { n: 1 })}</span>
+                                <span className="slider-value">{t('people.timesPerYearShort', { n: formData.meetingFrequency })}</span>
+                                <span>{t('people.timesPerYearShort', { n: 365 })}</span>
                             </div>
                         </div>
                     </div>
                     
                     <div className="form-group">
-                        <label>1回あたりの時間</label>
+                        <label>{t('person.hoursPerMeeting')}</label>
                         <div className="hours-presets">
                             {[
-                                { label: '30分', value: 0.5 },
-                                { label: '1時間', value: 1 },
-                                { label: '2時間', value: 2 },
-                                { label: '3時間', value: 3 },
-                                { label: '半日', value: 6 },
-                                { label: '1日', value: 24 }
+                                { key: 'hours.30min', value: 0.5 },
+                                { key: 'hours.1h', value: 1 },
+                                { key: 'hours.2h', value: 2 },
+                                { key: 'hours.3h', value: 3 },
+                                { key: 'hours.halfDay', value: 6 },
+                                { key: 'hours.fullDay', value: 24 }
                             ].map(preset => (
                                 <button
                                     key={preset.value}
@@ -314,7 +316,7 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
                                     className={`preset-btn ${formData.hoursPerMeeting == preset.value ? 'active' : ''}`}
                                     onClick={() => setFormData({...formData, hoursPerMeeting: preset.value})}
                                 >
-                                    {preset.label}
+                                    {t(preset.key)}
                                 </button>
                             ))}
                         </div>
@@ -329,9 +331,9 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
                                 className="slider"
                             />
                             <div className="slider-labels">
-                                <span>0.5時間</span>
-                                <span className="slider-value">{formData.hoursPerMeeting}時間</span>
-                                <span>24時間</span>
+                                <span>0.5{t('unit.hours')}</span>
+                                <span className="slider-value">{formData.hoursPerMeeting}{t('unit.hours')}</span>
+                                <span>24{t('unit.hours')}</span>
                             </div>
                         </div>
                         {/* Real-time calculation preview */}
@@ -370,12 +372,12 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
                             return (
                                 <div className="calculation-preview">
                                     <div className="preview-item">
-                                        <span>会える回数:</span>
-                                        <strong>{totalMeetings.toFixed(0)}回</strong>
+                                        <span>{t('people.meetingsCount')}:</span>
+                                        <strong>{totalMeetings.toFixed(0)}{t('unit.times')}</strong>
                                     </div>
                                     <div className="preview-item">
-                                        <span>共有できる時間:</span>
-                                        <strong>{totalHours.toFixed(0)}時間</strong>
+                                        <span>{t('people.sharedHours')}:</span>
+                                        <strong>{totalHours.toFixed(0)}{t('unit.hours')}</strong>
                                     </div>
                                 </div>
                             );
@@ -383,7 +385,7 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
                     </div>
                     
                     <div className="form-group">
-                        <label>色</label>
+                        <label>{t('people.colorLabel')}</label>
                         <div className="color-picker">
                             {colors.map(color => (
                                 <button
@@ -414,15 +416,15 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
                                 });
                                 setUseAgeInput(false);
                             }}>
-                                キャンセル
+                                {t('common.cancel')}
                             </button>
                             <button className="btn-primary" onClick={handleUpdate}>
-                                更新
+                                {t('common.update')}
                             </button>
                         </>
                     ) : (
                         <button className="btn-primary" onClick={handleAdd}>
-                            ＋ 追加
+                            ＋ {t('common.add')}
                         </button>
                     )}
                 </div>
@@ -432,9 +434,9 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
             <div className="people-list">
                 {people.length === 0 ? (
                     <div className="empty-state">
-                        <p>まだ対象が登録されていません</p>
+                        <p>{t('people.empty')}</p>
                         <p style={{ fontSize: '0.9rem', opacity: 0.7, marginTop: '0.5rem' }}>
-                            上記のフォームから追加してください
+                            {t('people.addFromForm')}
                         </p>
                     </div>
                 ) : (
@@ -473,7 +475,7 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
                                         <div>
                                             <div className="person-name">{person.name}</div>
                                             <div className="person-age">
-                                                {personAge ? `${personAge.toFixed(1)}歳` : '年齢不明'}
+                                                {personAge ? `${personAge.toFixed(1)}${t('input.ageUnit')}` : t('people.ageUnknown')}
                                             </div>
                                         </div>
                                     </div>
@@ -481,14 +483,14 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
                                         <button 
                                             className="btn-icon"
                                             onClick={() => handleEdit(person)}
-                                            aria-label="編集"
+                                            aria-label={t('people.edit')}
                                         >
                                             ✏️
                                         </button>
                                         <button 
                                             className="btn-icon btn-danger"
                                             onClick={() => handleDelete(person.id)}
-                                            aria-label="削除"
+                                            aria-label={t('common.delete')}
                                         >
                                             🗑️
                                         </button>
@@ -497,17 +499,17 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
                                 
                                 <div className="person-stats">
                                     <div className="stat-item">
-                                        <span className="stat-label">会える回数</span>
-                                        <span className="stat-value">{totalMeetings.toFixed(0)}回</span>
+                                        <span className="stat-label">{t('people.meetingsCount')}</span>
+                                        <span className="stat-value">{totalMeetings.toFixed(0)}{t('unit.times')}</span>
                                     </div>
                                     <div className="stat-item">
-                                        <span className="stat-label">共有できる時間</span>
-                                        <span className="stat-value">{totalHours.toFixed(0)}時間</span>
+                                        <span className="stat-label">{t('people.sharedHours')}</span>
+                                        <span className="stat-value">{totalHours.toFixed(0)}{t('unit.hours')}</span>
                                     </div>
                                     <div className="stat-item">
-                                        <span className="stat-label">設定</span>
+                                        <span className="stat-label">{t('common.settings')}</span>
                                         <span className="stat-value">
-                                            {person.meetingFrequency}回/年 × {person.hoursPerMeeting}時間
+                                            {t('people.timesPerYearShort', { n: person.meetingFrequency })} × {person.hoursPerMeeting}{t('unit.hours')}
                                         </span>
                                     </div>
                                 </div>
