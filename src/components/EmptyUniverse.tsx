@@ -16,7 +16,7 @@ export default function EmptyUniverse({ userCountry }: Props) {
             style={{
                 position: 'fixed',
                 left: '50%',
-                bottom: '8rem',
+                bottom: 'calc(env(safe-area-inset-bottom, 0px) + 8rem)',
                 transform: 'translateX(-50%)',
                 zIndex: 50,
                 pointerEvents: 'none',

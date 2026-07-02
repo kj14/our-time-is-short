@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import html2canvas from 'html2canvas';
+// html2canvas (~200KB) is loaded lazily at share time (see handleShareToX)
+// so it stays out of the initial bundle.
 import { calculateLifeStats, translations, lifeExpectancyData, healthyLifeExpectancyData, workingAgeLimitData } from '../utils/lifeData';
 import { calculateAge } from '../utils/calculations';
 import { TruthMessage } from '../features/truthMessages';
@@ -196,6 +197,7 @@ const DetailPage = ({
         setShareMessage(null);
         
         try {
+            const { default: html2canvas } = await import('html2canvas');
             const canvas = await html2canvas(shareCardRef.current, {
                 backgroundColor: '#050505',
                 scale: 2,

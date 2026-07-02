@@ -3,8 +3,9 @@
 //
 // Strategy: Web Share API with file attachment when available (mobile),
 // otherwise fall back to opening an X (Twitter) intent URL.
-
-import html2canvas from 'html2canvas';
+//
+// html2canvas (~200KB) is only needed when a user actually shares a
+// snapshot, so it's imported lazily to keep it out of the initial bundle.
 
 export const SHARE_HASHTAG = '#OurTimeIsShort';
 const APP_URL = 'https://letmeknow.life';
@@ -36,6 +37,7 @@ export async function shareText(text: string): Promise<void> {
 // text-only share when canvas capture or file-share isn't available.
 export async function shareElementSnapshot(element: HTMLElement, text: string): Promise<void> {
     try {
+        const { default: html2canvas } = await import('html2canvas');
         const canvas = await html2canvas(element, {
             backgroundColor: '#0a0a1a',
             scale: 2,

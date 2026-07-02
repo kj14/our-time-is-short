@@ -7,9 +7,10 @@ import DigitalHourglassScene from './DigitalHourglassScene';
 import { getLifeExpectancy } from '../utils/calculations';
 import { ORBIT_DISTANCES, HOUR_THRESHOLDS, MEETING_THRESHOLDS, CAMERA } from '../constants';
 import { isWebGLAvailable } from '../utils/webgl';
+import { useReducedMotion, usePageVisible } from '../utils/useReducedMotion';
 
 // Scene component handling 3D transitions
-function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears, selectedPersonId, visualizingPersonId, isEarthVisualized, calculationBasis, centerMode }) {
+function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears, selectedPersonId, visualizingPersonId, isEarthVisualized, calculationBasis, centerMode, reducedMotion }) {
     const solarSystemRef = useRef<any>(null);
     const earthRef = useRef<any>(null);
     const { camera } = useThree();
@@ -211,7 +212,7 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
                 />
             )}
             
-            <Stars radius={100} depth={50} count={isVisualizing ? 5000 : 2000} factor={isVisualizing ? 4 : 3} saturation={0} fade speed={isVisualizing ? 1 : 0.5} />
+            <Stars radius={100} depth={50} count={isVisualizing ? 5000 : 2000} factor={isVisualizing ? 4 : 3} saturation={0} fade speed={reducedMotion ? 0 : (isVisualizing ? 1 : 0.5)} />
         </>
     );
 }
@@ -220,6 +221,8 @@ export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, t
     const [topPulse, setTopPulse] = useState(1);
     const [currentRemainingSeconds, setCurrentRemainingSeconds] = useState(remainingSeconds || 0);
     const [currentLivedSeconds, setCurrentLivedSeconds] = useState(livedSeconds || 0);
+    const reducedMotion = useReducedMotion();
+    const pageVisible = usePageVisible();
     
     // Update initial values when props change
     useEffect(() => {
@@ -290,6 +293,9 @@ export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, t
                 }}
                 dpr={[1, 2]}
                 performance={{ min: 0.5 }}
+                // Pause the render loop when the tab is hidden — no sense
+                // animating a scene nobody is looking at (saves battery/CPU).
+                frameloop={pageVisible ? 'always' : 'never'}
                 style={{ touchAction: 'manipulation' }}
             >
                 <fog attach="fog" args={isVisualizing ? ['#141e35', 60, 130] : ['#0a0e1a', 10, 150]} />
@@ -313,6 +319,7 @@ export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, t
                         isEarthVisualized={isEarthVisualized}
                         calculationBasis={calculationBasis}
                         centerMode={centerMode}
+                        reducedMotion={reducedMotion}
                     />
                 </Suspense>
             </Canvas>
@@ -322,8 +329,8 @@ export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, t
             {isVisualizing && (
                 <div style={{
                     position: 'absolute',
-                    top: '1rem',
-                    right: '1rem',
+                    top: 'calc(env(safe-area-inset-top, 0px) + 1rem)',
+                    right: 'calc(env(safe-area-inset-right, 0px) + 1rem)',
                     fontSize: '0.75rem',
                     color: 'rgba(255, 255, 255, 0.6)',
                     fontFamily: 'monospace',
@@ -341,8 +348,8 @@ export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, t
             {isVisualizing && (
                 <div style={{
                     position: 'absolute',
-                    bottom: '1rem',
-                    right: '1rem',
+                    bottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)',
+                    right: 'calc(env(safe-area-inset-right, 0px) + 1rem)',
                     fontSize: '0.75rem',
                     color: 'rgba(255, 255, 255, 0.6)',
                     fontFamily: 'monospace',
