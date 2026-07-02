@@ -6,12 +6,12 @@
 I built this tool to help myself stop postponing my life.  
 私自身が人生を後回しにするのをやめるために、このツールを作りました。
 
-⚠️ **Alpha Version / アルファ版**  
-This project is still in active development. Expect bugs and incomplete features.  
-I'm building this for myself first, and evolving it constantly.
+🌱 **Beta / ベータ版**  
+Now installable, works offline, mobile-friendly, and fully bilingual. Your data
+stays on your device — export it any time. Still evolving; feedback welcome.
 
-このプロジェクトはまだ開発中です。バグや未完成の機能があります。  
-まず自分自身のために作り、どんどん進化させています。
+インストール可能・オフライン対応・モバイル最適化・日英対応になりました。  
+データは端末内にのみ保存され、いつでも書き出せます。引き続き進化させています。
 
 ---
 
@@ -51,16 +51,24 @@ This app doesn't instill fear—it gives you liberation and courage.
 - **Time Countdown**: Visualize your remaining life, healthy life expectancy, and working years as battery tanks.
 - **Your Own Universe**: Place up to 10 precious people in your universe—calculate and visualize the remaining time you have with them based on meeting frequency.
 - **Truth Messages**: Data-based messages that appear each time you access the app. Not spiritual fortune-telling, but mathematical facts like "Christmas with your son: 12 remaining."
-- **"If Life Were..."**: Reframe your perspective by customizing the assumed life expectancy.
-- **Share Your Visualization**: Generate and share a snapshot of your current life status to social media.
+- **"If Life Were..."**: Reframe your perspective by customizing the assumed life expectancy — tap the title on the main screen.
+- **Share Your Visualization**: Generate and share a snapshot of your current life status to social media, right from the countdown card.
+- **Mentor at the Center**: Place someone you admire at the center of your universe — you become a planet orbiting them.
+- **Universe Changes**: Compare your universe to one year ago — who appeared, who faded, and how your time together changed.
+- **Yours, on your device**: All data is stored locally and never sent to a server. Export/import a backup any time.
+- **Installable & offline**: Add to your home screen and open it like an app, even without a connection (PWA).
 
 ### 日本語
 
 - **時間のカウントダウン**: 残りの人生、健康寿命、労働年数をバッテリータンクとして表示
 - **自分だけの宇宙**: 大切な人を最大10人まで配置し、会う頻度から一緒に過ごせる残り時間を計算・可視化
 - **真実のメッセージ**: アクセスするたびに表示される、データに基づいたメッセージ。スピリチュアルな占いではなく、「息子と過ごせるクリスマス：あと12回」のような数学的事実
-- **「もし人生が○年だったら」**: 想定寿命をカスタマイズして、視点を変える
-- **SNSシェア**: 今の人生の状態をスナップショットとしてシェア
+- **「もし人生が○年だったら」**: 想定寿命をカスタマイズして、視点を変える（メイン画面のタイトルをタップ）
+- **SNSシェア**: 今の人生の状態をカウントダウンカードからそのままスナップショットとしてシェア
+- **メンターを中心に**: 憧れの人を宇宙の中心に据えると、自分がその周りを回る惑星になる
+- **宇宙の変化**: 1年前の宇宙と比較——誰が現れ、誰が離れ、共有時間がどう変わったか
+- **データは端末内に**: すべてのデータはローカルに保存され、サーバーには送信されません。いつでもバックアップを書き出し／読み込みできます
+- **インストール & オフライン**: ホーム画面に追加してアプリのように起動でき、オフラインでも動作します（PWA）
 
 ---
 
