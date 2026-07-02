@@ -96,7 +96,7 @@ function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCou
                     const effectiveRemainingYears = remainingYears || 40;
                     
                     const userLifeExpectancy = getLifeExpectancy(userCountry, calculationBasis);
-                    let limitLifeExpectancy = personAge < effectiveUserAge ? userLifeExpectancy : userLifeExpectancy;
+                    const limitLifeExpectancy = personAge < effectiveUserAge ? userLifeExpectancy : userLifeExpectancy;
                     const yearsWithPerson = Math.max(0, limitLifeExpectancy - personAge);
                     const effectiveYears = Math.min(yearsWithPerson, effectiveRemainingYears);
                     

@@ -1,7 +1,7 @@
 {
-  "name": "our-life-is-short",
+  "name": "our-time-is-short",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.9.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -30,7 +30,9 @@
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
     "typescript": "^6.0.3",
+    "typescript-eslint": "^8.62.1",
     "vite": "^7.2.4",
+    "vite-plugin-pwa": "^1.3.0",
     "vitest": "^4.1.5"
   }
 }
