@@ -180,6 +180,7 @@ export const strings: Strings = {
         // empty state
         'empty.title': 'あなたの宇宙は空です',
         'empty.subtitle': '最初の人を置いてみましょう',
+        'empty.hint': '右上の ⚙️ から大切な人を追加できます',
 
         // error boundary
         'error.title': '一時的に問題が発生しました',
@@ -353,6 +354,7 @@ export const strings: Strings = {
 
         'empty.title': 'Your universe is empty',
         'empty.subtitle': 'Place your first person',
+        'empty.hint': 'Tap ⚙️ at the top-right to add a precious person',
 
         'error.title': 'Something went wrong',
         'error.subtitle': 'Reload or reset to recover.',

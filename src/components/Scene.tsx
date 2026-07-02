@@ -6,6 +6,7 @@ import SolarSystem, { getUniverseLayout } from './SolarSystem';
 import DigitalHourglassScene from './DigitalHourglassScene';
 import { getLifeExpectancy } from '../utils/calculations';
 import { ORBIT_DISTANCES, HOUR_THRESHOLDS, MEETING_THRESHOLDS, CAMERA } from '../constants';
+import { isWebGLAvailable } from '../utils/webgl';
 
 // Scene component handling 3D transitions
 function SceneContent({ isVisualizing, isSettingsOpen, isOverviewMode, targetCountry, remainingPercentage, onParticleDrop, onEarthClick, onSunClick, onPersonClick, people, userAge, userCountry, remainingYears, selectedPersonId, visualizingPersonId, isEarthVisualized, calculationBasis, centerMode }) {
@@ -251,7 +252,12 @@ export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, t
     const formatSeconds = (seconds) => {
         return new Intl.NumberFormat().format(Math.max(0, Math.floor(seconds)));
     };
-    
+
+    // WebGL absent (old/hardened devices, disabled GPU, lost context): skip the
+    // Canvas entirely. The gradient background below plus the DOM overlay UI
+    // (countdown card, settings) stay fully usable — we degrade, never crash.
+    const webglOk = isWebGLAvailable();
+
     return (
         <div style={{
             position: 'fixed',
@@ -260,7 +266,7 @@ export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, t
             width: '100%',
             height: '100%',
             zIndex: 0,
-            background: isVisualizing 
+            background: isVisualizing
                 ? 'radial-gradient(ellipse at top, #232160 0%, #373396 25%, #232160 50%, #141e35 100%)'
                 : 'radial-gradient(circle at center, #1a1f3a 0%, #0a0e1a 100%)',
             backgroundImage: isVisualizing 
@@ -274,9 +280,10 @@ export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, t
             pointerEvents: 'auto',
             touchAction: 'manipulation' // Allow touch while preventing double-tap zoom
         }}>
-            <Canvas 
+            {webglOk && (
+            <Canvas
                 camera={isVisualizing ? { position: [0, 0, 40], fov: 45 } : { position: [0, 50, 30], fov: 45 }}
-                gl={{ 
+                gl={{
                     antialias: true,
                     alpha: false,
                     powerPreference: "high-performance"
@@ -287,7 +294,7 @@ export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, t
             >
                 <fog attach="fog" args={isVisualizing ? ['#141e35', 60, 130] : ['#0a0e1a', 10, 150]} />
                 <Suspense fallback={null}>
-                    <SceneContent 
+                    <SceneContent
                         isVisualizing={isVisualizing}
                         isSettingsOpen={isSettingsOpen}
                         isOverviewMode={isOverviewMode}
@@ -309,6 +316,7 @@ export default function Scene({ isVisualizing, isSettingsOpen, isOverviewMode, t
                     />
                 </Suspense>
             </Canvas>
+            )}
             
             {/* Top Right - Remaining Seconds (only visible when visualizing) */}
             {isVisualizing && (

@@ -2,20 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { COUNTRIES, translations } from '../utils/lifeData';
 import { calculateAge } from '../utils/calculations';
 import { useT, isJapaneseLanguage } from '../i18n';
+import { safeGet, safeSet } from '../utils/storage';
 
 const InputSection = ({ onVisualize, onCountryChange }) => {
     const [country, setCountry] = useState(() => {
-        return localStorage.getItem('lifevis_country') || 'Japan';
+        return safeGet('lifevis_country') || 'Japan';
     });
-    const [year, setYear] = useState(() => {
-        return localStorage.getItem('lifevis_year') || '1980';
-    });
-    const [month, setMonth] = useState(() => {
-        return localStorage.getItem('lifevis_month') || '1';
-    });
-    const [day, setDay] = useState(() => {
-        return localStorage.getItem('lifevis_day') || '14';
-    });
+    // Birthdate starts empty for first-time visitors (no misleading prefill);
+    // returning users get their last-entered value back from storage.
+    const [year, setYear] = useState(() => safeGet('lifevis_year') || '');
+    const [month, setMonth] = useState(() => safeGet('lifevis_month') || '');
+    const [day, setDay] = useState(() => safeGet('lifevis_day') || '');
     const [calculatedAge, setCalculatedAge] = useState<number | null>(null);
 
     const t = useT(country);
@@ -34,19 +31,19 @@ const InputSection = ({ onVisualize, onCountryChange }) => {
     const days = Array.from({ length: getDaysInMonth(year, month) }, (_, i) => i + 1);
 
     useEffect(() => {
-        if (country) localStorage.setItem('lifevis_country', country);
+        if (country) safeSet('lifevis_country', country);
     }, [country]);
 
     useEffect(() => {
-        if (year) localStorage.setItem('lifevis_year', year);
+        if (year) safeSet('lifevis_year', year);
     }, [year]);
 
     useEffect(() => {
-        if (month) localStorage.setItem('lifevis_month', month);
+        if (month) safeSet('lifevis_month', month);
     }, [month]);
 
     useEffect(() => {
-        if (day) localStorage.setItem('lifevis_day', day);
+        if (day) safeSet('lifevis_day', day);
     }, [day]);
 
     useEffect(() => {
@@ -145,7 +142,13 @@ const InputSection = ({ onVisualize, onCountryChange }) => {
                     )}
                 </div>
 
-                <button type="submit" className="visualize-btn">
+                <button
+                    type="submit"
+                    className="visualize-btn"
+                    disabled={calculatedAge === null}
+                    aria-disabled={calculatedAge === null}
+                    style={calculatedAge === null ? { opacity: 0.45, cursor: 'not-allowed' } : undefined}
+                >
                     {legacy.visualize}
                 </button>
             </form>

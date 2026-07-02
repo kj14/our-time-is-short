@@ -10,13 +10,13 @@ import { lifeExpectancyData, healthyLifeExpectancyData, workingAgeLimitData, cal
 import { useT } from './i18n'
 import { viewReducer, initialViewState } from './state/appView'
 import { maybeTakeSnapshot } from './features/universeHistory/snapshots'
+import { safeGet, safeSet, safeRemove, safeGetJSON } from './utils/storage'
 
 function App() {
   // ─── data state ──────────────────────────────────────────────────
   const [userData, setUserData] = useState(() => {
-    const saved = localStorage.getItem('lifevis_userData');
-    if (saved) {
-      const parsed = JSON.parse(saved);
+    const parsed = safeGetJSON<any>('lifevis_userData', null);
+    if (parsed && typeof parsed === 'object') {
       if (!parsed.lifeExpectancy && parsed.country) {
         parsed.lifeExpectancy = lifeExpectancyData[parsed.country] || lifeExpectancyData['Global'];
       }
@@ -32,15 +32,10 @@ function App() {
   });
   const [currentCountry, setCurrentCountry] = useState('Japan');
   const [people, setPeopleRaw] = useState(() => {
-    const saved = localStorage.getItem('lifevis_people');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        // Schema v1 → v2 migration: ensure every person has relationship + isMentor.
-        return parsed.map((p) => ({ relationship: 'other', isMentor: false, ...p }));
-      } catch (e) {
-        return [];
-      }
+    const parsed = safeGetJSON<any[]>('lifevis_people', null as any);
+    if (Array.isArray(parsed)) {
+      // Schema v1 → v2 migration: ensure every person has relationship + isMentor.
+      return parsed.map((p) => ({ relationship: 'other', isMentor: false, ...p }));
     }
     return [];
   });
@@ -68,14 +63,14 @@ function App() {
   };
 
   const [calculationBasis, setCalculationBasis] = useState(() =>
-    localStorage.getItem('lifevis_calculationBasis') || 'life'
+    safeGet('lifevis_calculationBasis') || 'life'
   );
   const [displayMode, setDisplayMode] = useState(() =>
-    localStorage.getItem('lifevis_displayMode') || 'percentage'
+    safeGet('lifevis_displayMode') || 'percentage'
   );
   // CONCEPT §5: the center of your universe can be you, or your mentor.
   const [centerMode, setCenterMode] = useState(() =>
-    localStorage.getItem('lifevis_centerMode') || 'self'
+    safeGet('lifevis_centerMode') || 'self'
   );
   const [particleDropCallback, setParticleDropCallback] = useState(null);
   const [personDisplayMode, setPersonDisplayMode] = useState('percentage');
@@ -90,22 +85,22 @@ function App() {
 
   // ─── persistence ─────────────────────────────────────────────────
   useEffect(() => {
-    localStorage.setItem('lifevis_people', JSON.stringify(people));
+    safeSet('lifevis_people', JSON.stringify(people));
     // Universe history (CONCEPT §11): self-throttled to one snapshot/month.
     maybeTakeSnapshot(people);
   }, [people]);
   useEffect(() => {
-    localStorage.setItem('lifevis_calculationBasis', calculationBasis);
+    safeSet('lifevis_calculationBasis', calculationBasis);
   }, [calculationBasis]);
   useEffect(() => {
-    localStorage.setItem('lifevis_displayMode', displayMode);
+    safeSet('lifevis_displayMode', displayMode);
   }, [displayMode]);
   useEffect(() => {
-    localStorage.setItem('lifevis_centerMode', centerMode);
+    safeSet('lifevis_centerMode', centerMode);
   }, [centerMode]);
   useEffect(() => {
-    if (userData) localStorage.setItem('lifevis_userData', JSON.stringify(userData));
-    else localStorage.removeItem('lifevis_userData');
+    if (userData) safeSet('lifevis_userData', JSON.stringify(userData));
+    else safeRemove('lifevis_userData');
   }, [userData]);
 
   // ─── handlers ────────────────────────────────────────────────────
@@ -190,6 +185,39 @@ function App() {
       <header className="container fade-in app-header">
         <div style={{ width: '100%' }}></div>
       </header>
+
+      {/* Persistent settings entry — the always-visible "sun/gear" the empty-state
+          nudge points at. Without this, a new user with an empty universe has no
+          discoverable way to open settings and add their first person. */}
+      {isValidUser && !view.isSettingsOpen && !view.isDetailPageOpen && !view.visualizingPersonId && (
+        <button
+          onClick={handleSunClick}
+          aria-label={tt('common.settings')}
+          className="app-gear-btn"
+          style={{
+            position: 'fixed',
+            top: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)',
+            right: 'calc(env(safe-area-inset-right, 0px) + 0.75rem)',
+            width: '44px',
+            height: '44px',
+            borderRadius: '50%',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            background: 'rgba(15, 23, 42, 0.55)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            color: 'white',
+            fontSize: '1.3rem',
+            cursor: 'pointer',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'auto'
+          }}
+        >
+          ⚙️
+        </button>
+      )}
 
       {isValidUser && !view.isSettingsOpen && !view.isDetailPageOpen && people.length === 0 && (
         <EmptyUniverse userCountry={userData.country} />

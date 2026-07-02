@@ -1,5 +1,5 @@
 import React from 'react';
-import { useT, isJapaneseLanguage } from '../i18n';
+import { useT } from '../i18n';
 
 interface Props {
     userCountry: string;
@@ -9,7 +9,6 @@ interface Props {
 // haven't added any people yet. Sits below the main visualization.
 export default function EmptyUniverse({ userCountry }: Props) {
     const t = useT(userCountry);
-    const isJa = isJapaneseLanguage(userCountry);
 
     return (
         <div
@@ -43,7 +42,7 @@ export default function EmptyUniverse({ userCountry }: Props) {
                     {t('empty.subtitle')}
                 </div>
                 <div style={{ color: 'rgba(255,255,255,0.45)', marginTop: '0.75rem', fontSize: '0.78rem' }}>
-                    {isJa ? '右上の太陽（⚙️）から「大切な人を追加」' : 'Tap the sun (⚙️) at top-right to add'}
+                    {t('empty.hint')}
                 </div>
             </div>
         </div>
