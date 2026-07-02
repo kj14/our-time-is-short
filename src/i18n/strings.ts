@@ -20,6 +20,8 @@ export const strings: Strings = {
         'common.reset': '最初に戻る',
         'common.share': 'シェア',
         'common.viewDetail': '詳細ページを見る',
+        'nav.map': '関係図を見る',
+        'nav.backToCountdown': 'カウントダウンに戻る',
 
         // app shell
         'app.title': 'Our Time Is Short',
@@ -244,6 +246,8 @@ export const strings: Strings = {
         'common.reset': 'Start Over',
         'common.share': 'Share',
         'common.viewDetail': 'View Detail Page',
+        'nav.map': 'Relationship map',
+        'nav.backToCountdown': 'Back to countdown',
 
         'app.title': 'Our Time Is Short',
 
