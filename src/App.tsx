@@ -6,8 +6,10 @@ import Scene from './components/Scene'
 import PersonSettings from './components/PersonSettings'
 import PersonVisualization from './components/PersonVisualization'
 import EmptyUniverse from './components/EmptyUniverse'
+import Onboarding from './components/Onboarding'
 import { lifeExpectancyData, healthyLifeExpectancyData, workingAgeLimitData, calculateLifeStats } from './utils/lifeData'
-import { useT } from './i18n'
+import { useT, resolveLanguage, getStoredLanguageOverride, setLanguageOverride } from './i18n'
+import type { Language } from './types'
 import { viewReducer, initialViewState } from './state/appView'
 import { maybeTakeSnapshot } from './features/universeHistory/snapshots'
 import { safeGet, safeSet, safeRemove, safeGetJSON } from './utils/storage'
@@ -74,6 +76,11 @@ function App() {
   );
   const [particleDropCallback, setParticleDropCallback] = useState(null);
   const [personDisplayMode, setPersonDisplayMode] = useState('percentage');
+  // First-run intro flag (CONCEPT §1/§12). Shown once, before the input form.
+  const [hasOnboarded, setHasOnboarded] = useState(() => safeGet('lifevis_hasOnboarded') === '1');
+  // Explicit language override; state exists to force a re-render (and thus a
+  // re-resolve of every useT) when the user switches language.
+  const [, setLangOverride] = useState<Language | null>(() => getStoredLanguageOverride());
 
   // ─── view state (consolidated reducer) ───────────────────────────
   const [view, dispatch] = useReducer(viewReducer, initialViewState);
@@ -82,6 +89,17 @@ function App() {
   // ─── derived ─────────────────────────────────────────────────────
   const isValidUser = !!(userData && userData.country && (userData.age !== undefined && userData.age !== null));
   const tt = useT(userData?.country || currentCountry);
+  const currentLang = resolveLanguage(userData?.country || currentCountry);
+
+  const changeLanguage = (lang: Language) => {
+    setLanguageOverride(lang);
+    setLangOverride(lang); // trigger re-render → useT re-resolves everywhere
+  };
+
+  const completeOnboarding = () => {
+    safeSet('lifevis_hasOnboarded', '1');
+    setHasOnboarded(true);
+  };
 
   // ─── persistence ─────────────────────────────────────────────────
   useEffect(() => {
@@ -151,6 +169,14 @@ function App() {
 
   return (
     <div className="app-container">
+      {!hasOnboarded && !isValidUser && (
+        <Onboarding
+          userCountry={currentCountry}
+          currentLang={currentLang}
+          onLanguageChange={changeLanguage}
+          onDone={completeOnboarding}
+        />
+      )}
       <Scene
         isVisualizing={(isValidUser && !view.isSettingsOpen) || view.visualizingPersonId}
         isSettingsOpen={view.isSettingsOpen}
@@ -397,6 +423,32 @@ function App() {
                 >×</button>
               </div>
               <div className="settings-content">
+                {/* Language switcher */}
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginBottom: '0.5rem' }}>
+                    {tt('lang.title')}
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    {([['ja', 'lang.ja'], ['en', 'lang.en']] as const).map(([lang, key]) => (
+                      <button
+                        key={lang}
+                        onClick={() => changeLanguage(lang)}
+                        aria-pressed={currentLang === lang}
+                        style={{
+                          flex: 1,
+                          padding: '0.6rem',
+                          borderRadius: 'var(--radius-sm)',
+                          border: '1px solid rgba(255,255,255,0.2)',
+                          background: currentLang === lang ? 'rgba(96, 165, 250, 0.25)' : 'transparent',
+                          color: 'white',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {tt(key)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <div ref={userSettingsRef}>
                   <UserSettings
                     lifeExpectancy={userData.lifeExpectancy || lifeExpectancyData[userData.country] || lifeExpectancyData['Global']}
@@ -487,6 +539,16 @@ function App() {
                     {tt('common.viewDetail')}
                   </button>
                 </div>
+                {/* Privacy reassurance (CONCEPT §5: private by default) */}
+                <p style={{
+                  marginTop: '1.25rem',
+                  fontSize: 'var(--text-xs)',
+                  color: 'rgba(255,255,255,0.4)',
+                  textAlign: 'center',
+                  lineHeight: 1.6
+                }}>
+                  🔒 {tt('privacy.note')}
+                </p>
               </div>
             </div>
           </div>

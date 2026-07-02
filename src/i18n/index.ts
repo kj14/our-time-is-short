@@ -5,6 +5,7 @@
 
 import { strings } from './strings';
 import type { Language } from '../types';
+import { safeGet, safeSet } from '../utils/storage';
 
 export const SUPPORTED_LANGUAGES: readonly Language[] = ['ja', 'en'] as const;
 const DEFAULT_LANGUAGE: Language = 'en';
@@ -15,14 +16,16 @@ export function languageFromCountry(country: string | undefined | null): Languag
 }
 
 export function getStoredLanguageOverride(): Language | null {
-    try {
-        const raw = localStorage.getItem('lifevis_language');
-        return raw && (SUPPORTED_LANGUAGES as readonly string[]).includes(raw)
-            ? (raw as Language)
-            : null;
-    } catch {
-        return null;
-    }
+    const raw = safeGet('lifevis_language');
+    return raw && (SUPPORTED_LANGUAGES as readonly string[]).includes(raw)
+        ? (raw as Language)
+        : null;
+}
+
+// Persist an explicit language choice (the settings/intro switcher). Routed
+// through safe storage so it also works when localStorage is blocked.
+export function setLanguageOverride(lang: Language): void {
+    safeSet('lifevis_language', lang);
 }
 
 export function resolveLanguage(country: string | undefined | null): Language {

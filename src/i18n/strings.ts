@@ -182,6 +182,25 @@ export const strings: Strings = {
         'empty.subtitle': '最初の人を置いてみましょう',
         'empty.hint': '右上の ⚙️ から大切な人を追加できます',
 
+        // onboarding intro (calm, liberation-not-fear; the death question is never stated)
+        'onboard.1.title': '時間は、見えない。',
+        'onboard.1.body': 'だから、無限にあるように感じてしまう。',
+        'onboard.2.title': 'あと何回、会えるだろう。',
+        'onboard.2.body': '大切な人と過ごせる時間を、星として見てみる。',
+        'onboard.3.title': '急かすためではなく。',
+        'onboard.3.body': '今この瞬間を、大切に思えるように。',
+        'onboard.begin': 'はじめる',
+        'onboard.skip': 'スキップ',
+        'onboard.next': '次へ',
+
+        // language switcher
+        'lang.title': '言語',
+        'lang.ja': '日本語',
+        'lang.en': 'English',
+
+        // privacy (reassurance: data never leaves the device)
+        'privacy.note': 'データはこの端末にのみ保存され、サーバーには送信されません。',
+
         // error boundary
         'error.title': '一時的に問題が発生しました',
         'error.subtitle': 'リロードするか、状態をリセットしてください',
@@ -355,6 +374,25 @@ export const strings: Strings = {
         'empty.title': 'Your universe is empty',
         'empty.subtitle': 'Place your first person',
         'empty.hint': 'Tap ⚙️ at the top-right to add a precious person',
+
+        // onboarding intro (calm, liberation-not-fear; the death question is never stated)
+        'onboard.1.title': 'Time is invisible.',
+        'onboard.1.body': "That's why it feels infinite.",
+        'onboard.2.title': 'How many times are left?',
+        'onboard.2.body': 'See the hours you have with the people who matter — as stars.',
+        'onboard.3.title': 'Not to rush you.',
+        'onboard.3.body': 'To help you treasure this moment, right now.',
+        'onboard.begin': 'Begin',
+        'onboard.skip': 'Skip',
+        'onboard.next': 'Next',
+
+        // language switcher
+        'lang.title': 'Language',
+        'lang.ja': '日本語',
+        'lang.en': 'English',
+
+        // privacy (reassurance: data never leaves the device)
+        'privacy.note': 'Your data is stored only on this device and is never sent to a server.',
 
         'error.title': 'Something went wrong',
         'error.subtitle': 'Reload or reset to recover.',
