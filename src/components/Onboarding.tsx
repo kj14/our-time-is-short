@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useT } from '../i18n';
 import type { Language } from '../types';
 
@@ -15,6 +15,13 @@ interface Props {
 export default function Onboarding({ userCountry, currentLang, onLanguageChange, onDone }: Props) {
     const t = useT(userCountry);
     const [slide, setSlide] = useState(0);
+
+    // Escape skips the intro.
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onDone(); };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+    }, [onDone]);
 
     const slides = [
         { title: t('onboard.1.title'), body: t('onboard.1.body') },

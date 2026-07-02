@@ -88,6 +88,8 @@ function App() {
   const userSettingsRef = useRef<any>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
   const [importMsg, setImportMsg] = useState<string | null>(null);
+  const settingsModalRef = useRef<HTMLDivElement>(null);
+  const lastFocusedRef = useRef<HTMLElement | null>(null);
 
   // ─── derived ─────────────────────────────────────────────────────
   const isValidUser = !!(userData && userData.country && (userData.age !== undefined && userData.age !== null));
@@ -142,6 +144,21 @@ function App() {
     if (userData) safeSet('lifevis_userData', JSON.stringify(userData));
     else safeRemove('lifevis_userData');
   }, [userData]);
+
+  // Settings modal a11y: Escape-to-close + focus move-in/return.
+  useEffect(() => {
+    if (!view.isSettingsOpen) return;
+    lastFocusedRef.current = (document.activeElement as HTMLElement) ?? null;
+    settingsModalRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') dispatch({ type: 'CLOSE_SETTINGS' });
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      lastFocusedRef.current?.focus?.();
+    };
+  }, [view.isSettingsOpen]);
 
   // ─── handlers ────────────────────────────────────────────────────
   const handleVisualize = (country, age) => {
@@ -434,7 +451,14 @@ function App() {
       {view.isSettingsOpen && isValidUser && (
         <>
           <div className="settings-overlay" onClick={() => dispatch({ type: 'CLOSE_SETTINGS' })}></div>
-          <div className="settings-modal">
+          <div
+            className="settings-modal"
+            ref={settingsModalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={tt('common.settings')}
+            tabIndex={-1}
+          >
             <div className="settings-container">
               <div className="settings-header">
                 <h2 className="settings-title">{tt('common.settings')}</h2>

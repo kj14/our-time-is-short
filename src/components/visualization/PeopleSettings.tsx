@@ -45,20 +45,24 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
 
     const colors = ['#818cf8', '#f472b6', '#fb7185', '#38bdf8', '#34d399', '#fbbf24', '#a78bfa', '#60a5fa'];
 
+    // Inline validation message (replaces blocking alert() dialogs).
+    const [formError, setFormError] = useState<string | null>(null);
+
     const handleAdd = () => {
         if (!formData.name) {
-            alert(t('person.errorName'));
+            setFormError(t('person.errorName'));
             return;
         }
-        
+
         const hasBirthdate = formData.birthYear && formData.birthMonth && formData.birthDay;
         const hasAge = formData.age && formData.age !== '';
-        
+
         if (!hasBirthdate && !hasAge) {
-            alert(t('person.errorBirthOrAge'));
+            setFormError(t('person.errorBirthOrAge'));
             return;
         }
-        
+        setFormError(null);
+
         const newPerson = {
             id: generateId(),
             name: formData.name,
@@ -105,19 +109,20 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
 
     const handleUpdate = () => {
         if (!formData.name) {
-            alert(t('person.errorName'));
+            setFormError(t('person.errorName'));
             return;
         }
-        
+
         const hasBirthdate = formData.birthYear && formData.birthMonth && formData.birthDay;
         const hasAge = formData.age && formData.age !== '';
-        
+
         if (!hasBirthdate && !hasAge) {
-            alert(t('person.errorBirthOrAge'));
+            setFormError(t('person.errorBirthOrAge'));
             return;
         }
-        
-        setPeople(people.map(p => 
+        setFormError(null);
+
+        setPeople(people.map(p =>
             p.id === editingId 
                 ? {
                     ...p,
@@ -428,6 +433,16 @@ const PeopleSettings = ({ people, setPeople, userAge, userCountry, remainingYear
                         </button>
                     )}
                 </div>
+                {formError && (
+                    <div role="alert" style={{
+                        marginTop: '0.75rem',
+                        color: '#fda4af',
+                        fontSize: '0.85rem',
+                        textAlign: 'center'
+                    }}>
+                        {formError}
+                    </div>
+                )}
             </div>
 
             {/* People List */}
