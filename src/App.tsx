@@ -90,6 +90,9 @@ function App() {
   const [importMsg, setImportMsg] = useState<string | null>(null);
   const settingsModalRef = useRef<HTMLDivElement>(null);
   const lastFocusedRef = useRef<HTMLElement | null>(null);
+  // Holds the countdown's userData while the user is in the top-down map, so
+  // returning restores the countdown without re-entering anything.
+  const stashedUserData = useRef<any>(null);
 
   // ─── derived ─────────────────────────────────────────────────────
   const isValidUser = !!(userData && userData.country && (userData.age !== undefined && userData.age !== null));
@@ -190,6 +193,21 @@ function App() {
     dispatch({ type: 'SUN_CLICK', isValidUser });
   };
 
+  // Top-down relationship map (overview). The overview UI is built around
+  // userData === null (universe-building mode), so we stash the countdown's
+  // userData and restore it on the way back — no data is lost, nothing to re-enter.
+  const openRelationshipMap = () => {
+    stashedUserData.current = userData;
+    setUserData(null);
+    dispatch({ type: 'SET_OVERVIEW', mode: true });
+  };
+
+  const closeRelationshipMap = () => {
+    if (stashedUserData.current) setUserData(stashedUserData.current);
+    stashedUserData.current = null;
+    dispatch({ type: 'SET_OVERVIEW', mode: false });
+  };
+
   const handlePersonClick = (personId) => {
     if (view.visualizingPersonId || isValidUser) {
       setUserData(null);
@@ -281,6 +299,71 @@ function App() {
           }}
         >
           ⚙️
+        </button>
+      )}
+
+      {/* Relationship-map (top-down overview) entry — sits left of the gear.
+          The overview was previously only reachable via an obscure Earth-tap
+          gesture; this makes it discoverable and preserves the countdown. */}
+      {isValidUser && !view.isSettingsOpen && !view.isDetailPageOpen && !view.visualizingPersonId && people.length > 0 && (
+        <button
+          onClick={openRelationshipMap}
+          aria-label={tt('nav.map')}
+          className="app-map-btn"
+          style={{
+            position: 'fixed',
+            top: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)',
+            right: 'calc(env(safe-area-inset-right, 0px) + 0.75rem + 54px)',
+            height: '44px',
+            padding: '0 0.9rem',
+            borderRadius: '22px',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            background: 'rgba(15, 23, 42, 0.55)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            color: 'white',
+            fontSize: '0.85rem',
+            cursor: 'pointer',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.35rem',
+            pointerEvents: 'auto'
+          }}
+        >
+          🌌 <span>{tt('nav.map')}</span>
+        </button>
+      )}
+
+      {/* Back-to-countdown button while viewing the map (or the input screen
+          you can land on from it) — always available as long as a countdown
+          is stashed, so you can never get stuck. */}
+      {!isValidUser && !view.isAddingPerson && !view.selectedPersonId && stashedUserData.current && (
+        <button
+          onClick={closeRelationshipMap}
+          className="app-map-back-btn"
+          style={{
+            position: 'fixed',
+            top: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)',
+            left: 'calc(env(safe-area-inset-left, 0px) + 0.75rem)',
+            height: '44px',
+            padding: '0 1rem',
+            borderRadius: '22px',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            background: 'rgba(15, 23, 42, 0.55)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            color: 'white',
+            fontSize: '0.85rem',
+            cursor: 'pointer',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.35rem',
+            pointerEvents: 'auto'
+          }}
+        >
+          ‹ {tt('nav.backToCountdown')}
         </button>
       )}
 
