@@ -14,9 +14,10 @@ const EnergyTank = ({ activity, hours, maxHours, color, label, t, country = 'Glo
     if (displayMode === 'hours') {
         // Bar chart mode (horizontal bar)
         return (
-            <div 
+            <div
                 className={`energy-tank-container horizontal-bar ${isSelected ? 'selected-battery' : ''} ${onClick ? 'clickable-battery' : ''}`}
                 onClick={onClick}
+                data-basis-label={isSelected ? tt('battery.basisBadge') : undefined}
                 style={{ cursor: onClick ? 'pointer' : 'default' }}
             >
                 <div className="bar-label-row">
@@ -52,9 +53,10 @@ const EnergyTank = ({ activity, hours, maxHours, color, label, t, country = 'Glo
 
     // Percentage mode (horizontal battery)
     return (
-        <div 
+        <div
             className={`energy-tank-container horizontal-battery ${isSelected ? 'selected-battery' : ''} ${onClick ? 'clickable-battery' : ''}`}
             onClick={onClick}
+            data-basis-label={isSelected ? tt('battery.basisBadge') : undefined}
             style={{ cursor: onClick ? 'pointer' : 'default' }}
         >
             <div className="battery-label-row">

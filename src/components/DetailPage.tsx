@@ -1,12 +1,12 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-// html2canvas (~200KB) is loaded lazily at share time (see handleShareToX)
-// so it stays out of the initial bundle.
 import { calculateLifeStats, translations, lifeExpectancyData, healthyLifeExpectancyData, workingAgeLimitData } from '../utils/lifeData';
+import { buildShareText, shareElementSnapshot } from '../utils/share';
 import { calculateAge } from '../utils/calculations';
 import { TruthMessage } from '../features/truthMessages';
 import UniverseChanges from '../features/universeHistory/UniverseChanges';
 import EnergyTank from './EnergyTank';
-import { useT } from '../i18n';
+import { useT, isJapaneseLanguage } from '../i18n';
+import { getConditionText } from './visualization/helpers';
 
 // Per-person remaining-meetings list. Restored after the Phase 4 dead-code
 // pass mistakenly removed it — the original DetailPage rendered this below
@@ -61,70 +61,10 @@ const LifeEvents = ({ remainingYears, people, userAge, userCountry }) => {
     );
 };
 
-const FREQUENCY_LABELS_JP = {
-    365: '毎日',
-    104: '週に2回',
-    52: '週に1回',
-    24: '月に2回',
-    12: '月に1回',
-    1: '年に1回'
-};
+// Frequency/hours label helpers live in ./visualization/helpers (getConditionText)
+// so the maps aren't duplicated across the detail page and the settings list.
 
-const FREQUENCY_LABELS_EN = {
-    365: 'Daily',
-    104: 'Twice a week',
-    52: 'Weekly',
-    24: 'Twice a month',
-    12: 'Monthly',
-    1: 'Once a year'
-};
-
-const HOURS_LABELS_JP = {
-    0.5: '30分',
-    1: '1時間',
-    2: '2時間',
-    3: '3時間',
-    6: '半日',
-    24: '1日'
-};
-
-const HOURS_LABELS_EN = {
-    0.5: '30 min',
-    1: '1 hour',
-    2: '2 hours',
-    3: '3 hours',
-    6: 'Half day',
-    24: '1 day'
-};
-
-const getFrequencyLabel = (frequency, isJapan) => {
-    const map = isJapan ? FREQUENCY_LABELS_JP : FREQUENCY_LABELS_EN;
-    if (map[frequency]) return map[frequency];
-    if (isJapan) {
-        return `年に${frequency}回`;
-    }
-    return `${frequency} times/year`;
-};
-
-const getHoursLabel = (hours, isJapan) => {
-    const map = isJapan ? HOURS_LABELS_JP : HOURS_LABELS_EN;
-    if (map[hours]) return map[hours];
-    const formatted = Number(hours).toString().replace(/\.0$/, '');
-    if (isJapan) {
-        return `${formatted}時間`;
-    }
-    const isPlural = Number(formatted) !== 1;
-    return `${formatted} hour${isPlural ? 's' : ''}`;
-};
-
-const getConditionText = (person, isJapan) => {
-    const freqLabel = getFrequencyLabel(person.meetingFrequency || 0, isJapan);
-    const hoursLabel = getHoursLabel(person.hoursPerMeeting || 0, isJapan);
-    return `${freqLabel} × ${hoursLabel}`;
-};
-
-
-const DetailPage = ({ 
+const DetailPage = ({
     country, 
     age, 
     lifeExpectancy: customLifeExpectancy, 
@@ -189,89 +129,22 @@ const DetailPage = ({
         onOpenSettingsWithPerson('user-settings');
     };
     
-    // Share functionality
+    // Share: capture the hidden share card and share it (Web Share → X intent),
+    // via the shared helper so all three share surfaces behave identically.
     const handleShareToX = async () => {
         if (!shareCardRef.current) return;
-        
         setIsCapturing(true);
         setShareMessage(null);
-        
         try {
-            const { default: html2canvas } = await import('html2canvas');
-            const canvas = await html2canvas(shareCardRef.current, {
-                backgroundColor: '#050505',
-                scale: 2,
-                logging: false,
-                useCORS: true
-            });
-            
-            canvas.toBlob((blob) => {
-                if (!blob) {
-                    setIsCapturing(false);
-                    return;
-                }
-                
-                const file = new File([blob], 'life-visualization.png', { type: 'image/png' });
-                const shareData = {
-                    files: [file],
-                    text: `${tt('detail.shareText', { years: displayStats.remainingYears.toFixed(1) })} #OurTimeIsShort`
-                };
-                
-                if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-                    navigator.share(shareData).catch(() => {
-                        openXWeb();
-                    });
-                } else {
-                    openXWeb();
-                }
-                
-                setIsCapturing(false);
-            }, 'image/png');
-        } catch (error) {
-            console.error('Error capturing share card:', error);
-            setIsCapturing(false);
+            const text = buildShareText(tt, displayStats.remainingYears);
+            await shareElementSnapshot(shareCardRef.current, text);
+        } catch {
             setShareMessage(tt('detail.shareFail'));
+        } finally {
+            setIsCapturing(false);
         }
     };
-    
-    const openXWeb = () => {
-        const text = `${tt('detail.shareText', { years: displayStats.remainingYears.toFixed(1) })} #OurTimeIsShort`;
-        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-        
-        // Try to open X app first on mobile
-        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-            const appUrl = `twitter://post?message=${encodeURIComponent(text)}`;
-            window.location.href = appUrl;
-            
-            // Fallback to web after delay if app didn't open
-            let fallbackTimeout;
-            const handleVisibilityChange = () => {
-                if (document.hidden) {
-                    clearTimeout(fallbackTimeout);
-                }
-            };
-            const handleBlur = () => {
-                clearTimeout(fallbackTimeout);
-            };
-            const handlePageHide = () => {
-                clearTimeout(fallbackTimeout);
-            };
-            
-            document.addEventListener('visibilitychange', handleVisibilityChange);
-            window.addEventListener('blur', handleBlur);
-            window.addEventListener('pagehide', handlePageHide);
-            
-            fallbackTimeout = setTimeout(() => {
-                document.removeEventListener('visibilitychange', handleVisibilityChange);
-                window.removeEventListener('blur', handleBlur);
-                window.removeEventListener('pagehide', handlePageHide);
-                window.open(url, '_blank');
-            }, 2000);
-        } else {
-            window.open(url, '_blank');
-        }
-    };
-    
+
     const shareButtonLabel = isCapturing ? tt('detail.preparing') : tt('detail.shareOnX');
     
     return (
@@ -415,7 +288,7 @@ const DetailPage = ({
                     
                     const allBatteries = [
                         {
-                            label: "人生",
+                            label: tt('battery.life'),
                             hours: remainingLifeHours,
                             maxHours: maxLifeHours,
                             color: "#06b6d4",
@@ -423,7 +296,7 @@ const DetailPage = ({
                             basis: 'life'
                         },
                         {
-                            label: "健康",
+                            label: tt('battery.healthy'),
                             hours: remainingHealthyHours,
                             maxHours: maxHealthyHours,
                             color: "#34d399",
@@ -431,7 +304,7 @@ const DetailPage = ({
                             basis: 'healthy'
                         },
                         {
-                            label: "仕事",
+                            label: tt('battery.work'),
                             hours: remainingWorkingHours,
                             maxHours: maxWorkingHours,
                             color: "#fbbf24",
@@ -456,7 +329,7 @@ const DetailPage = ({
                                         t={t}
                                         country={country}
                                         isSelected={isSelected}
-                                        subtitle={`${battery.years.toFixed(1)}年`}
+                                        subtitle={tt('detail.yearsValue', { years: battery.years.toFixed(1) })}
                                         onClick={handleOpenUserSettings}
                                         displayMode={currentDisplayMode}
                                     />
@@ -495,11 +368,9 @@ const DetailPage = ({
                         const totalMeetings = futureOverlapYears * person.meetingFrequency;
                         const hours = futureOverlapYears * person.meetingFrequency * person.hoursPerMeeting;
                         const totalLifeHours = totalOverlapYears * person.meetingFrequency * person.hoursPerMeeting || 1;
-                        const localeIsJapan = country === 'Japan';
+                        const localeIsJapan = isJapaneseLanguage(country);
                         const conditionText = getConditionText(person, localeIsJapan);
-                        const meetingsLabel = localeIsJapan
-                            ? `残り${Math.max(0, totalMeetings).toFixed(0)}${tt('unit.times')}`
-                            : `${Math.max(0, totalMeetings).toFixed(0)} ${tt('unit.times')} left`;
+                        const meetingsLabel = tt('detail.meetingsLeft', { n: Math.max(0, totalMeetings).toFixed(0) });
 
                         const personMaxHours = currentDisplayMode === 'hours' ? maxLifeHours : totalLifeHours;
 

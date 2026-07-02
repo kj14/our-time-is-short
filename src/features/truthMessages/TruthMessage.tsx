@@ -2,9 +2,8 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { pickTruthMessage, buildContext } from './selector';
 import { useT, isJapaneseLanguage } from '../../i18n';
 import { getLifeExpectancy } from '../../utils/calculations';
+import { shareText, SHARE_HASHTAG } from '../../utils/share';
 import type { CalculationBasis, Person, TruthMessageOutput } from '../../types';
-
-const SHARE_HASHTAG = '#OurTimeIsShort';
 
 const MAX_HISTORY = 8;
 
@@ -69,19 +68,9 @@ export default function TruthMessage({ user, people, basis = 'life' }: Props) {
 
     const handleShare = async (e: React.MouseEvent) => {
         e.stopPropagation();
-        const text = `Q: ${q}\nA: ${a}\n${SHARE_HASHTAG}`;
-        try {
-            if (navigator.share) {
-                await navigator.share({ text });
-            } else if (navigator.clipboard?.writeText) {
-                await navigator.clipboard.writeText(text);
-                alert(isJa ? 'メッセージをコピーしました' : 'Message copied to clipboard');
-            } else {
-                window.prompt(isJa ? 'コピーしてシェア' : 'Copy and share', text);
-            }
-        } catch {
-            // User cancelled or browser denied — silently ignore.
-        }
+        // Consolidated share path (Web Share → X intent fallback) shared with
+        // the countdown card and detail page.
+        await shareText(`Q: ${q}\nA: ${a}\n${SHARE_HASHTAG}`);
     };
 
     return (
@@ -161,7 +150,7 @@ export default function TruthMessage({ user, people, basis = 'life' }: Props) {
             </button>
             <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
                 <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.4)' }}>
-                    {isJa ? 'タップで別のメッセージ' : 'Tap for another message'}
+                    {t('viz.tapForAnother')}
                 </div>
                 <button
                     type="button"

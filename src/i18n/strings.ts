@@ -122,6 +122,12 @@ export const strings: Strings = {
         'detail.remainingTab': '残量',
         'detail.hoursTab': '時間比較',
         'detail.shareText': '残り{years}年。あなたの時間は短い。',
+        'detail.yearsValue': '{years}年',
+        'detail.meetingsLeft': '残り{n}回',
+        'battery.life': '人生',
+        'battery.healthy': '健康',
+        'battery.work': '仕事',
+        'battery.basisBadge': '基準',
 
         // frequency text helpers (for getFrequencyLabel)
         'freq.everyNDays': '{n}日に1回',
@@ -135,6 +141,7 @@ export const strings: Strings = {
         'viz.lived': '過ごした時間',
         'viz.empty': '対象を登録すると、メッセージが表示されます',
         'viz.shuffle': '別の組み合わせを選ぶ',
+        'viz.tapForAnother': 'タップで別のメッセージ',
         'viz.with': '{name}さんと過ごす',
         'viz.inRemaining': '残りの人生で',
 
@@ -330,6 +337,12 @@ export const strings: Strings = {
         'detail.remainingTab': 'Remaining',
         'detail.hoursTab': 'Hours',
         'detail.shareText': '{years} years left. Your time is short.',
+        'detail.yearsValue': '{years} years',
+        'detail.meetingsLeft': '{n} times left',
+        'battery.life': 'Life',
+        'battery.healthy': 'Health',
+        'battery.work': 'Work',
+        'battery.basisBadge': 'Basis',
 
         'freq.everyNDays': 'Every {n} days',
         'freq.weekly1': '{n}x/week',
@@ -341,6 +354,7 @@ export const strings: Strings = {
         'viz.lived': 'Time Lived',
         'viz.empty': 'Add a person to see Truth Messages',
         'viz.shuffle': 'Pick another',
+        'viz.tapForAnother': 'Tap for another message',
         'viz.with': 'With {name}',
         'viz.inRemaining': 'in your remaining life',
 

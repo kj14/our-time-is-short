@@ -724,7 +724,7 @@ main.container {
 }
 
 .energy-tank-container.selected-battery::before {
-    content: '基準';
+    content: attr(data-basis-label); /* i18n label supplied by the component */
     position: absolute;
     top: -9px;
     left: 1rem;

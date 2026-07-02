@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getLifeExpectancy, calculateAge as canonicalAge } from '../utils/calculations';
-import { useT, isJapaneseLanguage } from '../i18n';
+import { useT } from '../i18n';
 
 const PLANET_OPTIONS = [
     { url: '/textures/2k_mercury.jpg',       i18nKey: 'planet.mercury' },
@@ -56,7 +56,6 @@ const PersonSettings = ({
     calculationBasis = 'life'
 }: any) => {
     const t = useT(userCountry);
-    const localeIsJapan = isJapaneseLanguage(userCountry);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -370,7 +369,7 @@ const PersonSettings = ({
                                     {sharedTime.totalHours.toLocaleString()}
                                 </div>
                                 <div style={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.5)' }}>
-                                    {localeIsJapan ? '時間' : 'hours'}
+                                    {t('unit.hours')}
                                 </div>
                             </div>
                             <div>
@@ -378,7 +377,7 @@ const PersonSettings = ({
                                     {sharedTime.totalMeetings.toLocaleString()}
                                 </div>
                                 <div style={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.5)' }}>
-                                    {localeIsJapan ? '回' : 'times'}
+                                    {t('unit.times')}
                                 </div>
                             </div>
                             <div>
@@ -386,7 +385,7 @@ const PersonSettings = ({
                                     {sharedTime.totalDays}
                                 </div>
                                 <div style={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.5)' }}>
-                                    {localeIsJapan ? '日' : 'days'}
+                                    {t('unit.days')}
                                 </div>
                             </div>
                         </div>
