@@ -201,6 +201,14 @@ export const strings: Strings = {
         // privacy (reassurance: data never leaves the device)
         'privacy.note': 'データはこの端末にのみ保存され、サーバーには送信されません。',
 
+        // data export / import
+        'data.title': 'データのバックアップ',
+        'data.hint': '機種変更やブラウザのデータ削除に備えて、宇宙を保存できます。',
+        'data.export': '⬇ 書き出す',
+        'data.import': '⬆ 読み込む',
+        'data.importSuccess': '読み込みました。反映します…',
+        'data.importError': 'ファイルを読み込めませんでした。',
+
         // error boundary
         'error.title': '一時的に問題が発生しました',
         'error.subtitle': 'リロードするか、状態をリセットしてください',
@@ -393,6 +401,14 @@ export const strings: Strings = {
 
         // privacy (reassurance: data never leaves the device)
         'privacy.note': 'Your data is stored only on this device and is never sent to a server.',
+
+        // data export / import
+        'data.title': 'Back up your data',
+        'data.hint': 'Save your universe in case you switch devices or clear browser data.',
+        'data.export': '⬇ Export',
+        'data.import': '⬆ Import',
+        'data.importSuccess': 'Imported. Reloading…',
+        'data.importError': "Couldn't read that file.",
 
         'error.title': 'Something went wrong',
         'error.subtitle': 'Reload or reset to recover.',

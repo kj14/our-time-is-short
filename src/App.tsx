@@ -13,6 +13,7 @@ import type { Language } from './types'
 import { viewReducer, initialViewState } from './state/appView'
 import { maybeTakeSnapshot } from './features/universeHistory/snapshots'
 import { safeGet, safeSet, safeRemove, safeGetJSON } from './utils/storage'
+import { downloadExport, applyImport } from './utils/dataPortability'
 
 function App() {
   // ─── data state ──────────────────────────────────────────────────
@@ -85,6 +86,8 @@ function App() {
   // ─── view state (consolidated reducer) ───────────────────────────
   const [view, dispatch] = useReducer(viewReducer, initialViewState);
   const userSettingsRef = useRef<any>(null);
+  const importInputRef = useRef<HTMLInputElement>(null);
+  const [importMsg, setImportMsg] = useState<string | null>(null);
 
   // ─── derived ─────────────────────────────────────────────────────
   const isValidUser = !!(userData && userData.country && (userData.age !== undefined && userData.age !== null));
@@ -99,6 +102,25 @@ function App() {
   const completeOnboarding = () => {
     safeSet('lifevis_hasOnboarded', '1');
     setHasOnboarded(true);
+  };
+
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // allow re-selecting the same file later
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const res = applyImport(text);
+      if (res.ok) {
+        setImportMsg(tt('data.importSuccess'));
+        // Reload so all state re-hydrates through the load-time migrations.
+        setTimeout(() => window.location.reload(), 800);
+      } else {
+        setImportMsg(tt('data.importError'));
+      }
+    } catch {
+      setImportMsg(tt('data.importError'));
+    }
   };
 
   // ─── persistence ─────────────────────────────────────────────────
@@ -539,6 +561,51 @@ function App() {
                     {tt('common.viewDetail')}
                   </button>
                 </div>
+
+                {/* Data backup (CONCEPT §5: your data is yours) */}
+                <div style={{ marginTop: '1.5rem' }}>
+                  <div style={{ fontSize: 'var(--text-sm)', fontWeight: 600, marginBottom: '0.25rem' }}>
+                    {tt('data.title')}
+                  </div>
+                  <div style={{ fontSize: 'var(--text-xs)', color: 'rgba(255,255,255,0.5)', marginBottom: '0.6rem', lineHeight: 1.5 }}>
+                    {tt('data.hint')}
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      onClick={downloadExport}
+                      style={{
+                        flex: 1, padding: '0.6rem', borderRadius: 'var(--radius-sm)',
+                        border: '1px solid rgba(255,255,255,0.2)', background: 'transparent',
+                        color: 'white', cursor: 'pointer', fontSize: 'var(--text-sm)'
+                      }}
+                    >
+                      {tt('data.export')}
+                    </button>
+                    <button
+                      onClick={() => importInputRef.current?.click()}
+                      style={{
+                        flex: 1, padding: '0.6rem', borderRadius: 'var(--radius-sm)',
+                        border: '1px solid rgba(255,255,255,0.2)', background: 'transparent',
+                        color: 'white', cursor: 'pointer', fontSize: 'var(--text-sm)'
+                      }}
+                    >
+                      {tt('data.import')}
+                    </button>
+                    <input
+                      ref={importInputRef}
+                      type="file"
+                      accept="application/json,.json"
+                      onChange={handleImportFile}
+                      style={{ display: 'none' }}
+                    />
+                  </div>
+                  {importMsg && (
+                    <div style={{ marginTop: '0.5rem', fontSize: 'var(--text-xs)', color: 'rgba(186,225,255,0.9)' }}>
+                      {importMsg}
+                    </div>
+                  )}
+                </div>
+
                 {/* Privacy reassurance (CONCEPT §5: private by default) */}
                 <p style={{
                   marginTop: '1.25rem',
